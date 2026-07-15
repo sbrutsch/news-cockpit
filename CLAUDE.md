@@ -65,3 +65,10 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   ergänzt (Schema + Nachrüst-Migration in `db.init`, Ingest-API, UI-Chips).
   Domain-Entscheidung: `news.itcoach.cloud` statt sternenozean.de (Domain und
   VPS im selben Hostinger-Konto, all-inkl/WordPress bleibt unberührt).
+- **2026-07-15 (3):** Dunkles UI-Redesign; Titel-Links nur noch bei externen
+  Quellen. **Verwerten-Knopf**: `POST /api/items/{id}/verwerten` erzeugt via
+  `app/transform.py` (Anthropic-SDK, `TRANSFORM_MODEL`, Standard
+  claude-sonnet-5 — Stefans Content-Standardmodell) einen LinkedIn-Entwurf aus
+  Positionierungs-Prompt + Eintrag; Modal-UI mit Kopieren/Neu generieren.
+  Neuer Secret-Bedarf: `ANTHROPIC_API_KEY` als Coolify-Env (serverseitig,
+  nie im Browser).

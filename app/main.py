@@ -35,7 +35,7 @@ from fastapi.responses import JSONResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
-from app import auth, db  # noqa: E402
+from app import auth, db, transform  # noqa: E402
 
 log = logging.getLogger("news-cockpit")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -180,6 +180,18 @@ def patch_item(item_id: int, body: PatchBody):
     if not item or item["status"] == "deleted":
         raise HTTPException(status_code=404, detail="Nicht gefunden")
     return db.update_item(item_id, important=body.important, status=body.status)
+
+
+@app.post("/api/items/{item_id}/verwerten", dependencies=[Depends(require_session)])
+def verwerten(item_id: int):
+    item = db.get_item(item_id)
+    if not item or item["status"] == "deleted":
+        raise HTTPException(status_code=404, detail="Nicht gefunden")
+    try:
+        draft = transform.linkedin_entwurf(item)
+    except transform.TransformError as e:
+        raise HTTPException(status_code=e.status, detail=str(e))
+    return {"draft": draft, "model": transform.MODEL}
 
 
 @app.delete("/api/items/{item_id}", dependencies=[Depends(require_session)])

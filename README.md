@@ -30,6 +30,8 @@ Copy-Item .env.example .env
 | `APP_PASSWORD` | ja¹ | Alternative: Klartext-Passwort (nur wenn kein Hash gesetzt ist) |
 | `INGEST_TOKEN` | ja | Bearer-Token für `POST /api/ingest`; ohne Token ist Ingest deaktiviert |
 | `SECRET_KEY` | empfohlen | Signiert Session-Cookies; ohne Angabe enden Sessions beim Neustart |
+| `ANTHROPIC_API_KEY` | für Verwerten | Serverseitiger Claude-Key für den Verwerten-Knopf (LinkedIn-Entwürfe); ohne Key antwortet der Endpunkt mit 503 |
+| `TRANSFORM_MODEL` | nein | Modell für Verwerten (Standard `claude-sonnet-5`) |
 | `HOST` / `PORT` | nein | Standard `127.0.0.1` / `8080` (Docker setzt `HOST=0.0.0.0`) |
 
 ¹ Eines von beiden. Secrets niemals ins Repo — in Produktion in der Coolify-UI pflegen.
@@ -69,6 +71,7 @@ sich also nichts merken.
 - `POST /api/login` · `POST /api/logout` · `GET /api/me` — Session (Cookie, HttpOnly)
 - `GET /api/items?tab=new|important|archived&q=&limit=&offset=` — Liste + Zähler
 - `PATCH /api/items/{id}` — `{"important": true}` und/oder `{"status": "archived"|"new"}`
+- `POST /api/items/{id}/verwerten` — LinkedIn-Entwurf zum Eintrag (Claude serverseitig, Positionierungs-Prompt)
 - `DELETE /api/items/{id}` — Soft-Delete
 - `GET /healthz` — für Coolify-Healthcheck
 
