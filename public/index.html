@@ -442,9 +442,17 @@ function entryNode(item, index) {
   if (state.tab === "important" && item.status === "archived") meta.append(el("span", "chip archiviert", "archiviert"));
 
   const h2 = el("h2");
-  const a = el("a", "", item.title);
-  a.href = item.url; a.target = "_blank"; a.rel = "noopener noreferrer";
-  h2.append(a);
+  // Nur echte externe Quellen verlinken — Platzhalter-URLs (eigene Domain,
+  // ungültige URLs) werden als reiner Text gezeigt statt ins Leere zu führen.
+  let extern = false;
+  try { extern = new URL(item.url, location.href).origin !== location.origin; } catch { extern = false; }
+  if (extern) {
+    const a = el("a", "", item.title);
+    a.href = item.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+    h2.append(a);
+  } else {
+    h2.append(el("span", "", item.title));
+  }
 
   const actions = el("div", "actions");
   actions.append(
