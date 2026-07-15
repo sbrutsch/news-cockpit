@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0A0D14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IT-News">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <title>IT-Nachrichten · News-Cockpit</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A0D14'/%3E%3Ctext x='15' y='22' font-family='Georgia' font-size='17' font-weight='bold' font-style='italic' fill='%23E6EAF2' text-anchor='middle'%3EN%3C/text%3E%3Ccircle cx='24' cy='21' r='2.6' fill='%23E04848'/%3E%3C/svg%3E">
 <style>
@@ -92,6 +99,12 @@
   }
   .search input:focus { width: 240px; border-color: rgba(148,163,184,0.35); background: var(--elev-strong); outline: none; }
   .search input::placeholder { color: var(--faint); }
+  .tool-btn {
+    width: 34px; height: 34px; border-radius: 9px; color: var(--faint);
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--line-soft); transition: all .15s;
+  }
+  .tool-btn:hover { color: var(--text); background: var(--elev); border-color: var(--line); }
 
   /* ---------- Art-Filter (kind) ---------- */
   .kinds { display: flex; gap: 8px; padding: 14px 0 4px; flex-wrap: wrap; }
@@ -350,6 +363,9 @@
     <div class="search">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
       <input type="search" id="searchInput" placeholder="Suchen  ( / )" aria-label="Meldungen durchsuchen">
+      <button class="tool-btn" id="exportBtn" type="button" title="Wochen-Export: Wichtiges der letzten 7 Tage als Markdown" aria-label="Wochen-Export herunterladen">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 19h16"/></svg>
+      </button>
     </div>
   </nav>
 
@@ -839,6 +855,14 @@ moreBtn.addEventListener("click", () => {
   load(false).catch(e => toast(e.message));
 });
 
+$("exportBtn").addEventListener("click", async () => {
+  try {
+    await api("/api/me"); // Session prüfen, damit der Download nicht in einer JSON-Fehlerseite endet
+    window.location.href = "/api/export?days=7";
+    toast("Wochen-Export wird heruntergeladen …");
+  } catch { /* 401-Pfad zeigt bereits den Login */ }
+});
+
 /* ---------- Zeit & Toast ---------- */
 function relTime(iso) {
   if (!iso) return "";
@@ -872,6 +896,10 @@ function toast(msg) {
 /* ---------- Start ---------- */
 $("today").textContent = new Date().toLocaleDateString("de-DE",
   { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").catch(() => { /* PWA optional */ });
+}
 
 (async function init() {
   try {

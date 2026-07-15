@@ -73,7 +73,14 @@ sich also nichts merken.
 - `PATCH /api/items/{id}` — `{"important": true}`, `{"status": "archived"|"new"}` und/oder `{"note": "…"}` (leere Notiz löscht; Notiz fließt beim Verwerten als gewünschter Winkel in den Entwurf)
 - `POST /api/items/{id}/verwerten` — LinkedIn-Entwurf zum Eintrag (Claude serverseitig, Positionierungs-Prompt)
 - `DELETE /api/items/{id}` — Soft-Delete
+- `GET /api/export?days=7` — Wochen-Export: Wichtiges als Markdown-Download (gruppiert nach Content-Säule, inkl. Notizen; days 1–90)
 - `GET /healthz` — für Coolify-Healthcheck
+
+## PWA
+
+Die App ist installierbar (Manifest + Service Worker + Icons unter `public/`).
+Handy: Seite öffnen → „Zum Startbildschirm hinzufügen". Der Service Worker
+arbeitet Netz-zuerst und cacht die API nie — keine veralteten Inhalte.
 
 ## Deployment
 

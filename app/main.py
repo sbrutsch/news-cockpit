@@ -29,6 +29,7 @@ _load_env_file()
 
 import logging  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
+from datetime import datetime, timedelta, timezone  # noqa: E402
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response  # noqa: E402
 from fastapi.responses import JSONResponse  # noqa: E402
@@ -205,6 +206,65 @@ def delete_item(item_id: int):
         raise HTTPException(status_code=404, detail="Nicht gefunden")
     db.update_item(item_id, status="deleted")
     return {"ok": True}
+
+
+_EXPORT_KIND = {"news": "Meldung", "idee": "Content-Idee", "zitat": "Zitat"}
+
+
+def _export_datum(iso):
+    try:
+        s = iso[:-1] + "+00:00" if iso.endswith("Z") else iso
+        return datetime.fromisoformat(s).strftime("%d.%m.%Y")
+    except (ValueError, TypeError, AttributeError):
+        return ""
+
+
+@app.get("/api/export", dependencies=[Depends(require_session)])
+def export_markdown(days: int = 7):
+    days = max(1, min(days, 90))
+    seit = datetime.now(timezone.utc) - timedelta(days=days)
+    items = db.export_items(seit.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    heute = datetime.now(timezone.utc)
+
+    zeilen = [
+        "# Wochen-Export — Wichtiges aus dem News-Cockpit",
+        "",
+        f"Zeitraum: {seit.strftime('%d.%m.%Y')} bis {heute.strftime('%d.%m.%Y')} · "
+        f"{len(items)} {'Eintrag' if len(items) == 1 else 'Einträge'}",
+        "",
+    ]
+    if not items:
+        zeilen.append("*Keine als wichtig markierten Einträge in diesem Zeitraum.*")
+    else:
+        # Nach Content-Säule gruppieren; Einträge ohne Säule ans Ende
+        gruppen = {}
+        for it in items:
+            gruppen.setdefault(it["pillar"] or "zzz_ohne", []).append(it)
+        for pillar in sorted(gruppen):
+            zeilen.append(f"## {'Ohne Säule' if pillar == 'zzz_ohne' else pillar}")
+            zeilen.append("")
+            for it in gruppen[pillar]:
+                zeilen.append(f"### [{it['title']}]({it['url']})")
+                meta = [t for t in (it["source"], _export_datum(it["published_at"] or it["ingested_at"]),
+                                    _EXPORT_KIND.get(it["kind"], "Meldung")) if t]
+                zeilen.append(f"*{' · '.join(meta)}*")
+                zeilen.append("")
+                if it["summary"]:
+                    zeilen.append(it["summary"])
+                    zeilen.append("")
+                if it["note"]:
+                    zeilen.append(f"> **Mein Winkel:** {it['note']}")
+                    zeilen.append("")
+            zeilen.append("---")
+            zeilen.append("")
+
+    md = "\n".join(zeilen)
+    dateiname = f"wochen-export-{heute.strftime('%Y-%m-%d')}.md"
+    return Response(
+        content=md.encode("utf-8"),
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{dateiname}"'},
+    )
 
 
 @app.get("/healthz")

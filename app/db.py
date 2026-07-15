@@ -245,6 +245,16 @@ def counts():
     return {"new": new_c, "important": imp_c, "archived": arch_c}
 
 
+def export_items(since_iso):
+    """Wichtige, nicht gelöschte Einträge seit since_iso — für den Wochen-Export."""
+    sql = (f"SELECT {SELECT_COLS} FROM items "
+           "WHERE important = ? AND status != ? AND ingested_at >= ? "
+           "ORDER BY pillar, COALESCE(published_at, ingested_at) DESC")
+    with cursor() as cur:
+        cur.execute(_q(sql), (True, "deleted", since_iso))
+        return [_row(r) for r in cur.fetchall()]
+
+
 def get_item(item_id):
     with cursor() as cur:
         cur.execute(_q(f"SELECT {SELECT_COLS} FROM items WHERE id = ?"), (item_id,))

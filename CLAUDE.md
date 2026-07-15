@@ -77,3 +77,7 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   Notizfeld pro Eintrag (`note`-Spalte + Migration, PATCH-API, Amber-Block in
   der UI); Notiz wird beim Verwerten als verbindlicher Winkel in den Prompt
   eingebaut.
+- **2026-07-15 (5):** Wochen-Export (`GET /api/export?days=7`, Markdown-Download
+  nach Säulen gruppiert inkl. Notizen; Download-Knopf in der Toolbar) und PWA
+  (manifest.webmanifest, sw.js netz-zuerst ohne API-Caching, Icons via Pillow
+  generiert). Auto-Deploy per GitHub-Webhook aktiv seit d48cfac.
