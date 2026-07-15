@@ -80,3 +80,7 @@ sich also nichts merken.
 Coolify-App aus diesem Repo (Dockerfile-Build), Domain `news.itcoach.cloud`,
 Healthcheck-Pfad `/healthz`, Umgebungsvariablen siehe oben. Postgres läuft als
 Coolify-Datenbank im internen Docker-Netz (kein öffentlicher Port).
+
+**Auto-Deploy:** Jeder Push auf `main` deployt automatisch — GitHub-Webhook
+→ `https://coolify.itcoach.cloud/webhooks/source/github/events/manual`
+(eingerichtet 2026-07-15). Coolify-Verwaltung: https://coolify.itcoach.cloud
