@@ -8,7 +8,7 @@ Pressespiegel-UI gesichtet: wichtig markieren, archivieren, löschen, suchen.
 
 **Eigentümer:** Stefan Brutscher
 **Produktion:** Coolify auf Hostinger-VPS `srv1143188.hstgr.cloud` (Frankfurt),
-Domain `news.sternenozean.de`
+Domain `news.itcoach.cloud` (Domain liegt ebenfalls bei Hostinger)
 
 ## Architektur
 
@@ -61,3 +61,7 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
 - **2026-07-15:** Projekt angelegt (MVP: Ingest-API, Items-API, Login,
   Pressespiegel-UI, Dockerfile). Plattform-Entscheidung: Coolify auf
   Hostinger-VPS, Beschluss siehe Plan `zippy-snacking-jellyfish`.
+- **2026-07-15 (2):** Themenscout-Felder `kind` (news|idee|zitat) und `pillar`
+  ergänzt (Schema + Nachrüst-Migration in `db.init`, Ingest-API, UI-Chips).
+  Domain-Entscheidung: `news.itcoach.cloud` statt sternenozean.de (Domain und
+  VPS im selben Hostinger-Konto, all-inkl/WordPress bleibt unberührt).

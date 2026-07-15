@@ -90,6 +90,8 @@
   .entry .dot { color: var(--hairline); }
   .entry .time { color: var(--faint); font-variant-numeric: tabular-nums; }
   .entry .badge-archived { color: var(--faint); font-size: 12.5px; border: 1px solid var(--hairline); border-radius: 3px; padding: 0 6px; }
+  .entry .chip { color: var(--gray); font-size: 12px; border: 1px solid var(--hairline); border-radius: 3px; padding: 0 6px; }
+  .entry .chip.kind { color: var(--ink); border-color: var(--gray); font-weight: 600; }
 
   .entry h2 { grid-column: 1; font-size: 17.5px; font-weight: 600; line-height: 1.35; margin-top: 2px; }
   .entry h2 a { text-decoration: none; }
@@ -368,6 +370,13 @@ function entryNode(item, index) {
   const t = el("span", "time", relTime(item.published_at || item.ingested_at));
   t.title = absTime(item.published_at || item.ingested_at);
   meta.append(t);
+  if (item.kind === "idee" || item.kind === "zitat") {
+    meta.append(el("span", "dot", "·"),
+                el("span", "chip kind", item.kind === "idee" ? "Content-Idee" : "Zitat"));
+  }
+  if (item.pillar) {
+    meta.append(el("span", "dot", "·"), el("span", "chip", item.pillar));
+  }
   if (state.tab === "important" && item.status === "archived") {
     meta.append(el("span", "dot", "·"), el("span", "badge-archived", "archiviert"));
   }

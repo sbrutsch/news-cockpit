@@ -22,8 +22,11 @@ _lock = threading.Lock()
 _conn = None
 
 COLS = ("id", "title", "url", "source", "summary",
-        "published_at", "ingested_at", "status", "important")
+        "published_at", "ingested_at", "status", "important", "kind", "pillar")
 SELECT_COLS = ", ".join(COLS)
+
+# Art des Eintrags: klassische Meldung, Content-Idee oder Zitat/Pain-Point
+KINDS = ("news", "idee", "zitat")
 
 _SCHEMA_SQLITE = """
 CREATE TABLE IF NOT EXISTS items (
@@ -35,7 +38,9 @@ CREATE TABLE IF NOT EXISTS items (
   published_at TEXT,
   ingested_at  TEXT NOT NULL,
   status       TEXT NOT NULL DEFAULT 'new',
-  important    INTEGER NOT NULL DEFAULT 0
+  important    INTEGER NOT NULL DEFAULT 0,
+  kind         TEXT NOT NULL DEFAULT 'news',
+  pillar       TEXT NOT NULL DEFAULT ''
 )"""
 
 _SCHEMA_PG = """
@@ -48,7 +53,9 @@ CREATE TABLE IF NOT EXISTS items (
   published_at TEXT,
   ingested_at  TEXT NOT NULL,
   status       TEXT NOT NULL DEFAULT 'new',
-  important    BOOLEAN NOT NULL DEFAULT FALSE
+  important    BOOLEAN NOT NULL DEFAULT FALSE,
+  kind         TEXT NOT NULL DEFAULT 'news',
+  pillar       TEXT NOT NULL DEFAULT ''
 )"""
 
 _INDEXES = (
@@ -156,11 +163,25 @@ def _row(r):
     return d
 
 
+def _column_names(cur):
+    if IS_POSTGRES:
+        cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'items'")
+        return {r[0] for r in cur.fetchall()}
+    cur.execute("PRAGMA table_info(items)")
+    return {r[1] for r in cur.fetchall()}
+
+
 def init():
     with cursor() as cur:
         cur.execute(_SCHEMA_PG if IS_POSTGRES else _SCHEMA_SQLITE)
         for stmt in _INDEXES:
             cur.execute(stmt)
+        # Nachrüst-Migration für Bestände, die vor kind/pillar angelegt wurden
+        have = _column_names(cur)
+        if "kind" not in have:
+            cur.execute("ALTER TABLE items ADD COLUMN kind TEXT NOT NULL DEFAULT 'news'")
+        if "pillar" not in have:
+            cur.execute("ALTER TABLE items ADD COLUMN pillar TEXT NOT NULL DEFAULT ''")
 
 
 def ping():
@@ -170,25 +191,31 @@ def ping():
     return True
 
 
-def insert_item(title, url, source="", summary="", published_at=None):
+def insert_item(title, url, source="", summary="", published_at=None, kind="news", pillar=""):
     """Legt ein Item an. True = neu angelegt, False = URL existierte schon."""
+    if kind not in KINDS:
+        kind = "news"
     with cursor() as cur:
         cur.execute(
-            _q("INSERT INTO items (title, url, source, summary, published_at, ingested_at) "
-               "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (url) DO NOTHING"),
+            _q("INSERT INTO items (title, url, source, summary, published_at, ingested_at, kind, pillar) "
+               "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (url) DO NOTHING"),
             (title.strip(), url.strip(), (source or "").strip(),
-             (summary or "").strip(), normalize_ts(published_at), utcnow_iso()),
+             (summary or "").strip(), normalize_ts(published_at), utcnow_iso(),
+             kind, (pillar or "").strip()[:80]),
         )
         return cur.rowcount == 1
 
 
-def list_items(tab="new", q="", limit=50, offset=0):
+def list_items(tab="new", q="", limit=50, offset=0, kind=""):
     if tab == "important":
         where, params = ["status != ?", "important = ?"], ["deleted", True]
     elif tab == "archived":
         where, params = ["status = ?"], ["archived"]
     else:
         where, params = ["status = ?"], ["new"]
+    if kind in KINDS:
+        where.append("kind = ?")
+        params.append(kind)
     if q:
         like = f"%{q.lower()}%"
         where.append("(lower(title) LIKE ? OR lower(summary) LIKE ? OR lower(source) LIKE ?)")

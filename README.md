@@ -46,13 +46,18 @@ Body: ein Objekt **oder** ein Array von Objekten (max. 500):
 
 ```json
 {
-  "title":        "VMware ändert Lizenzmodell erneut",     // Pflicht
-  "url":          "https://www.heise.de/...",              // Pflicht, dient der Deduplizierung
-  "source":       "heise online",                          // optional
-  "summary":      "Kurzfassung in 2–3 Sätzen …",           // optional
-  "published_at": "2026-07-15T06:30:00Z"                   // optional, ISO 8601 oder Unix-Sekunden
+  "title":        "CFO stoppt KI-Projekt wegen ROI-Zweifeln",  // Pflicht
+  "url":          "https://www.cio.de/...",                    // Pflicht, dient der Deduplizierung
+  "source":       "CIO Magazin",                               // optional
+  "summary":      "Kurzfassung in 2–3 Sätzen …",               // optional
+  "published_at": "2026-07-15T06:30:00Z",                      // optional, ISO 8601 oder Unix-Sekunden
+  "kind":         "idee",                                      // optional: news (Standard) | idee | zitat
+  "pillar":       "Board Dynamics"                             // optional: Content-Säule des Themenscouts
 }
 ```
+
+`kind`/`pillar` sind für den Themenscout gedacht: Top-Themen kommen als `news`,
+Content-Ideen als `idee` (mit Pillar), markante Aussagen als `zitat`.
 
 Antwort: `{"received": 10, "created": 7, "duplicates": 3, "rejected": 0}` —
 Status 201, wenn mindestens ein Item neu angelegt wurde, sonst 200.
@@ -69,6 +74,6 @@ sich also nichts merken.
 
 ## Deployment
 
-Coolify-App aus diesem Repo (Dockerfile-Build), Domain `news.sternenozean.de`,
+Coolify-App aus diesem Repo (Dockerfile-Build), Domain `news.itcoach.cloud`,
 Healthcheck-Pfad `/healthz`, Umgebungsvariablen siehe oben. Postgres läuft als
 Coolify-Datenbank im internen Docker-Netz (kein öffentlicher Port).

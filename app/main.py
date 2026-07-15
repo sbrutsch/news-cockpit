@@ -101,6 +101,8 @@ class IngestItem(BaseModel):
     source: str = ""
     summary: str = ""
     published_at: str | int | float | None = None
+    kind: str = "news"    # news | idee | zitat
+    pillar: str = ""      # z. B. "Decision Breakdown", "Board Dynamics"
 
 
 class PatchBody(BaseModel):
@@ -150,7 +152,8 @@ def ingest(payload: IngestItem | list[IngestItem]):
         if not title or not url.startswith(("http://", "https://")):
             rejected += 1
             continue
-        if db.insert_item(title, url, it.source, it.summary, it.published_at):
+        if db.insert_item(title, url, it.source, it.summary, it.published_at,
+                          kind=it.kind, pillar=it.pillar):
             created += 1
         else:
             duplicates += 1
@@ -160,10 +163,12 @@ def ingest(payload: IngestItem | list[IngestItem]):
 
 
 @app.get("/api/items", dependencies=[Depends(require_session)])
-def get_items(tab: str = "new", q: str = "", limit: int = 50, offset: int = 0):
+def get_items(tab: str = "new", q: str = "", limit: int = 50, offset: int = 0, kind: str = ""):
     if tab not in ("new", "important", "archived"):
         raise HTTPException(status_code=400, detail="tab muss new, important oder archived sein")
-    items = db.list_items(tab=tab, q=q.strip(), limit=limit, offset=offset)
+    if kind and kind not in db.KINDS:
+        raise HTTPException(status_code=400, detail="kind muss news, idee oder zitat sein")
+    items = db.list_items(tab=tab, q=q.strip(), limit=limit, offset=offset, kind=kind)
     return {"items": items, "counts": db.counts()}
 
 
