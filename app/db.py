@@ -22,7 +22,7 @@ _lock = threading.Lock()
 _conn = None
 
 COLS = ("id", "title", "url", "source", "summary",
-        "published_at", "ingested_at", "status", "important", "kind", "pillar")
+        "published_at", "ingested_at", "status", "important", "kind", "pillar", "note")
 SELECT_COLS = ", ".join(COLS)
 
 # Art des Eintrags: klassische Meldung, Content-Idee oder Zitat/Pain-Point
@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS items (
   status       TEXT NOT NULL DEFAULT 'new',
   important    INTEGER NOT NULL DEFAULT 0,
   kind         TEXT NOT NULL DEFAULT 'news',
-  pillar       TEXT NOT NULL DEFAULT ''
+  pillar       TEXT NOT NULL DEFAULT '',
+  note         TEXT NOT NULL DEFAULT ''
 )"""
 
 _SCHEMA_PG = """
@@ -55,7 +56,8 @@ CREATE TABLE IF NOT EXISTS items (
   status       TEXT NOT NULL DEFAULT 'new',
   important    BOOLEAN NOT NULL DEFAULT FALSE,
   kind         TEXT NOT NULL DEFAULT 'news',
-  pillar       TEXT NOT NULL DEFAULT ''
+  pillar       TEXT NOT NULL DEFAULT '',
+  note         TEXT NOT NULL DEFAULT ''
 )"""
 
 _INDEXES = (
@@ -182,6 +184,8 @@ def init():
             cur.execute("ALTER TABLE items ADD COLUMN kind TEXT NOT NULL DEFAULT 'news'")
         if "pillar" not in have:
             cur.execute("ALTER TABLE items ADD COLUMN pillar TEXT NOT NULL DEFAULT ''")
+        if "note" not in have:
+            cur.execute("ALTER TABLE items ADD COLUMN note TEXT NOT NULL DEFAULT ''")
 
 
 def ping():
@@ -248,7 +252,7 @@ def get_item(item_id):
     return _row(r) if r else None
 
 
-def update_item(item_id, important=None, status=None):
+def update_item(item_id, important=None, status=None, note=None):
     sets, params = [], []
     if important is not None:
         sets.append("important = ?")
@@ -258,6 +262,9 @@ def update_item(item_id, important=None, status=None):
             raise ValueError("Ungültiger Status")
         sets.append("status = ?")
         params.append(status)
+    if note is not None:
+        sets.append("note = ?")
+        params.append(note)
     if sets:
         params.append(item_id)
         with cursor() as cur:

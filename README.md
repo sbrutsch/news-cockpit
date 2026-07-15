@@ -70,7 +70,7 @@ sich also nichts merken.
 
 - `POST /api/login` · `POST /api/logout` · `GET /api/me` — Session (Cookie, HttpOnly)
 - `GET /api/items?tab=new|important|archived&q=&limit=&offset=` — Liste + Zähler
-- `PATCH /api/items/{id}` — `{"important": true}` und/oder `{"status": "archived"|"new"}`
+- `PATCH /api/items/{id}` — `{"important": true}`, `{"status": "archived"|"new"}` und/oder `{"note": "…"}` (leere Notiz löscht; Notiz fließt beim Verwerten als gewünschter Winkel in den Entwurf)
 - `POST /api/items/{id}/verwerten` — LinkedIn-Entwurf zum Eintrag (Claude serverseitig, Positionierungs-Prompt)
 - `DELETE /api/items/{id}` — Soft-Delete
 - `GET /healthz` — für Coolify-Healthcheck

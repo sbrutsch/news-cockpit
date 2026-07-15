@@ -72,3 +72,8 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   Positionierungs-Prompt + Eintrag; Modal-UI mit Kopieren/Neu generieren.
   Neuer Secret-Bedarf: `ANTHROPIC_API_KEY` als Coolify-Env (serverseitig,
   nie im Browser).
+- **2026-07-15 (4):** Tagesbriefing-Karte (Neu-Tab: heutige Funde nach Art und
+  Säulen zusammengefasst) + Datums-Trenner in der Liste (Heute/Gestern/Datum).
+  Notizfeld pro Eintrag (`note`-Spalte + Migration, PATCH-API, Amber-Block in
+  der UI); Notiz wird beim Verwerten als verbindlicher Winkel in den Prompt
+  eingebaut.

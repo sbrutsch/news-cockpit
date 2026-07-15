@@ -108,6 +108,7 @@ class IngestItem(BaseModel):
 class PatchBody(BaseModel):
     important: bool | None = None
     status: str | None = None  # 'new' (wiederherstellen) oder 'archived'
+    note: str | None = None    # Stefans eigener Gedanke zum Eintrag; '' löscht
 
 
 @app.post("/api/login")
@@ -176,10 +177,13 @@ def get_items(tab: str = "new", q: str = "", limit: int = 50, offset: int = 0, k
 def patch_item(item_id: int, body: PatchBody):
     if body.status is not None and body.status not in ("new", "archived"):
         raise HTTPException(status_code=400, detail="status muss 'new' oder 'archived' sein")
+    if body.note is not None and len(body.note) > 5000:
+        raise HTTPException(status_code=400, detail="Notiz darf höchstens 5000 Zeichen haben")
     item = db.get_item(item_id)
     if not item or item["status"] == "deleted":
         raise HTTPException(status_code=404, detail="Nicht gefunden")
-    return db.update_item(item_id, important=body.important, status=body.status)
+    note = body.note.strip() if body.note is not None else None
+    return db.update_item(item_id, important=body.important, status=body.status, note=note)
 
 
 @app.post("/api/items/{item_id}/verwerten", dependencies=[Depends(require_session)])

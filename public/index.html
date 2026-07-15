@@ -165,6 +165,44 @@
   @keyframes pop { 40% { transform: scale(1.3) rotate(8deg); } }
   .actions button.popping svg { animation: pop .35s ease; }
 
+  /* ---------- Notiz ---------- */
+  .note-block {
+    grid-column: 1; margin-top: 9px; padding: 8px 13px; cursor: pointer;
+    background: var(--amber-dim); border-left: 2px solid rgba(227,179,79,0.5);
+    border-radius: 0 9px 9px 0; transition: background .15s;
+  }
+  .note-block:hover { background: rgba(227,179,79,0.18); }
+  .note-block .note-label { font-size: 11px; font-weight: 700; color: var(--amber); letter-spacing: .05em; margin-bottom: 2px; }
+  .note-block .note-text { font-size: 13.5px; line-height: 1.55; color: #D9CEAF; white-space: pre-wrap; }
+  .note-editor { grid-column: 1; margin-top: 9px; }
+  .note-editor textarea {
+    width: 100%; min-height: 76px; background: var(--elev); border: 1px solid var(--line);
+    border-radius: 10px; color: var(--text); font: inherit; font-size: 13.5px;
+    line-height: 1.55; padding: 10px 13px; resize: vertical;
+  }
+  .note-editor textarea:focus { outline: none; border-color: rgba(227,179,79,0.5); }
+  .note-editor .row { display: flex; gap: 8px; margin-top: 8px; }
+  .actions button.note-on { color: var(--amber); }
+
+  /* ---------- Tagesbriefing ---------- */
+  .briefing {
+    margin: 18px 0 4px; padding: 16px 20px;
+    border: 1px solid var(--line-soft); border-radius: 14px;
+    background: linear-gradient(135deg, rgba(64,96,160,0.10), var(--elev));
+    animation: rise .45s ease both;
+  }
+  .briefing .b-date { font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 13px; }
+  .briefing .b-line { font-size: 15px; margin-top: 4px; color: var(--muted); }
+  .briefing .b-line strong { color: var(--text); }
+  .briefing .b-pillars { color: var(--faint); font-size: 12.5px; margin-top: 7px; }
+
+  /* ---------- Datums-Trenner ---------- */
+  .day-sep {
+    list-style: none; padding: 24px 0 4px; display: flex; align-items: center; gap: 12px;
+    color: var(--faint); font-size: 12px; font-weight: 700; letter-spacing: .06em;
+  }
+  .day-sep::after { content: ""; flex: 1; height: 1px; background: var(--line-soft); }
+
   /* ---------- Zustände ---------- */
   .state { text-align: center; color: var(--muted); padding: 90px 0 30px; }
   .state .orn { font-family: var(--serif); font-style: italic; color: var(--faint); font-size: 30px; display: block; margin-bottom: 12px; }
@@ -323,6 +361,7 @@
   </div>
 
   <main>
+    <div id="briefing"></div>
     <ul class="list" id="list"></ul>
     <div class="state" id="stateBox" hidden></div>
     <button class="more" id="moreBtn" hidden type="button">Weitere Meldungen laden</button>
@@ -361,7 +400,8 @@ const ICONS = {
   archive: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4.5" rx="1"/><path d="M5 8.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8.5"/><path d="M10 12.5h4"/></svg>',
   restore: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-5h10l4 5"/><path d="M3 9h18v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M12 17v-5"/><path d="m9.5 14.5 2.5-2.5 2.5 2.5"/></svg>',
   trash: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 .9h8a1 1 0 0 0 1-.9L18 7"/><path d="M10 11v6M14 11v6"/></svg>',
-  quill: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c-5 0-11 2.5-13.5 8L4 20l1.5-.5C13 17 17 12 20 4z"/><path d="M9.5 14.5 4 20"/></svg>'
+  quill: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c-5 0-11 2.5-13.5 8L4 20l1.5-.5C13 17 17 12 20 4z"/><path d="M9.5 14.5 4 20"/></svg>',
+  note: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v9l-6 6H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14 20v-5a1 1 0 0 1 1-1h5"/></svg>'
 };
 
 const state = {
@@ -443,8 +483,18 @@ function render() {
     c.classList.toggle("active", c.dataset.kind === state.kind);
   });
 
+  renderBriefing();
+
   listEl.textContent = "";
-  state.items.forEach((item, i) => listEl.appendChild(entryNode(item, i)));
+  let lastLabel = null;
+  state.items.forEach((item, i) => {
+    const label = dayLabel(item.published_at || item.ingested_at);
+    if (label !== lastLabel) {
+      listEl.appendChild(el("li", "day-sep", label));
+      lastLabel = label;
+    }
+    listEl.appendChild(entryNode(item, i));
+  });
 
   if (state.items.length === 0) {
     stateBox.hidden = false;
@@ -454,6 +504,49 @@ function render() {
     stateBox.hidden = true;
   }
   moreBtn.hidden = !state.mayHaveMore;
+}
+
+function dayLabel(iso) {
+  const d = new Date(iso), now = new Date();
+  if (isNaN(d)) return "Ohne Datum";
+  if (d.toDateString() === now.toDateString()) return "Heute";
+  const gestern = new Date(now); gestern.setDate(now.getDate() - 1);
+  if (d.toDateString() === gestern.toDateString()) return "Gestern";
+  return d.toLocaleDateString("de-DE", { day: "numeric", month: "long" });
+}
+
+function renderBriefing() {
+  const box = $("briefing");
+  box.textContent = "";
+  if (state.tab !== "new" || state.q || state.kind) return;
+  const heute = state.items.filter(it => {
+    const d = new Date(it.ingested_at);
+    return !isNaN(d) && d.toDateString() === new Date().toDateString();
+  });
+  if (!heute.length) return;
+  const kinds = { news: 0, idee: 0, zitat: 0 };
+  const pillars = {};
+  heute.forEach(it => {
+    kinds[it.kind] = (kinds[it.kind] || 0) + 1;
+    if (it.pillar) pillars[it.pillar] = (pillars[it.pillar] || 0) + 1;
+  });
+  const teile = [];
+  if (kinds.news) teile.push(kinds.news + (kinds.news === 1 ? " Meldung" : " Meldungen"));
+  if (kinds.idee) teile.push(kinds.idee + (kinds.idee === 1 ? " Content-Idee" : " Content-Ideen"));
+  if (kinds.zitat) teile.push(kinds.zitat + (kinds.zitat === 1 ? " Zitat" : " Zitate"));
+  const top = Object.entries(pillars).sort((a, b) => b[1] - a[1]).slice(0, 3)
+    .map(([p, c]) => p + " (" + c + ")").join(" · ");
+
+  const card = el("div", "briefing");
+  card.append(el("div", "b-date",
+    new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })));
+  const line = el("div", "b-line");
+  line.append("Der Scout hat heute ");
+  line.append(el("strong", "", heute.length === 1 ? "1 Fundstück" : heute.length + " Fundstücke"));
+  line.append(" geliefert" + (teile.length ? ": " + teile.join(", ") : "") + ".");
+  card.append(line);
+  if (top) card.append(el("div", "b-pillars", "Schwerpunkte: " + top));
+  box.append(card);
 }
 
 function emptyText() {
@@ -513,6 +606,9 @@ function entryNode(item, index) {
             item.important ? "Wichtig-Markierung entfernen" : "Als wichtig markieren",
             "star-btn" + (item.important ? " star-on" : ""),
             () => toggleImportant(item, li)),
+    iconBtn(ICONS.note, item.note ? "Notiz bearbeiten" : "Notiz hinzufügen",
+            "note-btn" + (item.note ? " note-on" : ""),
+            () => noteEditor(item, li)),
     iconBtn(item.status === "archived" ? ICONS.restore : ICONS.archive,
             item.status === "archived" ? "Wiederherstellen" : "Archivieren", "",
             () => toggleArchive(item, li)),
@@ -523,7 +619,46 @@ function entryNode(item, index) {
   if (item.summary) {
     li.append(el("p", "summary" + (item.kind === "zitat" ? " zitat" : ""), item.summary));
   }
+  if (item.note) {
+    const nb = el("div", "note-block");
+    nb.title = "Klicken zum Bearbeiten";
+    nb.append(el("div", "note-label", "Meine Notiz"), el("div", "note-text", item.note));
+    nb.addEventListener("click", () => noteEditor(item, li));
+    li.append(nb);
+  }
   return li;
+}
+
+/* ---------- Notiz-Editor ---------- */
+function noteEditor(item, li) {
+  if (li.querySelector(".note-editor")) return;
+  const nb = li.querySelector(".note-block");
+  if (nb) nb.remove();
+  const ed = el("div", "note-editor");
+  const ta = document.createElement("textarea");
+  ta.value = item.note || "";
+  ta.placeholder = "Dein Winkel zu diesem Fund — fließt beim Verwerten in den Entwurf ein. (Leer speichern entfernt die Notiz.)";
+  ta.maxLength = 5000;
+  const row = el("div", "row");
+  const save = el("button", "vw-btn primary", "Speichern"); save.type = "button";
+  const cancel = el("button", "vw-btn", "Abbrechen"); cancel.type = "button";
+  row.append(save, cancel);
+  ed.append(ta, row);
+  li.append(ed);
+  ta.focus();
+  cancel.addEventListener("click", () => li.replaceWith(entryNode(item, 0)));
+  save.addEventListener("click", async () => {
+    save.disabled = true;
+    try {
+      const updated = await api("/api/items/" + item.id, { method: "PATCH", body: JSON.stringify({ note: ta.value }) });
+      Object.assign(item, updated);
+      li.replaceWith(entryNode(item, 0));
+      toast(item.note ? "Notiz gespeichert." : "Notiz entfernt.");
+    } catch (e) {
+      toast(e.message);
+      save.disabled = false;
+    }
+  });
 }
 
 function iconBtn(svg, label, cls, onClick) {

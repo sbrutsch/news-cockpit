@@ -60,8 +60,12 @@ def _user_content(item):
         teile.append(f"Quelle: {item['source']} ({item['url']})")
     if item.get("summary"):
         teile.append(f"Kern: {item['summary']}")
+    if item.get("note"):
+        teile.append(f"Stefans eigene Notiz zu diesem Fund: {item['note']}")
     teile.append("")
     teile.append(_KIND_ANWEISUNG.get(item["kind"], _KIND_ANWEISUNG["news"]))
+    if item.get("note"):
+        teile.append("Wichtig: Stefans Notiz ist der gewünschte Winkel — baue den Post um diesen Gedanken, nicht um die Zusammenfassung.")
     return "\n".join(teile)
 
 
