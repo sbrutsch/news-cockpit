@@ -199,6 +199,18 @@ def verwerten(item_id: int):
     return {"draft": draft, "model": transform.MODEL}
 
 
+@app.post("/api/items/{item_id}/einordnen", dependencies=[Depends(require_session)])
+def einordnen(item_id: int):
+    item = db.get_item(item_id)
+    if not item or item["status"] == "deleted":
+        raise HTTPException(status_code=404, detail="Nicht gefunden")
+    try:
+        relevanz, resumee = transform.einordnung(item)
+    except transform.TransformError as e:
+        raise HTTPException(status_code=e.status, detail=str(e))
+    return db.update_item(item_id, assessment=resumee, relevance=relevanz)
+
+
 @app.delete("/api/items/{item_id}", dependencies=[Depends(require_session)])
 def delete_item(item_id: int):
     item = db.get_item(item_id)
@@ -254,6 +266,9 @@ def export_markdown(days: int = 7):
                     zeilen.append("")
                 if it["note"]:
                     zeilen.append(f"> **Mein Winkel:** {it['note']}")
+                    zeilen.append("")
+                if it["assessment"]:
+                    zeilen.append(f"> **Resümee (Relevanz {it['relevance'] or 'unbewertet'}):** {it['assessment']}")
                     zeilen.append("")
             zeilen.append("---")
             zeilen.append("")

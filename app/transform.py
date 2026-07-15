@@ -1,4 +1,8 @@
-"""Verwerten: Aus einem Cockpit-Eintrag einen LinkedIn-Post-Entwurf erzeugen.
+"""Verwerten & Einordnen: KI-Funktionen des News-Cockpits.
+
+- linkedin_entwurf(item): LinkedIn-Post-Entwurf aus einem Eintrag
+- einordnung(item): Resümee, wie wichtig ein Fund für Stefans Geschäft
+  und seine IT-Leiter-Zielgruppe ist (Relevanz hoch/mittel/gering)
 
 Läuft serverseitig über die offizielle Anthropic-SDK; der API-Key kommt aus
 der Umgebungsvariable ANTHROPIC_API_KEY (Coolify), nie aus dem Browser.
@@ -7,6 +11,7 @@ Stefans Standardmodell für Content-Erzeugung, gutes Kosten/Qualitäts-Maß
 für einen Klick-Workflow).
 """
 
+import json
 import os
 
 import anthropic
@@ -60,6 +65,8 @@ def _user_content(item):
         teile.append(f"Quelle: {item['source']} ({item['url']})")
     if item.get("summary"):
         teile.append(f"Kern: {item['summary']}")
+    if item.get("assessment"):
+        teile.append(f"Einordnung (Relevanz {item.get('relevance') or 'unbewertet'}): {item['assessment']}")
     if item.get("note"):
         teile.append(f"Stefans eigene Notiz zu diesem Fund: {item['note']}")
     teile.append("")
@@ -69,15 +76,16 @@ def _user_content(item):
     return "\n".join(teile)
 
 
-def linkedin_entwurf(item):
+def _claude_text(system, user_content, max_tokens):
+    """Gemeinsamer, fehlerfest verpackter Claude-Aufruf; liefert den Antworttext."""
     if not os.environ.get("ANTHROPIC_API_KEY"):
-        raise TransformError("ANTHROPIC_API_KEY ist nicht gesetzt — Verwerten ist noch nicht freigeschaltet.", status=503)
+        raise TransformError("ANTHROPIC_API_KEY ist nicht gesetzt — KI-Funktionen sind noch nicht freigeschaltet.", status=503)
     try:
         msg = _get_client().messages.create(
             model=MODEL,
-            max_tokens=2000,
-            system=SYSTEM,
-            messages=[{"role": "user", "content": _user_content(item)}],
+            max_tokens=max_tokens,
+            system=system,
+            messages=[{"role": "user", "content": user_content}],
         )
     except anthropic.AuthenticationError:
         raise TransformError("Claude-API: Der hinterlegte API-Key wurde abgelehnt.", status=502)
@@ -95,5 +103,38 @@ def linkedin_entwurf(item):
     if not text:
         raise TransformError("Leere Antwort von der Claude-API.", status=502)
     if msg.stop_reason == "max_tokens":
-        text += "\n\n[Hinweis: Entwurf wurde am Token-Limit abgeschnitten]"
+        text += "\n\n[Hinweis: Antwort wurde am Token-Limit abgeschnitten]"
     return text
+
+
+def linkedin_entwurf(item):
+    return _claude_text(SYSTEM, _user_content(item), max_tokens=2000)
+
+
+EINORDNUNG_SYSTEM = """Du bewertest Fundstücke für Stefan Brutscher — Sparringspartner für IT-Leiter, deren wichtige Entscheidungen im Management-Gremium zu scheitern drohen. Positionierung: Entscheidungssicherheit in kritischen Managementmomenten, "Damit Entscheidungen durchgehen." Zielgruppe: IT-Leiter, CIOs, IT-Bereichsleiter im DACH-Raum — fachlich stark, unter Druck im Management.
+
+Bewerte das Fundstück in zwei Dimensionen:
+1. Nutzen für Stefans Geschäft: Taugt es als Content-Aufhänger, Gesprächseinstieg im Sparring, Keynote-Material oder Sichtbarkeits-Thema?
+2. Betroffenheit seiner Zielgruppe: Berührt es die Gremien-Realität von IT-Leitern — Budgetkonflikte, Durchsetzung, Machtdynamik, Rechtfertigungsdruck?
+
+Sei ehrlich und streng: "hoch" nur, wenn es direkt auf Entscheidungs- und Gremien-Momente einzahlt. Generische IT-Trends ohne Entscheidungswinkel sind "gering" — auch wenn sie technisch spannend sind. Keine Gefälligkeitsbewertung.
+
+Antworte AUSSCHLIESSLICH mit einem JSON-Objekt, ohne Markdown, ohne Kommentar:
+{"relevanz": "hoch" oder "mittel" oder "gering", "resumee": "2 bis 4 Sätze auf Deutsch: Was bedeutet das konkret für Stefans Geschäft und seine IT-Leiter? Direkt und konkret, keine Floskeln. Bei gering: kurz begründen, warum es nicht einzahlt."}"""
+
+
+def einordnung(item):
+    """Bewertet einen Eintrag; liefert (relevanz, resumee)."""
+    text = _claude_text(EINORDNUNG_SYSTEM, _user_content(item), max_tokens=1000)
+    start, end = text.find("{"), text.rfind("}")
+    if start == -1 or end <= start:
+        raise TransformError("Einordnung nicht lesbar (kein JSON in der Antwort).", status=502)
+    try:
+        data = json.loads(text[start:end + 1])
+    except json.JSONDecodeError:
+        raise TransformError("Einordnung nicht lesbar (JSON-Fehler).", status=502)
+    relevanz = data.get("relevanz", "")
+    resumee = (data.get("resumee") or "").strip()
+    if relevanz not in ("hoch", "mittel", "gering") or not resumee:
+        raise TransformError("Einordnung unvollständig — bitte erneut versuchen.", status=502)
+    return relevanz, resumee[:2000]

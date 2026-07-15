@@ -51,7 +51,7 @@
   ::selection { background: rgba(224,72,72,0.35); }
   :focus-visible { outline: 2px solid var(--rot); outline-offset: 2px; border-radius: 4px; }
 
-  .wrap { max-width: 780px; margin: 0 auto; padding: 44px 26px 90px; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 44px 30px 90px; }
 
   /* ---------- Masthead ---------- */
   .masthead { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; padding-bottom: 20px; }
@@ -155,7 +155,7 @@
   .entry h2 a { text-decoration: none; transition: color .15s; }
   .entry h2 a:hover { color: #fff; text-decoration: underline; text-decoration-color: var(--rot); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 
-  .entry .summary { grid-column: 1; color: var(--muted); font-size: 14.5px; line-height: 1.6; margin-top: 5px; max-width: 64ch; }
+  .entry .summary { grid-column: 1; color: var(--muted); font-size: 14.5px; line-height: 1.6; margin-top: 5px; max-width: 80ch; }
   .entry .summary.zitat {
     font-family: var(--serif); font-style: italic; font-size: 15.5px; color: #C3CBDA;
     border-left: 2px solid var(--line); padding-left: 14px; margin-top: 8px;
@@ -196,6 +196,28 @@
   .note-editor textarea:focus { outline: none; border-color: rgba(227,179,79,0.5); }
   .note-editor .row { display: flex; gap: 8px; margin-top: 8px; }
   .actions button.note-on { color: var(--amber); }
+
+  /* ---------- Resümee (KI-Einordnung) ---------- */
+  :root { --gruen: #3FA96C; }
+  .res-block {
+    grid-column: 1; margin-top: 9px; padding: 8px 13px;
+    background: var(--elev); border-left: 2px solid var(--line);
+    border-radius: 0 9px 9px 0;
+  }
+  .res-block.hoch { border-left-color: var(--gruen); background: rgba(63,169,108,0.09); }
+  .res-block.mittel { border-left-color: var(--amber); background: rgba(227,179,79,0.07); }
+  .res-block.gering { border-left-color: var(--faint); }
+  .res-block .res-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; margin-bottom: 2px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .res-block .res-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
+  .res-block.hoch .res-dot { background: var(--gruen); }
+  .res-block.hoch .res-label { color: var(--gruen); }
+  .res-block.mittel .res-dot { background: var(--amber); }
+  .res-block.mittel .res-label { color: var(--amber); }
+  .res-block .res-text { font-size: 13.5px; line-height: 1.55; color: var(--muted); white-space: pre-wrap; }
+  .res-block .res-loading { display: flex; gap: 6px; padding: 4px 0; }
+  .res-block .res-loading span { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); animation: vwpulse 1.2s infinite; }
+  .res-block .res-loading span:nth-child(2) { animation-delay: .2s; }
+  .res-block .res-loading span:nth-child(3) { animation-delay: .4s; }
 
   /* ---------- Tagesbriefing ---------- */
   .briefing {
@@ -274,7 +296,7 @@
   }
   .vw-overlay[hidden] { display: none; }
   .vw-panel {
-    width: 100%; max-width: 580px; max-height: 86vh; display: flex; flex-direction: column;
+    width: 100%; max-width: 640px; max-height: 86vh; display: flex; flex-direction: column;
     background: #101623; border: 1px solid var(--line); border-radius: 16px;
     box-shadow: 0 24px 70px rgba(0,0,0,0.6);
     animation: rise .3s ease both;
@@ -417,7 +439,8 @@ const ICONS = {
   restore: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-5h10l4 5"/><path d="M3 9h18v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M12 17v-5"/><path d="m9.5 14.5 2.5-2.5 2.5 2.5"/></svg>',
   trash: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 .9h8a1 1 0 0 0 1-.9L18 7"/><path d="M10 11v6M14 11v6"/></svg>',
   quill: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c-5 0-11 2.5-13.5 8L4 20l1.5-.5C13 17 17 12 20 4z"/><path d="M9.5 14.5 4 20"/></svg>',
-  note: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v9l-6 6H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14 20v-5a1 1 0 0 1 1-1h5"/></svg>'
+  note: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v9l-6 6H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14 20v-5a1 1 0 0 1 1-1h5"/></svg>',
+  gauge: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.8" fill="currentColor"/></svg>'
 };
 
 const state = {
@@ -618,6 +641,8 @@ function entryNode(item, index) {
   const actions = el("div", "actions");
   actions.append(
     iconBtn(ICONS.quill, "Verwerten: LinkedIn-Entwurf erstellen", "", () => verwerten(item)),
+    iconBtn(ICONS.gauge, item.assessment ? "Resümee neu bewerten" : "Einordnen: Relevanz für Geschäft & IT-Leiter",
+            "", () => einordnen(item, li)),
     iconBtn(item.important ? ICONS.starFill : ICONS.star,
             item.important ? "Wichtig-Markierung entfernen" : "Als wichtig markieren",
             "star-btn" + (item.important ? " star-on" : ""),
@@ -635,6 +660,9 @@ function entryNode(item, index) {
   if (item.summary) {
     li.append(el("p", "summary" + (item.kind === "zitat" ? " zitat" : ""), item.summary));
   }
+  if (item.assessment) {
+    li.append(resBlock(item));
+  }
   if (item.note) {
     const nb = el("div", "note-block");
     nb.title = "Klicken zum Bearbeiten";
@@ -643,6 +671,40 @@ function entryNode(item, index) {
     li.append(nb);
   }
   return li;
+}
+
+/* ---------- Resümee (KI-Einordnung) ---------- */
+const REL_LABEL = { hoch: "Relevanz hoch", mittel: "Relevanz mittel", gering: "Relevanz gering" };
+
+function resBlock(item) {
+  const rb = el("div", "res-block " + (item.relevance || ""));
+  const label = el("div", "res-label");
+  label.append(el("span", "res-dot"), el("span", "", "Resümee · " + (REL_LABEL[item.relevance] || "bewertet")));
+  rb.append(label, el("div", "res-text", item.assessment));
+  return rb;
+}
+
+async function einordnen(item, li) {
+  let rb = li.querySelector(".res-block");
+  if (!rb) {
+    rb = el("div", "res-block");
+    const nb = li.querySelector(".note-block");
+    if (nb) li.insertBefore(rb, nb); else li.append(rb);
+  }
+  rb.className = "res-block";
+  rb.textContent = "";
+  const lade = el("div", "res-loading");
+  lade.append(el("span"), el("span"), el("span"));
+  rb.append(el("div", "res-label", "Resümee entsteht …"), lade);
+  try {
+    const updated = await api("/api/items/" + item.id + "/einordnen", { method: "POST" });
+    Object.assign(item, updated);
+    rb.replaceWith(resBlock(item));
+  } catch (e) {
+    rb.remove();
+    if (item.assessment) li.insertBefore(resBlock(item), li.querySelector(".note-block"));
+    toast(e.message);
+  }
 }
 
 /* ---------- Notiz-Editor ---------- */

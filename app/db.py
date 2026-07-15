@@ -22,7 +22,8 @@ _lock = threading.Lock()
 _conn = None
 
 COLS = ("id", "title", "url", "source", "summary",
-        "published_at", "ingested_at", "status", "important", "kind", "pillar", "note")
+        "published_at", "ingested_at", "status", "important", "kind", "pillar", "note",
+        "assessment", "relevance")
 SELECT_COLS = ", ".join(COLS)
 
 # Art des Eintrags: klassische Meldung, Content-Idee oder Zitat/Pain-Point
@@ -41,7 +42,9 @@ CREATE TABLE IF NOT EXISTS items (
   important    INTEGER NOT NULL DEFAULT 0,
   kind         TEXT NOT NULL DEFAULT 'news',
   pillar       TEXT NOT NULL DEFAULT '',
-  note         TEXT NOT NULL DEFAULT ''
+  note         TEXT NOT NULL DEFAULT '',
+  assessment   TEXT NOT NULL DEFAULT '',
+  relevance    TEXT NOT NULL DEFAULT ''
 )"""
 
 _SCHEMA_PG = """
@@ -57,7 +60,9 @@ CREATE TABLE IF NOT EXISTS items (
   important    BOOLEAN NOT NULL DEFAULT FALSE,
   kind         TEXT NOT NULL DEFAULT 'news',
   pillar       TEXT NOT NULL DEFAULT '',
-  note         TEXT NOT NULL DEFAULT ''
+  note         TEXT NOT NULL DEFAULT '',
+  assessment   TEXT NOT NULL DEFAULT '',
+  relevance    TEXT NOT NULL DEFAULT ''
 )"""
 
 _INDEXES = (
@@ -186,6 +191,10 @@ def init():
             cur.execute("ALTER TABLE items ADD COLUMN pillar TEXT NOT NULL DEFAULT ''")
         if "note" not in have:
             cur.execute("ALTER TABLE items ADD COLUMN note TEXT NOT NULL DEFAULT ''")
+        if "assessment" not in have:
+            cur.execute("ALTER TABLE items ADD COLUMN assessment TEXT NOT NULL DEFAULT ''")
+        if "relevance" not in have:
+            cur.execute("ALTER TABLE items ADD COLUMN relevance TEXT NOT NULL DEFAULT ''")
 
 
 def ping():
@@ -262,7 +271,7 @@ def get_item(item_id):
     return _row(r) if r else None
 
 
-def update_item(item_id, important=None, status=None, note=None):
+def update_item(item_id, important=None, status=None, note=None, assessment=None, relevance=None):
     sets, params = [], []
     if important is not None:
         sets.append("important = ?")
@@ -275,6 +284,14 @@ def update_item(item_id, important=None, status=None, note=None):
     if note is not None:
         sets.append("note = ?")
         params.append(note)
+    if assessment is not None:
+        sets.append("assessment = ?")
+        params.append(assessment)
+    if relevance is not None:
+        if relevance not in ("", "hoch", "mittel", "gering"):
+            raise ValueError("Ungültige Relevanz")
+        sets.append("relevance = ?")
+        params.append(relevance)
     if sets:
         params.append(item_id)
         with cursor() as cur:

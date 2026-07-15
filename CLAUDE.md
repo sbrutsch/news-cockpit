@@ -81,3 +81,9 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   nach Säulen gruppiert inkl. Notizen; Download-Knopf in der Toolbar) und PWA
   (manifest.webmanifest, sw.js netz-zuerst ohne API-Caching, Icons via Pillow
   generiert). Auto-Deploy per GitHub-Webhook aktiv seit d48cfac.
+- **2026-07-15 (6):** Layout verbreitert (960px, Summary 80ch). **Resümee**:
+  `POST /api/items/{id}/einordnen` bewertet via Claude (strenges JSON:
+  relevanz hoch/mittel/gering + resumee) den Nutzen für Stefans Geschäft und
+  die IT-Leiter-Zielgruppe; Spalten `assessment`/`relevance` + Migration,
+  Ampel-Block in der UI (grün/amber/grau), Zeile im Wochen-Export, Kontext im
+  Verwerten-Prompt. Ziel-Icon in den Aktionen (erneuter Klick = neu bewerten).
