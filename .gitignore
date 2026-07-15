@@ -1,0 +1,14 @@
+# Secrets — niemals committen (Governance)
+.env
+
+# Laufzeitdaten
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

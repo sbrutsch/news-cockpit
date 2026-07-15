@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>IT-Nachrichten · News-Cockpit</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231F2A37'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='18' font-weight='bold' fill='white' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --ink: #1F2A37;        /* Primär: H1, Header, Buttons */
+    --gray: #6B7280;       /* Sekundär: Meta, Tabs inaktiv */
+    --faint: #9CA3AF;      /* Zeitstempel, leise Elemente */
+    --text: #111827;       /* Fließtext, Titel */
+    --summary: #4B5563;    /* Zusammenfassungen */
+    --accent: #C53030;     /* Nur für Wichtig-Markierungen */
+    --paper: #FFFFFF;
+    --hairline: #E5E7EB;
+    --hover-bg: #F3F4F6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: "Source Sans 3", "Source Sans Pro", "Segoe UI", Arial, sans-serif;
+    background: var(--paper);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  a { color: inherit; }
+  button { font: inherit; background: none; border: 0; cursor: pointer; color: inherit; }
+  input { font: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 2px; }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 28px 80px; }
+
+  /* ---------- Masthead ---------- */
+  .masthead { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .masthead h1 { font-size: 30px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; line-height: 1.1; }
+  .masthead .sub { color: var(--gray); font-size: 14px; margin-top: 6px; }
+  .masthead .right { text-align: right; color: var(--gray); font-size: 13.5px; white-space: nowrap; }
+  .masthead .right .today { display: block; color: var(--ink); font-weight: 600; }
+  #logoutBtn { color: var(--faint); font-size: 13px; margin-top: 2px; }
+  #logoutBtn:hover { color: var(--ink); text-decoration: underline; }
+  .rule { border: 0; border-top: 1px solid var(--ink); margin: 18px 0 0; }
+
+  /* ---------- Toolbar: Tabs + Suche ---------- */
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 18px;
+    padding: 4px 0 0; border-bottom: 1px solid var(--hairline);
+    position: sticky; top: 0; background: var(--paper); z-index: 5;
+  }
+  .tabs { display: flex; gap: 26px; overflow-x: auto; }
+  .tab {
+    padding: 14px 0 12px; color: var(--gray); font-size: 15px; white-space: nowrap;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--ink); font-weight: 700; border-bottom-color: var(--ink); }
+  .tab .count { color: var(--faint); font-weight: 400; font-size: 13px; margin-left: 4px; font-variant-numeric: tabular-nums; }
+  .tab.active .count { color: var(--gray); }
+
+  .search { display: flex; align-items: center; gap: 7px; color: var(--faint); }
+  .search svg { flex: 0 0 auto; }
+  .search input {
+    border: 0; border-bottom: 1px solid var(--hairline); background: transparent;
+    width: 150px; padding: 4px 2px; font-size: 14.5px; color: var(--text);
+    transition: width .25s ease, border-color .2s;
+  }
+  .search input:focus { width: 240px; border-bottom-color: var(--ink); outline: none; }
+  .search input::placeholder { color: var(--faint); }
+
+  /* ---------- Liste ---------- */
+  .list { list-style: none; }
+  .entry {
+    position: relative;
+    padding: 18px 0 18px 16px;
+    border-bottom: 1px solid var(--hairline);
+    border-left: 3px solid transparent;
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 18px;
+    animation: rise .4s ease both;
+    transition: opacity .25s ease;
+  }
+  .entry.important { border-left-color: var(--accent); }
+  .entry.leaving { opacity: 0; }
+  @keyframes rise { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+
+  .entry .meta { grid-column: 1; display: flex; align-items: baseline; gap: 8px; font-size: 13px; }
+  .entry .source { color: var(--ink); font-weight: 600; }
+  .entry .dot { color: var(--hairline); }
+  .entry .time { color: var(--faint); font-variant-numeric: tabular-nums; }
+  .entry .badge-archived { color: var(--faint); font-size: 12.5px; border: 1px solid var(--hairline); border-radius: 3px; padding: 0 6px; }
+
+  .entry h2 { grid-column: 1; font-size: 17.5px; font-weight: 600; line-height: 1.35; margin-top: 2px; }
+  .entry h2 a { text-decoration: none; }
+  .entry h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  .entry .summary { grid-column: 1; color: var(--summary); font-size: 14.5px; line-height: 1.55; margin-top: 3px; max-width: 62ch; }
+
+  .actions {
+    grid-column: 2; grid-row: 1 / span 3; align-self: start;
+    display: flex; gap: 2px; opacity: 0; transition: opacity .15s;
+  }
+  .entry:hover .actions, .entry:focus-within .actions { opacity: 1; }
+  .actions button {
+    width: 32px; height: 32px; border-radius: 5px; color: var(--gray);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .actions button:hover { background: var(--hover-bg); color: var(--ink); }
+  .actions button.star-on { color: var(--accent); }
+  .actions button.star-on:hover { color: var(--accent); }
+  .actions button.confirm {
+    width: auto; padding: 0 9px; color: var(--accent); font-size: 13px; font-weight: 600;
+    background: var(--hover-bg);
+  }
+  @keyframes pop { 40% { transform: scale(1.25); } }
+  .actions button.popping svg { animation: pop .3s ease; }
+
+  /* ---------- Zustände ---------- */
+  .state { text-align: center; color: var(--gray); padding: 72px 0 24px; }
+  .state .orn { color: var(--hairline); font-size: 22px; letter-spacing: .4em; display: block; margin-bottom: 14px; }
+  .state .hint { color: var(--faint); font-size: 13.5px; margin-top: 6px; }
+
+  .more { display: block; margin: 26px auto 0; color: var(--gray); font-size: 14px; padding: 8px 18px; border: 1px solid var(--hairline); border-radius: 5px; }
+  .more:hover { color: var(--ink); border-color: var(--gray); }
+  .more[hidden] { display: none; }
+
+  footer { margin-top: 56px; border-top: 1px solid var(--hairline); padding-top: 14px;
+           color: var(--faint); font-size: 12.5px; display: flex; justify-content: space-between; gap: 12px; }
+
+  /* ---------- Login ---------- */
+  .login-overlay {
+    position: fixed; inset: 0; background: var(--paper); z-index: 50;
+    display: flex; align-items: center; justify-content: center; padding: 28px;
+  }
+  .login-overlay[hidden] { display: none; }
+  .login-box { width: 100%; max-width: 320px; }
+  .login-box h1 { font-size: 24px; font-weight: 700; color: var(--ink); }
+  .login-box .sub { color: var(--gray); font-size: 13.5px; margin-top: 4px; }
+  .login-box hr { border: 0; border-top: 1px solid var(--ink); margin: 14px 0 30px; }
+  .login-box label { display: block; font-size: 13px; color: var(--gray); margin-bottom: 6px; }
+  .login-box input {
+    width: 100%; border: 0; border-bottom: 1px solid var(--gray); padding: 6px 2px;
+    font-size: 16px; background: transparent; border-radius: 0;
+  }
+  .login-box input:focus { outline: none; border-bottom-color: var(--ink); }
+  .login-box button {
+    width: 100%; margin-top: 26px; background: var(--ink); color: #fff;
+    padding: 11px; border-radius: 5px; font-size: 15px; font-weight: 600;
+  }
+  .login-box button:hover { background: #16202b; }
+  .login-error { color: var(--accent); font-size: 13.5px; margin-top: 12px; min-height: 20px; }
+  .shake { animation: shake .35s; }
+  @keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+
+  /* ---------- Toast ---------- */
+  #toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(8px);
+    background: var(--ink); color: #fff; font-size: 14px; padding: 9px 16px;
+    border-radius: 6px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 60;
+    max-width: min(90vw, 480px);
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%); }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 28px 18px 60px; }
+    .masthead h1 { font-size: 24px; }
+    .masthead .right { display: none; }
+    .toolbar { flex-wrap: wrap; }
+    .search { width: 100%; padding-bottom: 10px; }
+    .search input, .search input:focus { width: 100%; }
+    .actions { opacity: 1; }
+    .entry { grid-template-columns: 1fr; }
+    .actions { grid-column: 1; grid-row: auto; margin-top: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="login-overlay" id="loginOverlay" hidden>
+  <form class="login-box" id="loginForm">
+    <h1>IT-Nachrichten</h1>
+    <div class="sub">News-Cockpit · Stefan Brutscher</div>
+    <hr>
+    <label for="pw">Passwort</label>
+    <input type="password" id="pw" autocomplete="current-password" required autofocus>
+    <button type="submit" id="loginBtn">Anmelden</button>
+    <div class="login-error" id="loginError"></div>
+  </form>
+</div>
+
+<div class="wrap" id="appWrap" hidden>
+  <header class="masthead">
+    <div>
+      <h1>IT-Nachrichten</h1>
+      <div class="sub">Pressespiegel · automatisch gesammelt, von Hand sortiert</div>
+    </div>
+    <div class="right">
+      <span class="today" id="today"></span>
+      <button id="logoutBtn" type="button">Abmelden</button>
+    </div>
+  </header>
+  <hr class="rule">
+
+  <nav class="toolbar" aria-label="Ansichten">
+    <div class="tabs" role="tablist">
+      <button class="tab active" role="tab" data-tab="new" aria-selected="true">Neu<span class="count" id="count-new"></span></button>
+      <button class="tab" role="tab" data-tab="important" aria-selected="false">Wichtig<span class="count" id="count-important"></span></button>
+      <button class="tab" role="tab" data-tab="archived" aria-selected="false">Archiv<span class="count" id="count-archived"></span></button>
+    </div>
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
+      <input type="search" id="searchInput" placeholder="Suchen  ( / )" aria-label="Meldungen durchsuchen">
+    </div>
+  </nav>
+
+  <main>
+    <ul class="list" id="list"></ul>
+    <div class="state" id="stateBox" hidden></div>
+    <button class="more" id="moreBtn" hidden type="button">Weitere Meldungen laden</button>
+  </main>
+
+  <footer>
+    <span>News-Cockpit</span>
+    <span>läuft auf eigenem Server · Frankfurt am Main</span>
+  </footer>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script>
+"use strict";
+
+/* ---------- Icons (statische Strings, nur in Buttons injiziert) ---------- */
+const ICONS = {
+  star: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.8L12 16.9l-5.3 2.7 1.1-5.8-4.3-4.1 5.9-.8z"/></svg>',
+  starFill: '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.8L12 16.9l-5.3 2.7 1.1-5.8-4.3-4.1 5.9-.8z"/></svg>',
+  archive: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4.5" rx="1"/><path d="M5 8.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8.5"/><path d="M10 12.5h4"/></svg>',
+  restore: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-5h10l4 5"/><path d="M3 9h18v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M12 17v-5"/><path d="m9.5 14.5 2.5-2.5 2.5 2.5"/></svg>',
+  trash: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 .9h8a1 1 0 0 0 1-.9L18 7"/><path d="M10 11v6M14 11v6"/></svg>'
+};
+
+const state = {
+  tab: "new", q: "", offset: 0, limit: 50,
+  items: [], counts: { new: 0, important: 0, archived: 0 },
+  mayHaveMore: false, initialRender: true
+};
+
+const $ = (id) => document.getElementById(id);
+const listEl = $("list"), stateBox = $("stateBox"), moreBtn = $("moreBtn");
+
+/* ---------- API ---------- */
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    headers: { "Content-Type": "application/json" },
+    ...opts
+  });
+  if (res.status === 401) { showLogin(); throw new Error("nicht angemeldet"); }
+  let body = null;
+  try { body = await res.json(); } catch { /* leer */ }
+  if (!res.ok) throw new Error((body && body.detail) || ("Fehler " + res.status));
+  return body;
+}
+
+/* ---------- Login ---------- */
+function showLogin() {
+  $("loginOverlay").hidden = false;
+  $("appWrap").hidden = true;
+  setTimeout(() => $("pw").focus(), 50);
+}
+function showApp() {
+  $("loginOverlay").hidden = true;
+  $("appWrap").hidden = false;
+}
+
+$("loginForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const btn = $("loginBtn"), err = $("loginError");
+  err.textContent = ""; btn.disabled = true;
+  try {
+    await api("/api/login", { method: "POST", body: JSON.stringify({ password: $("pw").value }) });
+    $("pw").value = "";
+    showApp();
+    await load(true);
+  } catch (e) {
+    err.textContent = e.message === "nicht angemeldet" ? "Falsches Passwort" : e.message;
+    const box = document.querySelector(".login-box");
+    box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+$("logoutBtn").addEventListener("click", async () => {
+  try { await api("/api/logout", { method: "POST" }); } catch { /* egal */ }
+  state.items = []; listEl.textContent = "";
+  showLogin();
+});
+
+/* ---------- Laden & Rendern ---------- */
+async function load(reset) {
+  if (reset) { state.offset = 0; state.items = []; }
+  const params = new URLSearchParams({ tab: state.tab, limit: state.limit, offset: state.offset });
+  if (state.q) params.set("q", state.q);
+  const data = await api("/api/items?" + params);
+  state.items = state.offset === 0 ? data.items : state.items.concat(data.items);
+  state.counts = data.counts;
+  state.mayHaveMore = data.items.length === state.limit;
+  render();
+  state.initialRender = false;
+}
+
+function render() {
+  for (const key of ["new", "important", "archived"]) {
+    $("count-" + key).textContent = state.counts[key] > 0 ? " " + state.counts[key] : "";
+  }
+  document.querySelectorAll(".tab").forEach(t => {
+    const active = t.dataset.tab === state.tab;
+    t.classList.toggle("active", active);
+    t.setAttribute("aria-selected", String(active));
+  });
+
+  listEl.textContent = "";
+  state.items.forEach((item, i) => listEl.appendChild(entryNode(item, i)));
+
+  if (state.items.length === 0) {
+    stateBox.hidden = false;
+    stateBox.textContent = "";
+    const orn = el("span", "orn", "— — —");
+    const msg = el("div", "", emptyText());
+    const hint = el("div", "hint", emptyHint());
+    stateBox.append(orn, msg, hint);
+  } else {
+    stateBox.hidden = true;
+  }
+  moreBtn.hidden = !state.mayHaveMore;
+}
+
+function emptyText() {
+  if (state.q) return "Keine Treffer für „" + state.q + "“.";
+  return { new: "Keine neuen Meldungen.", important: "Nichts als wichtig markiert.",
+           archived: "Das Archiv ist leer." }[state.tab];
+}
+function emptyHint() {
+  if (state.q) return "Suchbegriff anpassen oder leeren (Esc).";
+  return { new: "Neue Meldungen erscheinen hier, sobald der Sammler liefert.",
+           important: "Der Stern an einer Meldung legt sie hier ab.",
+           archived: "Archivierte Meldungen bleiben durchsuchbar." }[state.tab];
+}
+
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
+function entryNode(item, index) {
+  const li = el("li", "entry" + (item.important ? " important" : ""));
+  if (state.initialRender) li.style.animationDelay = Math.min(index, 12) * 35 + "ms";
+  else li.style.animation = "none";
+
+  const meta = el("div", "meta");
+  if (item.source) meta.append(el("span", "source", item.source), el("span", "dot", "·"));
+  const t = el("span", "time", relTime(item.published_at || item.ingested_at));
+  t.title = absTime(item.published_at || item.ingested_at);
+  meta.append(t);
+  if (state.tab === "important" && item.status === "archived") {
+    meta.append(el("span", "dot", "·"), el("span", "badge-archived", "archiviert"));
+  }
+
+  const h2 = el("h2");
+  const a = el("a", "", item.title);
+  a.href = item.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+  h2.append(a);
+
+  const actions = el("div", "actions");
+  actions.append(
+    iconBtn(item.important ? ICONS.starFill : ICONS.star,
+            item.important ? "Wichtig-Markierung entfernen" : "Als wichtig markieren",
+            item.important ? "star-on" : "",
+            () => toggleImportant(item, li)),
+    iconBtn(item.status === "archived" ? ICONS.restore : ICONS.archive,
+            item.status === "archived" ? "Wiederherstellen" : "Archivieren", "",
+            () => toggleArchive(item, li)),
+    trashBtn(item, li)
+  );
+
+  li.append(meta, h2, actions);
+  if (item.summary) li.append(el("p", "summary", item.summary));
+  return li;
+}
+
+function iconBtn(svg, label, cls, onClick) {
+  const b = el("button", cls || "");
+  b.type = "button"; b.innerHTML = svg;
+  b.title = label; b.setAttribute("aria-label", label);
+  b.addEventListener("click", onClick);
+  return b;
+}
+
+function trashBtn(item, li) {
+  const b = iconBtn(ICONS.trash, "Löschen", "", () => {
+    if (!b.classList.contains("confirm")) {
+      b.classList.add("confirm"); b.textContent = "Löschen?";
+      setTimeout(() => { if (b.isConnected && b.classList.contains("confirm")) {
+        b.classList.remove("confirm"); b.textContent = ""; b.innerHTML = ICONS.trash;
+      } }, 2600);
+    } else {
+      removeItem(item, li);
+    }
+  });
+  return b;
+}
+
+/* ---------- Aktionen ---------- */
+async function toggleImportant(item, li) {
+  const target = !item.important;
+  try {
+    const updated = await api("/api/items/" + item.id, { method: "PATCH", body: JSON.stringify({ important: target }) });
+    Object.assign(item, updated);
+    state.counts.important += target ? 1 : -1;
+    if (state.tab === "important" && !target) return removeRow(item, li);
+    li.classList.toggle("important", item.important);
+    const btn = li.querySelector(".actions button");
+    btn.classList.toggle("star-on", item.important);
+    btn.innerHTML = item.important ? ICONS.starFill : ICONS.star;
+    btn.title = btn.ariaLabel = item.important ? "Wichtig-Markierung entfernen" : "Als wichtig markieren";
+    btn.classList.add("popping"); setTimeout(() => btn.classList.remove("popping"), 350);
+    render_counts_only();
+  } catch (e) { toast(e.message); }
+}
+
+async function toggleArchive(item, li) {
+  const target = item.status === "archived" ? "new" : "archived";
+  try {
+    const updated = await api("/api/items/" + item.id, { method: "PATCH", body: JSON.stringify({ status: target }) });
+    Object.assign(item, updated);
+    state.counts.new += target === "archived" ? -1 : 1;
+    state.counts.archived += target === "archived" ? 1 : -1;
+    if (state.tab !== "important") return removeRow(item, li);
+    render(); // Wichtig-Tab: Zeile bleibt, Badge/Icon aktualisieren
+  } catch (e) { toast(e.message); }
+}
+
+async function removeItem(item, li) {
+  try {
+    await api("/api/items/" + item.id, { method: "DELETE" });
+    if (item.status === "new") state.counts.new -= 1;
+    if (item.status === "archived") state.counts.archived -= 1;
+    if (item.important) state.counts.important -= 1;
+    removeRow(item, li);
+  } catch (e) { toast(e.message); }
+}
+
+function removeRow(item, li) {
+  state.items = state.items.filter(x => x.id !== item.id);
+  li.classList.add("leaving");
+  setTimeout(() => {
+    render_counts_only();
+    render_list_after_removal();
+  }, 240);
+}
+
+function render_counts_only() {
+  for (const key of ["new", "important", "archived"]) {
+    $("count-" + key).textContent = state.counts[key] > 0 ? " " + state.counts[key] : "";
+  }
+}
+
+function render_list_after_removal() {
+  state.initialRender = false;
+  render();
+  if (state.items.length === 0 && state.mayHaveMore) load(true).catch(e => toast(e.message));
+}
+
+/* ---------- Tabs, Suche, Mehr ---------- */
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  if (t.dataset.tab === state.tab) return;
+  state.tab = t.dataset.tab;
+  state.initialRender = true;
+  load(true).catch(e => toast(e.message));
+}));
+
+let searchTimer = null;
+$("searchInput").addEventListener("input", (ev) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    state.q = ev.target.value.trim();
+    load(true).catch(e => toast(e.message));
+  }, 300);
+});
+$("searchInput").addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape") { ev.target.value = ""; state.q = ""; load(true).catch(e => toast(e.message)); }
+});
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "/" && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) {
+    ev.preventDefault(); $("searchInput").focus();
+  }
+});
+
+moreBtn.addEventListener("click", () => {
+  state.offset += state.limit;
+  load(false).catch(e => toast(e.message));
+});
+
+/* ---------- Zeit & Toast ---------- */
+function relTime(iso) {
+  if (!iso) return "";
+  const then = new Date(iso), now = new Date();
+  const mins = Math.round((now - then) / 60000);
+  if (isNaN(mins)) return "";
+  if (mins < 1) return "gerade eben";
+  if (mins < 60) return "vor " + mins + " Min.";
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return "vor " + hours + " Std.";
+  const days = Math.round(hours / 24);
+  if (days === 1) return "gestern";
+  if (days < 7) return "vor " + days + " Tagen";
+  return then.toLocaleDateString("de-DE", { day: "numeric", month: "long" });
+}
+function absTime(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleString("de-DE", { dateStyle: "full", timeStyle: "short" });
+}
+
+let toastTimer = null;
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3500);
+}
+
+/* ---------- Start ---------- */
+$("today").textContent = new Date().toLocaleDateString("de-DE",
+  { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
+(async function init() {
+  try {
+    await api("/api/me");
+    showApp();
+    await load(true);
+  } catch { /* showLogin() lief bereits über den 401-Pfad */ }
+})();
+</script>
+</body>
+</html>
