@@ -81,6 +81,20 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   nach Säulen gruppiert inkl. Notizen; Download-Knopf in der Toolbar) und PWA
   (manifest.webmanifest, sw.js netz-zuerst ohne API-Caching, Icons via Pillow
   generiert). Auto-Deploy per GitHub-Webhook aktiv seit d48cfac.
+- **2026-07-16 (2):** Prüfstand-Ausbau nach Stefans erstem Praxistest
+  (Mercedes-Fall: Ronny 4, Claudia 7 → verschiedene Beiträge je Zielgruppe).
+  **Breites Modal:** ab 1000px zweispaltig (Entwurf links, Prüfstand rechts,
+  `:has(.two-col)`), mobil unverändert einspaltig. **Entwurf direkt editierbar**
+  (Textarea, `field-sizing: content` mit JS-Fallback). **Wählbares Feedback:**
+  „einbeziehen"-Checkbox pro Prüfer-Urteil + optionale Regie-Anweisung
+  (`anweisung` an /api/ueberarbeiten, hat Vorrang; bewusst statt fragiler
+  Einzelvorschlag-Checkboxen). **Entwurfs-Bibliothek:** Tabelle `drafts`
+  (Score-Schnappschuss als JSON, Status entwurf/gepostet, hartes Löschen ok),
+  CRUD unter /api/drafts, vierter Tab „Entwürfe" (Suche client-seitig,
+  Karten mit Score-Badges, Öffnen/Kopieren/Gepostet/Löschen; Öffnen führt
+  zurück in den Prüfkreislauf). „Neu generieren" löst die Speicher-Verknüpfung
+  (kein Überschreiben gespeicherter Entwürfe); Status-Toggle ändert
+  updated_at nicht (Liste bleibt stabil sortiert).
 - **2026-07-16:** **IT-Leiter-Prüfstand** im Verwerten-Dialog. `app/pruefer.py`
   mit zwei Ziel-Personas (Ronny Berger aus skills-bibliothek/marktfilter-ronny,
   Claudia Brenner aus KI-Agenten/Tagesworkshop/simulator-claudia-prompt.md);

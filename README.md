@@ -74,7 +74,8 @@ sich also nichts merken.
 - `POST /api/items/{id}/verwerten` — LinkedIn-Entwurf zum Eintrag (Claude serverseitig, Positionierungs-Prompt)
 - `POST /api/items/{id}/einordnen` — Resümee: Relevanz für Stefans Geschäft und IT-Leiter (hoch/mittel/gering + 2–4 Sätze, gespeichert am Eintrag)
 - `POST /api/pruefen` — `{entwurf, pruefer}` (`ronny`|`claudia`): IT-Leiter-Persona bewertet den Entwurf → `{score 1–10, feedback, name, rolle}`
-- `POST /api/ueberarbeiten` — `{entwurf, feedback:[…]}`: überarbeitet den Entwurf anhand des Prüfer-Feedbacks → `{draft}`
+- `POST /api/ueberarbeiten` — `{entwurf, feedback:[…], anweisung?}`: überarbeitet den Entwurf anhand des ausgewählten Prüfer-Feedbacks; `anweisung` = optionale Regie-Anweisung mit Vorrang → `{draft}`
+- `GET /api/drafts` · `POST /api/drafts` (`{text, item_id?, item_title?, scores?}`) · `PATCH /api/drafts/{id}` (`{text?, scores?, status?}`, Status `entwurf`|`gepostet`) · `DELETE /api/drafts/{id}` — gespeicherte LinkedIn-Entwürfe (Tab „Entwürfe" in der UI)
 - `DELETE /api/items/{id}` — Soft-Delete
 - `GET /api/export?days=7` — Wochen-Export: Wichtiges als Markdown-Download (gruppiert nach Content-Säule, inkl. Notizen; days 1–90)
 - `GET /healthz` — für Coolify-Healthcheck

@@ -345,6 +345,50 @@
   .pruef-mini { display: inline-flex; align-items: center; gap: 6px; color: var(--faint); font-size: 12.5px; padding: 8px 0; }
   .pruef-mini .vw-dots span { width: 6px; height: 6px; }
   .pruef-fehler { padding: 10px 15px; color: var(--rot); font-size: 13px; border-top: 1px solid var(--line-soft); }
+  .pruef-check { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; white-space: nowrap; user-select: none; }
+  .pruef-check input { accent-color: var(--rot); width: 15px; height: 15px; cursor: pointer; margin: 0; }
+  .pruef-check:hover { color: var(--text); }
+  .pruef-anweisung {
+    width: 100%; margin-top: 14px; background: var(--elev); border: 1px solid var(--line-soft);
+    border-radius: 10px; color: var(--text); font: inherit; font-size: 13px; line-height: 1.55;
+    padding: 9px 12px; resize: vertical; min-height: 54px;
+  }
+  .pruef-anweisung::placeholder { color: var(--faint); }
+  .pruef-anweisung:focus { outline: none; border-color: var(--line); }
+
+  /* Entwurfstext im Modal direkt editierbar */
+  textarea.vw-draft {
+    display: block; width: 100%; border: none; background: transparent; padding: 0; margin: 0;
+    font: inherit; font-size: 15px; line-height: 1.65; color: var(--text);
+    resize: none; outline: none; overflow: hidden; min-height: 100px; border-radius: 6px;
+  }
+  textarea.vw-draft:focus { box-shadow: -14px 0 0 -12px var(--rot); }
+
+  /* Breites Zwei-Spalten-Modal auf dem Desktop: Entwurf links, Prüfstand rechts */
+  @media (min-width: 1000px) {
+    .vw-panel:has(.two-col) { max-width: 1160px; }
+    .vw-body.two-col { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 0 30px; align-items: start; }
+    .vw-body.two-col .pruef-zone {
+      border-top: none; margin-top: 0; padding-top: 0;
+      border-left: 1px dashed var(--line); padding-left: 30px; min-height: 100%;
+    }
+    .vw-body.two-col .pruef-feedback { max-height: 260px; }
+  }
+
+  /* ---------- Entwürfe-Tab ---------- */
+  .chip.gepostet { color: #6FCF97; border-color: rgba(111,207,151,0.35); background: rgba(111,207,151,0.08); }
+  .d-score { font-size: 11.5px; font-weight: 700; padding: 1.5px 8px; border-radius: 5px; font-variant-numeric: tabular-nums; }
+  .d-score.hoch { color: #6FCF97; background: rgba(111,207,151,0.12); }
+  .d-score.mittel { color: var(--amber); background: var(--amber-dim); }
+  .d-score.gering { color: var(--rot); background: var(--rot-dim); }
+  .entry.gepostet h2, .entry.gepostet .d-text { opacity: .55; }
+  .entry .d-text {
+    grid-column: 1; white-space: pre-wrap; color: var(--muted); font-size: 14.5px; line-height: 1.6;
+    margin-top: 5px; max-width: 80ch; cursor: pointer;
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .entry .d-text.open { display: block; -webkit-line-clamp: none; }
+  .actions button.check-on { color: #6FCF97; }
 
   /* ---------- Toast ---------- */
   #toast {
@@ -404,6 +448,7 @@
       <button class="tab active" role="tab" data-tab="new" aria-selected="true">Neu<span class="count" id="count-new"></span></button>
       <button class="tab" role="tab" data-tab="important" aria-selected="false">Wichtig<span class="count" id="count-important"></span></button>
       <button class="tab" role="tab" data-tab="archived" aria-selected="false">Archiv<span class="count" id="count-archived"></span></button>
+      <button class="tab" role="tab" data-tab="drafts" aria-selected="false">Entwürfe<span class="count" id="count-drafts"></span></button>
     </div>
     <div class="search">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
@@ -443,6 +488,7 @@
     <div class="vw-body" id="vwBody"></div>
     <div class="vw-foot">
       <button class="vw-btn primary" id="vwCopy" type="button" disabled>Kopieren</button>
+      <button class="vw-btn" id="vwSave" type="button" disabled>Speichern</button>
       <button class="vw-btn" id="vwRevise" type="button" disabled>Mit Feedback überarbeiten</button>
       <button class="vw-btn" id="vwRetry" type="button" disabled>Neu generieren</button>
       <button class="vw-btn" id="vwCancel" type="button" style="margin-left:auto">Schließen</button>
@@ -464,12 +510,15 @@ const ICONS = {
   trash: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 .9h8a1 1 0 0 0 1-.9L18 7"/><path d="M10 11v6M14 11v6"/></svg>',
   quill: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c-5 0-11 2.5-13.5 8L4 20l1.5-.5C13 17 17 12 20 4z"/><path d="M9.5 14.5 4 20"/></svg>',
   note: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v9l-6 6H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14 20v-5a1 1 0 0 1 1-1h5"/></svg>',
-  gauge: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.8" fill="currentColor"/></svg>'
+  gauge: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.8" fill="currentColor"/></svg>',
+  copy: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>',
+  check: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5.5"/></svg>',
+  open: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h5v5"/><path d="M20 4 11 13"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg>'
 };
 
 const state = {
   tab: "new", kind: "", q: "", offset: 0, limit: 50,
-  items: [], counts: { new: 0, important: 0, archived: 0 },
+  items: [], drafts: [], counts: { new: 0, important: 0, archived: 0, drafts: 0 },
   mayHaveMore: false, initialRender: true
 };
 
@@ -523,6 +572,15 @@ $("logoutBtn").addEventListener("click", async () => {
 
 /* ---------- Laden & Rendern ---------- */
 async function load(reset) {
+  if (state.tab === "drafts") {
+    const data = await api("/api/drafts");
+    state.drafts = data.items;
+    state.counts = data.counts;
+    state.mayHaveMore = false;
+    render();
+    state.initialRender = false;
+    return;
+  }
   if (reset) { state.offset = 0; state.items = []; }
   const params = new URLSearchParams({ tab: state.tab, limit: state.limit, offset: state.offset });
   if (state.q) params.set("q", state.q);
@@ -545,10 +603,12 @@ function render() {
   document.querySelectorAll(".kind-chip").forEach(c => {
     c.classList.toggle("active", c.dataset.kind === state.kind);
   });
+  document.querySelector(".kinds").hidden = state.tab === "drafts";
 
   renderBriefing();
 
   listEl.textContent = "";
+  if (state.tab === "drafts") { renderDrafts(); return; }
   let lastLabel = null;
   state.items.forEach((item, i) => {
     const label = dayLabel(item.published_at || item.ingested_at);
@@ -836,25 +896,142 @@ function removeRow(item, li) {
 }
 
 function render_counts_only() {
-  for (const key of ["new", "important", "archived"]) {
+  for (const key of ["new", "important", "archived", "drafts"]) {
     $("count-" + key).textContent = state.counts[key] > 0 ? String(state.counts[key]) : "";
   }
 }
 
+/* ---------- Entwürfe-Tab ---------- */
+function renderDrafts() {
+  const q = state.q.toLowerCase();
+  const list = state.drafts.filter(d =>
+    !q || d.text.toLowerCase().includes(q) || (d.item_title || "").toLowerCase().includes(q));
+  let lastLabel = null;
+  list.forEach((d, i) => {
+    const label = dayLabel(d.updated_at);
+    if (label !== lastLabel) {
+      listEl.appendChild(el("li", "day-sep", label));
+      lastLabel = label;
+    }
+    listEl.appendChild(draftNode(d, i));
+  });
+  if (list.length === 0) {
+    stateBox.hidden = false;
+    stateBox.textContent = "";
+    stateBox.append(el("span", "orn", "⁂"),
+      el("div", "", q ? "Keine Entwürfe zu „" + state.q + "“." : "Noch keine gespeicherten Entwürfe."),
+      el("div", "hint", q ? "Suchbegriff anpassen oder mit Esc leeren."
+                          : "Im LinkedIn-Fenster „Speichern“ klicken — dann landet der Entwurf hier."));
+  } else {
+    stateBox.hidden = true;
+  }
+  moreBtn.hidden = true;
+}
+
+function draftTitel(text) {
+  const zeile = (text || "").split("\n").map(z => z.trim()).find(z => z) || "Entwurf";
+  return zeile.length > 110 ? zeile.slice(0, 110) + "…" : zeile;
+}
+
+function draftNode(d, index) {
+  const li = el("li", "entry" + (d.status === "gepostet" ? " gepostet" : ""));
+  if (state.initialRender) li.style.animationDelay = Math.min(index, 12) * 40 + "ms";
+  else li.style.animation = "none";
+
+  const meta = el("div", "meta");
+  meta.append(el("span", "source", d.item_title || "Freier Entwurf"), el("span", "dot", "·"));
+  const t = el("span", "time", relTime(d.updated_at));
+  t.title = absTime(d.updated_at);
+  meta.append(t);
+  if (d.status === "gepostet") meta.append(el("span", "chip gepostet", "gepostet"));
+  (d.scores || []).forEach(s => {
+    if (s.score !== null && s.score !== undefined) {
+      meta.append(el("span", "d-score " + scoreKlasse(s.score),
+        ((s.name || "?").split(" ")[0]) + " " + s.score));
+    }
+  });
+
+  const h2 = el("h2");
+  h2.append(el("span", "", draftTitel(d.text)));
+
+  const actions = el("div", "actions");
+  actions.append(
+    iconBtn(ICONS.open, "Öffnen: bearbeiten, prüfen lassen, überarbeiten", "", () => openDraft(d)),
+    iconBtn(ICONS.copy, "Text kopieren", "", async () => {
+      try { await navigator.clipboard.writeText(d.text); toast("Entwurf kopiert — ab damit zu LinkedIn."); }
+      catch { toast("Kopieren fehlgeschlagen — Text bitte manuell markieren."); }
+    }),
+    iconBtn(ICONS.check, d.status === "gepostet" ? "Zurück auf „Entwurf“ setzen" : "Als gepostet markieren",
+            d.status === "gepostet" ? "check-on" : "", () => toggleGepostet(d, li)),
+    draftTrashBtn(d, li)
+  );
+
+  const text = el("p", "d-text", d.text);
+  text.title = "Klicken zum Auf- und Zuklappen";
+  text.addEventListener("click", () => text.classList.toggle("open"));
+
+  li.append(meta, h2, actions, text);
+  return li;
+}
+
+async function toggleGepostet(d, li) {
+  const target = d.status === "gepostet" ? "entwurf" : "gepostet";
+  try {
+    const updated = await api("/api/drafts/" + d.id, { method: "PATCH", body: JSON.stringify({ status: target }) });
+    Object.assign(d, updated);
+    state.initialRender = false;
+    li.replaceWith(draftNode(d, 0));
+    toast(target === "gepostet" ? "Als gepostet markiert." : "Zurück auf „Entwurf“.");
+  } catch (e) { toast(e.message); }
+}
+
+function draftTrashBtn(d, li) {
+  const b = iconBtn(ICONS.trash, "Löschen", "", async () => {
+    if (!b.classList.contains("confirm")) {
+      b.classList.add("confirm"); b.textContent = "Löschen?";
+      setTimeout(() => { if (b.isConnected && b.classList.contains("confirm")) {
+        b.classList.remove("confirm"); b.textContent = ""; b.innerHTML = ICONS.trash;
+      } }, 2600);
+    } else {
+      try {
+        await api("/api/drafts/" + d.id, { method: "DELETE" });
+        state.drafts = state.drafts.filter(x => x.id !== d.id);
+        state.counts.drafts = Math.max(0, (state.counts.drafts || 0) - 1);
+        li.classList.add("leaving");
+        setTimeout(() => { state.initialRender = false; render(); }, 280);
+      } catch (e) { toast(e.message); }
+    }
+  });
+  return b;
+}
+
+function openDraft(d) {
+  vw.item = null;
+  vw.draftId = d.id;
+  vw.quelleText = d.item_title ? "Grundlage: " + d.item_title : "Freier Entwurf";
+  vwShow();
+  renderDraft(d.text);
+}
+
 /* ---------- Verwerten: LinkedIn-Entwurf ---------- */
-const vw = { item: null, draft: "", results: {} };
+const vw = { item: null, draft: "", results: {}, include: {}, draftId: null, quelleText: "" };
 
 function vwShow() { $("vwOverlay").hidden = false; }
 function vwHide() {
   $("vwOverlay").hidden = true;
-  vw.item = null; vw.draft = ""; vw.results = {};
+  vw.item = null; vw.draft = ""; vw.results = {}; vw.include = {};
+  vw.draftId = null; vw.quelleText = "";
+  $("vwBody").classList.remove("two-col");
   $("vwRevise").disabled = true;
   $("vwRevise").textContent = "Mit Feedback überarbeiten";
+  $("vwSave").disabled = true;
+  if (state.tab === "drafts") load(true).catch(e => toast(e.message));
 }
 
 function vwLoading(text) {
   const body = $("vwBody");
   body.textContent = "";
+  body.classList.remove("two-col");
   const box = el("div", "vw-loading");
   const dots = el("div", "vw-dots");
   dots.append(el("span"), el("span"), el("span"));
@@ -863,6 +1040,7 @@ function vwLoading(text) {
   $("vwCopy").disabled = true;
   $("vwRetry").disabled = true;
   $("vwRevise").disabled = true;
+  $("vwSave").disabled = true;
 }
 
 function vwQuelleZeile(item) {
@@ -883,6 +1061,8 @@ const PRUEFER_LISTE = [
 async function verwerten(item) {
   vw.item = item;
   vw.results = {};
+  vw.draftId = null;   // frisch generiert = beim Speichern ein neuer Bibliothekseintrag
+  vw.quelleText = "";
   vwShow();
   vwLoading();
   try {
@@ -902,24 +1082,58 @@ function scoreKlasse(score) {
   return score >= 8 ? "hoch" : score >= 6 ? "mittel" : "gering";
 }
 
+function autosize(ta) {
+  ta.style.height = "auto";
+  ta.style.height = (ta.scrollHeight + 2) + "px";
+}
+
 function renderDraft(draft) {
   vw.draft = draft;
   vw.results = {};
+  vw.include = {};
   const body = $("vwBody");
   body.textContent = "";
-  if (vw.item) body.append(el("div", "vw-quelle", vwQuelleZeile(vw.item)));
-  body.append(el("div", "vw-draft", draft));
+  body.classList.add("two-col");
 
-  // Prüfstand
+  // Linke Spalte: Quelle + direkt editierbarer Entwurf
+  const main = el("div", "vw-main");
+  const quelle = vw.item ? vwQuelleZeile(vw.item) : (vw.quelleText || "Neuer Entwurf");
+  main.append(el("div", "vw-quelle", quelle + " · Text direkt bearbeitbar"));
+  const ta = document.createElement("textarea");
+  ta.className = "vw-draft";
+  ta.value = draft;
+  ta.maxLength = 12000;
+  ta.spellcheck = false;
+  ta.addEventListener("input", () => { vw.draft = ta.value; });
+  if ("fieldSizing" in ta.style) {
+    ta.style.fieldSizing = "content"; // Browser hält die Höhe selbst aktuell
+  } else {
+    const wachsen = () => autosize(ta);
+    ta.addEventListener("input", wachsen);
+    requestAnimationFrame(wachsen);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(wachsen);
+  }
+  main.append(ta);
+  body.append(main);
+
+  // Rechte Spalte: Prüfstand
   const zone = el("div", "pruef-zone");
   zone.append(el("div", "pruef-titel", "PRÜFSTAND — WIE DIE ZIELGRUPPE URTEILT"));
   const karten = el("div", "pruef-karten");
   PRUEFER_LISTE.forEach(p => karten.append(pruefKarte(p)));
   zone.append(karten);
+  const anw = document.createElement("textarea");
+  anw.className = "pruef-anweisung";
+  anw.id = "vwAnweisung";
+  anw.rows = 2;
+  anw.maxLength = 2000;
+  anw.placeholder = "Regie-Anweisung für die Überarbeitung (optional) — z. B. „nur Claudias Vorschlag 2 umsetzen, Rest ignorieren“";
+  zone.append(anw);
   body.append(zone);
 
   $("vwCopy").disabled = false;
-  $("vwRetry").disabled = false;
+  $("vwSave").disabled = false;
+  $("vwRetry").disabled = !vw.item;
   syncUeberarbeiten();
 }
 
@@ -943,9 +1157,11 @@ async function pruefenLassen(p) {
   const karte = $("pk-" + p.key);
   if (!karte) return;
   const kopf = karte.querySelector(".pruef-kopf");
-  const startBtn = kopf.querySelector(".pruef-start");
-  if (startBtn) startBtn.remove();
+  kopf.querySelectorAll(".pruef-start, .pruef-score, .pruef-check").forEach(n => n.remove());
   karte.querySelectorAll(".pruef-feedback, .pruef-fehler, .pruef-mini").forEach(n => n.remove());
+  delete vw.results[p.key];
+  delete vw.include[p.key];
+  syncUeberarbeiten();
   const lade = el("div", "pruef-mini");
   const dots = el("span", "vw-dots"); dots.append(el("span"), el("span"), el("span"));
   lade.append(dots, el("span", "", p.name + " liest …"));
@@ -953,13 +1169,20 @@ async function pruefenLassen(p) {
   try {
     const r = await api("/api/pruefen", { method: "POST", body: JSON.stringify({ entwurf: vw.draft, pruefer: p.key }) });
     vw.results[p.key] = r;
+    vw.include[p.key] = true;
     lade.remove();
     if (r.score !== null && r.score !== undefined) {
-      const sc = el("div", "pruef-score " + scoreKlasse(r.score), r.score);
-      kopf.insertBefore(sc, null);
+      kopf.append(el("div", "pruef-score " + scoreKlasse(r.score), r.score));
     }
     kopf.insertAdjacentElement("afterend", el("div", "pruef-feedback", r.feedback));
-    // Erneut-Bewerten-Möglichkeit als kleiner Text
+    // Auswahl: fließt dieses Urteil in die Überarbeitung ein?
+    const check = el("label", "pruef-check");
+    check.title = "Nur angehakte Urteile fließen in die Überarbeitung ein";
+    const cb = document.createElement("input");
+    cb.type = "checkbox"; cb.checked = true;
+    cb.addEventListener("change", () => { vw.include[p.key] = cb.checked; syncUeberarbeiten(); });
+    check.append(cb, el("span", "", "einbeziehen"));
+    kopf.append(check);
     const neu = el("button", "pruef-start", "Neu");
     neu.type = "button"; neu.title = "Erneut bewerten lassen";
     neu.addEventListener("click", () => pruefenLassen(p));
@@ -975,8 +1198,14 @@ async function pruefenLassen(p) {
   }
 }
 
+function ausgewaehltesFeedback() {
+  return Object.keys(vw.results || {})
+    .filter(k => vw.include[k])
+    .map(k => vw.results[k]);
+}
+
 function syncUeberarbeiten() {
-  const anz = Object.keys(vw.results || {}).length;
+  const anz = ausgewaehltesFeedback().length;
   const btn = $("vwRevise");
   if (btn) {
     btn.disabled = anz === 0;
@@ -986,19 +1215,51 @@ function syncUeberarbeiten() {
 }
 
 async function ueberarbeiten() {
-  const feedback = Object.values(vw.results || {});
+  const feedback = ausgewaehltesFeedback();
   if (!feedback.length) return;
-  const btn = $("vwRevise");
-  if (btn) btn.disabled = true;
+  const anweisung = ($("vwAnweisung") ? $("vwAnweisung").value : "").trim();
+  const vorher = vw.draft;
   vwLoading("Überarbeite mit dem Feedback …");
   try {
-    const data = await api("/api/ueberarbeiten", { method: "POST", body: JSON.stringify({ entwurf: vw.draft, feedback }) });
+    const data = await api("/api/ueberarbeiten", {
+      method: "POST",
+      body: JSON.stringify({ entwurf: vorher, feedback, anweisung })
+    });
     renderDraft(data.draft);
     toast("Überarbeitet — die Prüfer können erneut urteilen.");
   } catch (e) {
-    renderDraft(vw.draft); // alten Entwurf zurückholen
+    renderDraft(vorher); // alten Entwurf zurückholen
     toast(e.message);
   }
+}
+
+async function saveDraft() {
+  if (!vw.draft.trim()) { toast("Leerer Entwurf — nichts zu speichern."); return; }
+  const btn = $("vwSave");
+  btn.disabled = true;
+  const scores = Object.values(vw.results || {}).map(r => ({ pruefer: r.pruefer, name: r.name, score: r.score }));
+  try {
+    if (vw.draftId) {
+      const body = { text: vw.draft };
+      if (scores.length) body.scores = scores; // alte Urteile nicht mit leerer Liste überschreiben
+      await api("/api/drafts/" + vw.draftId, { method: "PATCH", body: JSON.stringify(body) });
+      toast("Entwurf aktualisiert.");
+    } else {
+      const d = await api("/api/drafts", { method: "POST", body: JSON.stringify({
+        text: vw.draft,
+        item_id: vw.item ? vw.item.id : null,
+        item_title: vw.item ? vw.item.title : "",
+        scores
+      }) });
+      vw.draftId = d.id;
+      state.counts.drafts = (state.counts.drafts || 0) + 1;
+      render_counts_only();
+      toast("Gespeichert — zu finden im Tab „Entwürfe“.");
+    }
+  } catch (e) {
+    toast(e.message);
+  }
+  btn.disabled = false;
 }
 
 $("vwClose").addEventListener("click", vwHide);
@@ -1007,6 +1268,7 @@ $("vwOverlay").addEventListener("click", (ev) => { if (ev.target === $("vwOverla
 document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !$("vwOverlay").hidden) vwHide(); });
 $("vwRetry").addEventListener("click", () => { if (vw.item) verwerten(vw.item); });
 $("vwRevise").addEventListener("click", ueberarbeiten);
+$("vwSave").addEventListener("click", saveDraft);
 $("vwCopy").addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(vw.draft);

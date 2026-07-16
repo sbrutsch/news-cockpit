@@ -27,6 +27,7 @@ def _load_env_file():
 
 _load_env_file()
 
+import json  # noqa: E402
 import logging  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from datetime import datetime, timedelta, timezone  # noqa: E402
@@ -207,6 +208,7 @@ class PruefBody(BaseModel):
 class UeberarbeitenBody(BaseModel):
     entwurf: str
     feedback: list[dict]  # [{name, rolle, score, feedback}, ...]
+    anweisung: str = ""   # Stefans Regie-Anweisung, hat Vorrang vor dem Feedback
 
 
 @app.post("/api/pruefen", dependencies=[Depends(require_session)])
@@ -226,9 +228,66 @@ def ueberarbeiten(body: UeberarbeitenBody):
     if not body.feedback:
         raise HTTPException(status_code=400, detail="Kein Feedback übergeben")
     try:
-        return {"draft": transform.ueberarbeiten(body.entwurf, body.feedback)}
+        return {"draft": transform.ueberarbeiten(body.entwurf, body.feedback, body.anweisung)}
     except transform.TransformError as e:
         raise HTTPException(status_code=e.status, detail=str(e))
+
+
+class DraftBody(BaseModel):
+    text: str
+    item_id: int | None = None
+    item_title: str = ""
+    scores: list[dict] = []  # [{pruefer, name, score}, ...] — Schnappschuss
+
+
+class DraftPatchBody(BaseModel):
+    text: str | None = None
+    scores: list[dict] | None = None
+    status: str | None = None  # 'entwurf' oder 'gepostet'
+
+
+def _draft_out(d):
+    try:
+        d["scores"] = json.loads(d["scores"] or "[]")
+    except ValueError:
+        d["scores"] = []
+    return d
+
+
+@app.get("/api/drafts", dependencies=[Depends(require_session)])
+def get_drafts():
+    return {"items": [_draft_out(d) for d in db.list_drafts()], "counts": db.counts()}
+
+
+@app.post("/api/drafts", dependencies=[Depends(require_session)])
+def create_draft(body: DraftBody):
+    if not body.text.strip():
+        raise HTTPException(status_code=400, detail="Leerer Entwurf")
+    d = db.insert_draft(body.text, item_id=body.item_id,
+                        item_title=body.item_title.strip()[:300],
+                        scores=json.dumps(body.scores[:8]))
+    return JSONResponse(status_code=201, content=_draft_out(d))
+
+
+@app.patch("/api/drafts/{draft_id}", dependencies=[Depends(require_session)])
+def patch_draft(draft_id: int, body: DraftPatchBody):
+    if body.status is not None and body.status not in db.DRAFT_STATUS:
+        raise HTTPException(status_code=400, detail="status muss 'entwurf' oder 'gepostet' sein")
+    if body.text is not None and not body.text.strip():
+        raise HTTPException(status_code=400, detail="Leerer Entwurf")
+    if not db.get_draft(draft_id):
+        raise HTTPException(status_code=404, detail="Nicht gefunden")
+    d = db.update_draft(draft_id, text=body.text,
+                        scores=json.dumps(body.scores[:8]) if body.scores is not None else None,
+                        status=body.status)
+    return _draft_out(d)
+
+
+@app.delete("/api/drafts/{draft_id}", dependencies=[Depends(require_session)])
+def delete_draft(draft_id: int):
+    if not db.delete_draft(draft_id):
+        raise HTTPException(status_code=404, detail="Nicht gefunden")
+    return {"ok": True}
 
 
 @app.post("/api/items/{item_id}/einordnen", dependencies=[Depends(require_session)])

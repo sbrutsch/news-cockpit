@@ -70,6 +70,37 @@ _INDEXES = (
     "CREATE INDEX IF NOT EXISTS idx_items_ingested ON items(ingested_at)",
 )
 
+# Gespeicherte LinkedIn-Entwürfe (aus dem Verwerten-Dialog).
+# scores = JSON-Schnappschuss der Prüfer-Urteile zum Speicherzeitpunkt.
+DRAFT_COLS = ("id", "item_id", "item_title", "text", "scores", "status",
+              "created_at", "updated_at")
+DRAFT_SELECT = ", ".join(DRAFT_COLS)
+DRAFT_STATUS = ("entwurf", "gepostet")
+
+_SCHEMA_DRAFTS_SQLITE = """
+CREATE TABLE IF NOT EXISTS drafts (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  item_id     INTEGER,
+  item_title  TEXT NOT NULL DEFAULT '',
+  text        TEXT NOT NULL,
+  scores      TEXT NOT NULL DEFAULT '[]',
+  status      TEXT NOT NULL DEFAULT 'entwurf',
+  created_at  TEXT NOT NULL,
+  updated_at  TEXT NOT NULL
+)"""
+
+_SCHEMA_DRAFTS_PG = """
+CREATE TABLE IF NOT EXISTS drafts (
+  id          BIGSERIAL PRIMARY KEY,
+  item_id     BIGINT,
+  item_title  TEXT NOT NULL DEFAULT '',
+  text        TEXT NOT NULL,
+  scores      TEXT NOT NULL DEFAULT '[]',
+  status      TEXT NOT NULL DEFAULT 'entwurf',
+  created_at  TEXT NOT NULL,
+  updated_at  TEXT NOT NULL
+)"""
+
 
 def utcnow_iso():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -181,6 +212,8 @@ def _column_names(cur):
 def init():
     with cursor() as cur:
         cur.execute(_SCHEMA_PG if IS_POSTGRES else _SCHEMA_SQLITE)
+        cur.execute(_SCHEMA_DRAFTS_PG if IS_POSTGRES else _SCHEMA_DRAFTS_SQLITE)
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_drafts_updated ON drafts(updated_at)")
         for stmt in _INDEXES:
             cur.execute(stmt)
         # Nachrüst-Migration für Bestände, die vor kind/pillar angelegt wurden
@@ -251,7 +284,9 @@ def counts():
     with cursor() as cur:
         cur.execute(sql)
         new_c, imp_c, arch_c = cur.fetchone()
-    return {"new": new_c, "important": imp_c, "archived": arch_c}
+        cur.execute("SELECT COUNT(*) FROM drafts")
+        drafts_c = cur.fetchone()[0]
+    return {"new": new_c, "important": imp_c, "archived": arch_c, "drafts": drafts_c}
 
 
 def export_items(since_iso):
@@ -297,3 +332,69 @@ def update_item(item_id, important=None, status=None, note=None, assessment=None
         with cursor() as cur:
             cur.execute(_q(f"UPDATE items SET {', '.join(sets)} WHERE id = ?"), params)
     return get_item(item_id)
+
+
+# ---------- Entwürfe ----------
+
+def _draft_row(r):
+    return dict(zip(DRAFT_COLS, r))
+
+
+def insert_draft(text, item_id=None, item_title="", scores="[]"):
+    now = utcnow_iso()
+    params = (item_id, item_title, text, scores, now, now)
+    with cursor() as cur:
+        if IS_POSTGRES:
+            cur.execute(_q("INSERT INTO drafts (item_id, item_title, text, scores, created_at, updated_at) "
+                           "VALUES (?, ?, ?, ?, ?, ?) RETURNING id"), params)
+            new_id = cur.fetchone()[0]
+        else:
+            cur.execute("INSERT INTO drafts (item_id, item_title, text, scores, created_at, updated_at) "
+                        "VALUES (?, ?, ?, ?, ?, ?)", params)
+            new_id = cur.lastrowid
+    return get_draft(new_id)
+
+
+def list_drafts(limit=200):
+    sql = (f"SELECT {DRAFT_SELECT} FROM drafts "
+           "ORDER BY updated_at DESC, id DESC LIMIT ?")
+    with cursor() as cur:
+        cur.execute(_q(sql), (max(1, min(int(limit), 500)),))
+        return [_draft_row(r) for r in cur.fetchall()]
+
+
+def get_draft(draft_id):
+    with cursor() as cur:
+        cur.execute(_q(f"SELECT {DRAFT_SELECT} FROM drafts WHERE id = ?"), (draft_id,))
+        r = cur.fetchone()
+    return _draft_row(r) if r else None
+
+
+def update_draft(draft_id, text=None, scores=None, status=None):
+    sets, params = [], []
+    if text is not None:
+        sets.append("text = ?")
+        params.append(text)
+    if scores is not None:
+        sets.append("scores = ?")
+        params.append(scores)
+    if status is not None:
+        if status not in DRAFT_STATUS:
+            raise ValueError("Ungültiger Status")
+        sets.append("status = ?")
+        params.append(status)
+    # Nur inhaltliche Änderungen heben den Entwurf in der Liste nach oben
+    if text is not None or scores is not None:
+        sets.append("updated_at = ?")
+        params.append(utcnow_iso())
+    if sets:
+        params.append(draft_id)
+        with cursor() as cur:
+            cur.execute(_q(f"UPDATE drafts SET {', '.join(sets)} WHERE id = ?"), params)
+    return get_draft(draft_id)
+
+
+def delete_draft(draft_id):
+    with cursor() as cur:
+        cur.execute(_q("DELETE FROM drafts WHERE id = ?"), (draft_id,))
+        return cur.rowcount == 1
