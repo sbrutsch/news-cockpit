@@ -111,6 +111,26 @@ def linkedin_entwurf(item):
     return _claude_text(SYSTEM, _user_content(item), max_tokens=2000)
 
 
+_UEBERARBEITEN_SYSTEM = SYSTEM + """
+
+Du erhältst einen bestehenden Entwurf plus das Feedback echter IT-Leiter aus der Zielgruppe. Überarbeite den Post so, dass er die berechtigten Kritikpunkte aufnimmt — ohne die Positionslogik zu verwässern oder in Gefälligkeit zu kippen. Nimm ernst, was substanziell ist; ignoriere, was den Kern verraten würde, und triff bei widersprüchlichem Feedback eine klare Entscheidung. Antworte NUR mit dem überarbeiteten Post-Text, ohne Vorwort oder Kommentar."""
+
+
+def ueberarbeiten(entwurf, feedback_liste):
+    bloecke = []
+    for f in feedback_liste:
+        kopf = f.get("name", "IT-Leiter")
+        if f.get("rolle"):
+            kopf += f" ({f['rolle']})"
+        if f.get("score") is not None:
+            kopf += f" — Bewertung {f['score']}/10"
+        bloecke.append(f"### Feedback von {kopf}\n{(f.get('feedback') or '').strip()}")
+    user = ("Bestehender Entwurf:\n\n" + entwurf.strip()
+            + "\n\n---\n\n" + "\n\n".join(bloecke)
+            + "\n\n---\n\nÜberarbeite den Entwurf auf Basis dieses Feedbacks.")
+    return _claude_text(_UEBERARBEITEN_SYSTEM, user, max_tokens=2000)
+
+
 EINORDNUNG_SYSTEM = """Du bewertest Fundstücke für Stefan Brutscher — Sparringspartner für IT-Leiter, deren wichtige Entscheidungen im Management-Gremium zu scheitern drohen. Positionierung: Entscheidungssicherheit in kritischen Managementmomenten, "Damit Entscheidungen durchgehen." Zielgruppe: IT-Leiter, CIOs, IT-Bereichsleiter im DACH-Raum — fachlich stark, unter Druck im Management.
 
 Bewerte das Fundstück in zwei Dimensionen:

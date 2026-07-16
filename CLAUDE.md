@@ -81,6 +81,15 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   nach Säulen gruppiert inkl. Notizen; Download-Knopf in der Toolbar) und PWA
   (manifest.webmanifest, sw.js netz-zuerst ohne API-Caching, Icons via Pillow
   generiert). Auto-Deploy per GitHub-Webhook aktiv seit d48cfac.
+- **2026-07-16:** **IT-Leiter-Prüfstand** im Verwerten-Dialog. `app/pruefer.py`
+  mit zwei Ziel-Personas (Ronny Berger aus skills-bibliothek/marktfilter-ronny,
+  Claudia Brenner aus KI-Agenten/Tagesworkshop/simulator-claudia-prompt.md);
+  einheitliche erste Zeile `SCORE: n` → Ampel in der UI. `POST /api/pruefen`
+  (eine Persona bewertet) + `POST /api/ueberarbeiten` (transform.ueberarbeiten
+  schreibt Entwurf anhand des Prüfer-Feedbacks neu, ohne Positionslogik zu
+  verwässern). Prüfer-Karten mit Score/Feedback im Modal, „Mit Feedback
+  überarbeiten"-Knopf. transform.py um `_claude_text`-Helfer zentralisiert.
+  Bewusst KEINE eigene App — gehört in die bestehende Verwerten-Kette.
 - **2026-07-15 (6):** Layout verbreitert (960px, Summary 80ch). **Resümee**:
   `POST /api/items/{id}/einordnen` bewertet via Claude (strenges JSON:
   relevanz hoch/mittel/gering + resumee) den Nutzen für Stefans Geschäft und

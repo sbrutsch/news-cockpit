@@ -323,6 +323,29 @@
   .vw-btn.primary:hover { background: #fff; }
   .vw-btn[disabled] { opacity: .4; cursor: default; }
 
+  /* ---------- IT-Leiter-Prüfstand ---------- */
+  .pruef-zone { margin-top: 22px; border-top: 1px dashed var(--line); padding-top: 18px; }
+  .pruef-titel { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--faint); margin-bottom: 12px; }
+  .pruef-karten { display: flex; flex-direction: column; gap: 12px; }
+  .pruef-karte { border: 1px solid var(--line-soft); border-radius: 12px; overflow: hidden; }
+  .pruef-kopf { display: flex; align-items: center; gap: 11px; padding: 11px 14px; background: var(--elev); }
+  .pruef-avatar { width: 34px; height: 34px; border-radius: 50%; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-weight: 700; font-size: 15px; color: var(--bg); }
+  .pruef-avatar.ronny { background: linear-gradient(135deg, #6E8BB8, #3E577F); }
+  .pruef-avatar.claudia { background: linear-gradient(135deg, #C98BA8, #9E5E7C); }
+  .pruef-wer { flex: 1; min-width: 0; }
+  .pruef-name { font-size: 14px; font-weight: 650; color: var(--text); }
+  .pruef-rolle { font-size: 12px; color: var(--faint); }
+  .pruef-score { font-family: var(--serif); font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; padding: 2px 10px; border-radius: 8px; }
+  .pruef-score.hoch { color: #6FCF97; background: rgba(111,207,151,0.12); }
+  .pruef-score.mittel { color: var(--amber); background: var(--amber-dim); }
+  .pruef-score.gering { color: var(--rot); background: var(--rot-dim); }
+  .pruef-start { font-size: 13px; font-weight: 700; color: var(--muted); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--line-soft); }
+  .pruef-start:hover { color: var(--text); border-color: var(--line); background: var(--elev-strong); }
+  .pruef-feedback { padding: 12px 15px; font-size: 13.5px; line-height: 1.6; color: var(--summary); white-space: pre-wrap; border-top: 1px solid var(--line-soft); max-height: 320px; overflow-y: auto; }
+  .pruef-mini { display: inline-flex; align-items: center; gap: 6px; color: var(--faint); font-size: 12.5px; padding: 8px 0; }
+  .pruef-mini .vw-dots span { width: 6px; height: 6px; }
+  .pruef-fehler { padding: 10px 15px; color: var(--rot); font-size: 13px; border-top: 1px solid var(--line-soft); }
+
   /* ---------- Toast ---------- */
   #toast {
     position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(10px);
@@ -420,6 +443,7 @@
     <div class="vw-body" id="vwBody"></div>
     <div class="vw-foot">
       <button class="vw-btn primary" id="vwCopy" type="button" disabled>Kopieren</button>
+      <button class="vw-btn" id="vwRevise" type="button" disabled>Mit Feedback überarbeiten</button>
       <button class="vw-btn" id="vwRetry" type="button" disabled>Neu generieren</button>
       <button class="vw-btn" id="vwCancel" type="button" style="margin-left:auto">Schließen</button>
     </div>
@@ -818,21 +842,27 @@ function render_counts_only() {
 }
 
 /* ---------- Verwerten: LinkedIn-Entwurf ---------- */
-const vw = { item: null, draft: "" };
+const vw = { item: null, draft: "", results: {} };
 
 function vwShow() { $("vwOverlay").hidden = false; }
-function vwHide() { $("vwOverlay").hidden = true; vw.item = null; vw.draft = ""; }
+function vwHide() {
+  $("vwOverlay").hidden = true;
+  vw.item = null; vw.draft = ""; vw.results = {};
+  $("vwRevise").disabled = true;
+  $("vwRevise").textContent = "Mit Feedback überarbeiten";
+}
 
-function vwLoading() {
+function vwLoading(text) {
   const body = $("vwBody");
   body.textContent = "";
   const box = el("div", "vw-loading");
   const dots = el("div", "vw-dots");
   dots.append(el("span"), el("span"), el("span"));
-  box.append(dots, el("div", "", "Entwurf entsteht — dauert einen Moment …"));
+  box.append(dots, el("div", "", text || "Entwurf entsteht — dauert einen Moment …"));
   body.append(box);
   $("vwCopy").disabled = true;
   $("vwRetry").disabled = true;
+  $("vwRevise").disabled = true;
 }
 
 function vwQuelleZeile(item) {
@@ -845,18 +875,19 @@ function vwQuelleZeile(item) {
   return "Grundlage: " + teile.join(" · ");
 }
 
+const PRUEFER_LISTE = [
+  { key: "ronny", name: "Ronny Berger", rolle: "IT-Leiter, 30 Jahre Praxis", initial: "R" },
+  { key: "claudia", name: "Claudia Brenner", rolle: "IT-Directorin, Industrie", initial: "C" }
+];
+
 async function verwerten(item) {
   vw.item = item;
+  vw.results = {};
   vwShow();
   vwLoading();
   try {
     const data = await api("/api/items/" + item.id + "/verwerten", { method: "POST" });
-    vw.draft = data.draft;
-    const body = $("vwBody");
-    body.textContent = "";
-    body.append(el("div", "vw-quelle", vwQuelleZeile(item)), el("div", "vw-draft", data.draft));
-    $("vwCopy").disabled = false;
-    $("vwRetry").disabled = false;
+    renderDraft(data.draft);
   } catch (e) {
     const body = $("vwBody");
     body.textContent = "";
@@ -866,11 +897,116 @@ async function verwerten(item) {
   }
 }
 
+function scoreKlasse(score) {
+  if (score === null || score === undefined) return "";
+  return score >= 8 ? "hoch" : score >= 6 ? "mittel" : "gering";
+}
+
+function renderDraft(draft) {
+  vw.draft = draft;
+  vw.results = {};
+  const body = $("vwBody");
+  body.textContent = "";
+  if (vw.item) body.append(el("div", "vw-quelle", vwQuelleZeile(vw.item)));
+  body.append(el("div", "vw-draft", draft));
+
+  // Prüfstand
+  const zone = el("div", "pruef-zone");
+  zone.append(el("div", "pruef-titel", "PRÜFSTAND — WIE DIE ZIELGRUPPE URTEILT"));
+  const karten = el("div", "pruef-karten");
+  PRUEFER_LISTE.forEach(p => karten.append(pruefKarte(p)));
+  zone.append(karten);
+  body.append(zone);
+
+  $("vwCopy").disabled = false;
+  $("vwRetry").disabled = false;
+  syncUeberarbeiten();
+}
+
+function pruefKarte(p) {
+  const karte = el("div", "pruef-karte");
+  karte.id = "pk-" + p.key;
+  const kopf = el("div", "pruef-kopf");
+  kopf.append(el("div", "pruef-avatar " + p.key, p.initial));
+  const wer = el("div", "pruef-wer");
+  wer.append(el("div", "pruef-name", p.name), el("div", "pruef-rolle", p.rolle));
+  kopf.append(wer);
+  const start = el("button", "pruef-start", "Bewerten lassen");
+  start.type = "button";
+  start.addEventListener("click", () => pruefenLassen(p));
+  kopf.append(start);
+  karte.append(kopf);
+  return karte;
+}
+
+async function pruefenLassen(p) {
+  const karte = $("pk-" + p.key);
+  if (!karte) return;
+  const kopf = karte.querySelector(".pruef-kopf");
+  const startBtn = kopf.querySelector(".pruef-start");
+  if (startBtn) startBtn.remove();
+  karte.querySelectorAll(".pruef-feedback, .pruef-fehler, .pruef-mini").forEach(n => n.remove());
+  const lade = el("div", "pruef-mini");
+  const dots = el("span", "vw-dots"); dots.append(el("span"), el("span"), el("span"));
+  lade.append(dots, el("span", "", p.name + " liest …"));
+  kopf.insertAdjacentElement("afterend", lade);
+  try {
+    const r = await api("/api/pruefen", { method: "POST", body: JSON.stringify({ entwurf: vw.draft, pruefer: p.key }) });
+    vw.results[p.key] = r;
+    lade.remove();
+    if (r.score !== null && r.score !== undefined) {
+      const sc = el("div", "pruef-score " + scoreKlasse(r.score), r.score);
+      kopf.insertBefore(sc, null);
+    }
+    kopf.insertAdjacentElement("afterend", el("div", "pruef-feedback", r.feedback));
+    // Erneut-Bewerten-Möglichkeit als kleiner Text
+    const neu = el("button", "pruef-start", "Neu");
+    neu.type = "button"; neu.title = "Erneut bewerten lassen";
+    neu.addEventListener("click", () => pruefenLassen(p));
+    kopf.append(neu);
+    syncUeberarbeiten();
+  } catch (e) {
+    lade.remove();
+    kopf.insertAdjacentElement("afterend", el("div", "pruef-fehler", e.message));
+    const retry = el("button", "pruef-start", "Erneut");
+    retry.type = "button";
+    retry.addEventListener("click", () => pruefenLassen(p));
+    kopf.append(retry);
+  }
+}
+
+function syncUeberarbeiten() {
+  const anz = Object.keys(vw.results || {}).length;
+  const btn = $("vwRevise");
+  if (btn) {
+    btn.disabled = anz === 0;
+    btn.textContent = anz === 0 ? "Mit Feedback überarbeiten"
+      : "Mit Feedback überarbeiten (" + anz + ")";
+  }
+}
+
+async function ueberarbeiten() {
+  const feedback = Object.values(vw.results || {});
+  if (!feedback.length) return;
+  const btn = $("vwRevise");
+  if (btn) btn.disabled = true;
+  vwLoading("Überarbeite mit dem Feedback …");
+  try {
+    const data = await api("/api/ueberarbeiten", { method: "POST", body: JSON.stringify({ entwurf: vw.draft, feedback }) });
+    renderDraft(data.draft);
+    toast("Überarbeitet — die Prüfer können erneut urteilen.");
+  } catch (e) {
+    renderDraft(vw.draft); // alten Entwurf zurückholen
+    toast(e.message);
+  }
+}
+
 $("vwClose").addEventListener("click", vwHide);
 $("vwCancel").addEventListener("click", vwHide);
 $("vwOverlay").addEventListener("click", (ev) => { if (ev.target === $("vwOverlay")) vwHide(); });
 document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !$("vwOverlay").hidden) vwHide(); });
 $("vwRetry").addEventListener("click", () => { if (vw.item) verwerten(vw.item); });
+$("vwRevise").addEventListener("click", ueberarbeiten);
 $("vwCopy").addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(vw.draft);

@@ -36,7 +36,7 @@ from fastapi.responses import JSONResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
-from app import auth, db, transform  # noqa: E402
+from app import auth, db, pruefer, transform  # noqa: E402
 
 log = logging.getLogger("news-cockpit")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -197,6 +197,38 @@ def verwerten(item_id: int):
     except transform.TransformError as e:
         raise HTTPException(status_code=e.status, detail=str(e))
     return {"draft": draft, "model": transform.MODEL}
+
+
+class PruefBody(BaseModel):
+    entwurf: str
+    pruefer: str  # 'ronny' oder 'claudia'
+
+
+class UeberarbeitenBody(BaseModel):
+    entwurf: str
+    feedback: list[dict]  # [{name, rolle, score, feedback}, ...]
+
+
+@app.post("/api/pruefen", dependencies=[Depends(require_session)])
+def pruefen(body: PruefBody):
+    if not body.entwurf.strip():
+        raise HTTPException(status_code=400, detail="Kein Entwurf übergeben")
+    try:
+        return pruefer.pruefen(body.entwurf, body.pruefer)
+    except pruefer.TransformError as e:
+        raise HTTPException(status_code=e.status, detail=str(e))
+
+
+@app.post("/api/ueberarbeiten", dependencies=[Depends(require_session)])
+def ueberarbeiten(body: UeberarbeitenBody):
+    if not body.entwurf.strip():
+        raise HTTPException(status_code=400, detail="Kein Entwurf übergeben")
+    if not body.feedback:
+        raise HTTPException(status_code=400, detail="Kein Feedback übergeben")
+    try:
+        return {"draft": transform.ueberarbeiten(body.entwurf, body.feedback)}
+    except transform.TransformError as e:
+        raise HTTPException(status_code=e.status, detail=str(e))
 
 
 @app.post("/api/items/{item_id}/einordnen", dependencies=[Depends(require_session)])

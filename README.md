@@ -73,6 +73,8 @@ sich also nichts merken.
 - `PATCH /api/items/{id}` — `{"important": true}`, `{"status": "archived"|"new"}` und/oder `{"note": "…"}` (leere Notiz löscht; Notiz fließt beim Verwerten als gewünschter Winkel in den Entwurf)
 - `POST /api/items/{id}/verwerten` — LinkedIn-Entwurf zum Eintrag (Claude serverseitig, Positionierungs-Prompt)
 - `POST /api/items/{id}/einordnen` — Resümee: Relevanz für Stefans Geschäft und IT-Leiter (hoch/mittel/gering + 2–4 Sätze, gespeichert am Eintrag)
+- `POST /api/pruefen` — `{entwurf, pruefer}` (`ronny`|`claudia`): IT-Leiter-Persona bewertet den Entwurf → `{score 1–10, feedback, name, rolle}`
+- `POST /api/ueberarbeiten` — `{entwurf, feedback:[…]}`: überarbeitet den Entwurf anhand des Prüfer-Feedbacks → `{draft}`
 - `DELETE /api/items/{id}` — Soft-Delete
 - `GET /api/export?days=7` — Wochen-Export: Wichtiges als Markdown-Download (gruppiert nach Content-Säule, inkl. Notizen; days 1–90)
 - `GET /healthz` — für Coolify-Healthcheck
