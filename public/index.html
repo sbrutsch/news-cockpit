@@ -489,6 +489,7 @@
     <div class="vw-foot">
       <button class="vw-btn primary" id="vwCopy" type="button" disabled>Kopieren</button>
       <button class="vw-btn" id="vwSave" type="button" disabled>Speichern</button>
+      <button class="vw-btn" id="vwLoop" type="button" disabled title="Beide Prüfer urteilen, bei Bedarf wird automatisch überarbeitet und erneut geprüft — bis ein Urteil mindestens 8/10 erreicht (max. 2 Überarbeitungen)">Prüfschleife</button>
       <button class="vw-btn" id="vwRevise" type="button" disabled>Mit Feedback überarbeiten</button>
       <button class="vw-btn" id="vwRetry" type="button" disabled>Neu generieren</button>
       <button class="vw-btn" id="vwCancel" type="button" style="margin-left:auto">Schließen</button>
@@ -1026,22 +1027,25 @@ function openDraft(d) {
   vw.item = null;
   vw.draftId = d.id;
   vw.quelleText = d.item_title ? "Grundlage: " + d.item_title : "Freier Entwurf";
+  vw.anweisung = "";
   vwShow();
   renderDraft(d.text);
 }
 
 /* ---------- Verwerten: LinkedIn-Entwurf ---------- */
-const vw = { item: null, draft: "", results: {}, include: {}, draftId: null, quelleText: "" };
+const vw = { item: null, draft: "", results: {}, include: {}, draftId: null,
+             quelleText: "", anweisung: "", laufend: false };
 
 function vwShow() { $("vwOverlay").hidden = false; }
 function vwHide() {
   $("vwOverlay").hidden = true;
   vw.item = null; vw.draft = ""; vw.results = {}; vw.include = {};
-  vw.draftId = null; vw.quelleText = "";
+  vw.draftId = null; vw.quelleText = ""; vw.anweisung = "";
   $("vwBody").classList.remove("two-col");
   $("vwRevise").disabled = true;
   $("vwRevise").textContent = "Mit Feedback überarbeiten";
   $("vwSave").disabled = true;
+  $("vwLoop").disabled = true;
   if (state.tab === "drafts") load(true).catch(e => toast(e.message));
 }
 
@@ -1058,6 +1062,7 @@ function vwLoading(text) {
   $("vwRetry").disabled = true;
   $("vwRevise").disabled = true;
   $("vwSave").disabled = true;
+  $("vwLoop").disabled = true;
 }
 
 function vwQuelleZeile(item) {
@@ -1080,6 +1085,7 @@ async function verwerten(item) {
   vw.results = {};
   vw.draftId = null;   // frisch generiert = beim Speichern ein neuer Bibliothekseintrag
   vw.quelleText = "";
+  vw.anweisung = "";
   vwShow();
   vwLoading();
   try {
@@ -1145,12 +1151,15 @@ function renderDraft(draft) {
   anw.rows = 2;
   anw.maxLength = 2000;
   anw.placeholder = "Regie-Anweisung für die Überarbeitung (optional) — z. B. „nur Claudias Vorschlag 2 umsetzen, Rest ignorieren“";
+  anw.value = vw.anweisung || "";  // bleibt über Überarbeitungs-Runden erhalten
+  anw.addEventListener("input", () => { vw.anweisung = anw.value; });
   zone.append(anw);
   body.append(zone);
 
-  $("vwCopy").disabled = false;
-  $("vwSave").disabled = false;
-  $("vwRetry").disabled = !vw.item;
+  $("vwCopy").disabled = vw.laufend;
+  $("vwSave").disabled = vw.laufend;
+  $("vwRetry").disabled = vw.laufend || !vw.item;
+  $("vwLoop").disabled = vw.laufend;
   syncUeberarbeiten();
 }
 
@@ -1172,7 +1181,7 @@ function pruefKarte(p) {
 
 async function pruefenLassen(p) {
   const karte = $("pk-" + p.key);
-  if (!karte) return;
+  if (!karte) return null;
   const kopf = karte.querySelector(".pruef-kopf");
   kopf.querySelectorAll(".pruef-start, .pruef-score, .pruef-check").forEach(n => n.remove());
   karte.querySelectorAll(".pruef-feedback, .pruef-fehler, .pruef-mini").forEach(n => n.remove());
@@ -1205,6 +1214,7 @@ async function pruefenLassen(p) {
     neu.addEventListener("click", () => pruefenLassen(p));
     kopf.append(neu);
     syncUeberarbeiten();
+    return r;
   } catch (e) {
     lade.remove();
     kopf.insertAdjacentElement("afterend", el("div", "pruef-fehler", e.message));
@@ -1212,6 +1222,7 @@ async function pruefenLassen(p) {
     retry.type = "button";
     retry.addEventListener("click", () => pruefenLassen(p));
     kopf.append(retry);
+    return null;
   }
 }
 
@@ -1225,7 +1236,7 @@ function syncUeberarbeiten() {
   const anz = ausgewaehltesFeedback().length;
   const btn = $("vwRevise");
   if (btn) {
-    btn.disabled = anz === 0;
+    btn.disabled = vw.laufend || anz === 0;
     btn.textContent = anz === 0 ? "Mit Feedback überarbeiten"
       : "Mit Feedback überarbeiten (" + anz + ")";
   }
@@ -1233,8 +1244,8 @@ function syncUeberarbeiten() {
 
 async function ueberarbeiten() {
   const feedback = ausgewaehltesFeedback();
-  if (!feedback.length) return;
-  const anweisung = ($("vwAnweisung") ? $("vwAnweisung").value : "").trim();
+  if (!feedback.length) return false;
+  const anweisung = (vw.anweisung || "").trim();
   const vorher = vw.draft;
   vwLoading("Überarbeite mit dem Feedback …");
   try {
@@ -1243,10 +1254,57 @@ async function ueberarbeiten() {
       body: JSON.stringify({ entwurf: vorher, feedback, anweisung })
     });
     renderDraft(data.draft);
-    toast("Überarbeitet — die Prüfer können erneut urteilen.");
+    if (!vw.laufend) toast("Überarbeitet — die Prüfer können erneut urteilen.");
+    return true;
   } catch (e) {
     renderDraft(vorher); // alten Entwurf zurückholen
     toast(e.message);
+    return false;
+  }
+}
+
+/* Prüfschleife: beide Prüfer urteilen parallel; reicht es nicht, wird mit
+   dem gesammelten Feedback überarbeitet und erneut geprüft. Stoppt, sobald
+   ein Urteil BESTANDEN_AB erreicht — oder nach MAX_UEBERARBEITUNGEN Runden. */
+const BESTANDEN_AB = 8;
+const MAX_UEBERARBEITUNGEN = 2;
+
+async function pruefSchleife() {
+  if (vw.laufend || !vw.draft.trim()) return;
+  vw.laufend = true;
+  ["vwCopy", "vwSave", "vwRetry", "vwRevise", "vwLoop"].forEach(id => { $(id).disabled = true; });
+  try {
+    for (let runde = 1; runde <= MAX_UEBERARBEITUNGEN + 1; runde++) {
+      if ($("vwOverlay").hidden) return;
+      const titel = document.querySelector("#vwBody .pruef-titel");
+      if (titel) titel.textContent = "PRÜFSTAND — RUNDE " + runde + " LÄUFT …";
+      const ergebnisse = (await Promise.all(PRUEFER_LISTE.map(p => pruefenLassen(p)))).filter(Boolean);
+      const t2 = document.querySelector("#vwBody .pruef-titel");
+      if (t2) t2.textContent = "PRÜFSTAND — WIE DIE ZIELGRUPPE URTEILT";
+      if (!ergebnisse.length) { toast("Prüfung fehlgeschlagen — bitte einzeln erneut versuchen."); return; }
+      const best = Math.max(...ergebnisse.map(r => r.score ?? 0));
+      if (best >= BESTANDEN_AB) {
+        toast("Bestanden in Runde " + runde + " — bestes Urteil " + best + "/10.");
+        return;
+      }
+      if (runde === MAX_UEBERARBEITUNGEN + 1) {
+        toast("Bestes Urteil nach " + MAX_UEBERARBEITUNGEN + " Überarbeitungen: " + best + "/10 — ab hier hilft eine Regie-Anweisung oder Handarbeit.");
+        return;
+      }
+      toast("Runde " + runde + ": bestes Urteil " + best + "/10 — überarbeite …");
+      if ($("vwOverlay").hidden) return;
+      const ok = await ueberarbeiten();
+      if (!ok) return;
+    }
+  } finally {
+    vw.laufend = false;
+    if (!$("vwOverlay").hidden && $("vwBody").querySelector("textarea.vw-draft")) {
+      $("vwCopy").disabled = false;
+      $("vwSave").disabled = false;
+      $("vwRetry").disabled = !vw.item;
+      $("vwLoop").disabled = false;
+      syncUeberarbeiten();
+    }
   }
 }
 
@@ -1286,6 +1344,7 @@ document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !$("vw
 $("vwRetry").addEventListener("click", () => { if (vw.item) verwerten(vw.item); });
 $("vwRevise").addEventListener("click", ueberarbeiten);
 $("vwSave").addEventListener("click", saveDraft);
+$("vwLoop").addEventListener("click", pruefSchleife);
 $("vwCopy").addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(vw.draft);

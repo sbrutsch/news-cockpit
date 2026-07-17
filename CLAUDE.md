@@ -81,6 +81,13 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   nach Säulen gruppiert inkl. Notizen; Download-Knopf in der Toolbar) und PWA
   (manifest.webmanifest, sw.js netz-zuerst ohne API-Caching, Icons via Pillow
   generiert). Auto-Deploy per GitHub-Webhook aktiv seit d48cfac.
+- **2026-07-17 (3):** **Prüfschleife (Auto-Modus).** Neuer Knopf im
+  Verwerten-Dialog automatisiert Stefans manuellen Ablauf: beide Prüfer
+  parallel → bestes Urteil < 8 → Überarbeitung mit gesammeltem Feedback →
+  erneut prüfen; Stopp bei Urteil ≥ 8 (BESTANDEN_AB) oder nach 2
+  Überarbeitungen (MAX_UEBERARBEITUNGEN). Rein clientseitig auf bestehenden
+  Endpunkten; Regie-Anweisung bleibt über Runden erhalten (vw.anweisung);
+  Knöpfe während des Laufs gesperrt; Abbruch-sicher bei Modal-Schließen.
 - **2026-07-17 (2):** **KI-Themen freigeschaltet + Qualitätslatte im Erstentwurf.**
   Stefans Befund 1: Scout mied KI-Themen — Ursache: Scout-Prompt nannte
   „KI-Einführung" als erstes Negativ-Beispiel und hatte kein KI-Suchfeld.
