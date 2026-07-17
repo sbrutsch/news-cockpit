@@ -266,8 +266,11 @@ def list_items(tab="new", q="", limit=50, offset=0, kind=""):
         like = f"%{q.lower()}%"
         where.append("(lower(title) LIKE ? OR lower(summary) LIKE ? OR lower(source) LIKE ?)")
         params += [like, like, like]
+    # Posteingangs-Logik: sortiert nach Eingang im Cockpit, nicht nach
+    # Erscheinungsdatum des Artikels — sonst "versteckt" sich ein heute
+    # gelieferter, aber älter erschienener Fund unter alten Datums-Trennern.
     sql = (f"SELECT {SELECT_COLS} FROM items WHERE {' AND '.join(where)} "
-           "ORDER BY COALESCE(published_at, ingested_at) DESC, id DESC "
+           "ORDER BY ingested_at DESC, id DESC "
            "LIMIT ? OFFSET ?")
     params += [max(1, min(int(limit), 200)), max(0, int(offset))]
     with cursor() as cur:

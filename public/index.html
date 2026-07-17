@@ -611,7 +611,8 @@ function render() {
   if (state.tab === "drafts") { renderDrafts(); return; }
   let lastLabel = null;
   state.items.forEach((item, i) => {
-    const label = dayLabel(item.published_at || item.ingested_at);
+    // Gruppierung nach Eingang — konsistent mit Sortierung und Tagesbriefing
+    const label = dayLabel(item.ingested_at);
     if (label !== lastLabel) {
       listEl.appendChild(el("li", "day-sep", label));
       lastLabel = label;
@@ -636,6 +637,16 @@ function dayLabel(iso) {
   const gestern = new Date(now); gestern.setDate(now.getDate() - 1);
   if (d.toDateString() === gestern.toDateString()) return "Gestern";
   return d.toLocaleDateString("de-DE", { day: "numeric", month: "long" });
+}
+
+function erschienenText(item) {
+  // Erscheinungsdatum nur zeigen, wenn es von Eingangstag abweicht
+  if (!item.published_at) return "";
+  const p = new Date(item.published_at), i = new Date(item.ingested_at);
+  if (isNaN(p) || isNaN(i) || p.toDateString() === i.toDateString()) return "";
+  const opts = { day: "numeric", month: "long" };
+  if (p.getFullYear() !== new Date().getFullYear()) opts.year = "numeric";
+  return "erschienen " + p.toLocaleDateString("de-DE", opts);
 }
 
 function renderBriefing() {
@@ -701,9 +712,15 @@ function entryNode(item, index) {
 
   const meta = el("div", "meta");
   if (item.source) meta.append(el("span", "source", item.source), el("span", "dot", "·"));
-  const t = el("span", "time", relTime(item.published_at || item.ingested_at));
-  t.title = absTime(item.published_at || item.ingested_at);
+  const t = el("span", "time", relTime(item.ingested_at));
+  t.title = "Eingegangen: " + absTime(item.ingested_at);
   meta.append(t);
+  const ersch = erschienenText(item);
+  if (ersch) {
+    const e = el("span", "time", ersch);
+    e.title = "Erscheinungsdatum des Originals: " + absTime(item.published_at);
+    meta.append(el("span", "dot", "·"), e);
+  }
   if (item.kind === "idee") meta.append(el("span", "chip idee", "Content-Idee"));
   if (item.kind === "zitat") meta.append(el("span", "chip zitat", "Zitat"));
   if (item.pillar) meta.append(el("span", "chip pillar", item.pillar));

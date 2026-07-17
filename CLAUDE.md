@@ -81,6 +81,13 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   nach Säulen gruppiert inkl. Notizen; Download-Knopf in der Toolbar) und PWA
   (manifest.webmanifest, sw.js netz-zuerst ohne API-Caching, Icons via Pillow
   generiert). Auto-Deploy per GitHub-Webhook aktiv seit d48cfac.
+- **2026-07-17:** **Posteingangs-Sortierung.** Stefans Fund: Briefing meldete
+  „heute 4 Fundstücke", Liste zeigte sie unter alten Datums-Trennern — Briefing
+  zählte nach `ingested_at`, Liste sortierte/gruppierte nach
+  `COALESCE(published_at, …)`. Fix: Liste + Tagestrenner + relTime konsequent
+  nach Eingang (`ingested_at`); Erscheinungsdatum bleibt als Zusatz sichtbar
+  („erschienen 14. Juli", nur bei Abweichung vom Eingangstag). Wochen-Export
+  bewusst unverändert (gruppiert nach Säule).
 - **2026-07-16 (2):** Prüfstand-Ausbau nach Stefans erstem Praxistest
   (Mercedes-Fall: Ronny 4, Claudia 7 → verschiedene Beiträge je Zielgruppe).
   **Breites Modal:** ab 1000px zweispaltig (Entwurf links, Prüfstand rechts,
