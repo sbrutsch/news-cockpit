@@ -88,7 +88,7 @@ def pruefen(entwurf, key):
     text = _claude_text(
         PRUEFER[key]["system"],
         f"Hier ist der zu bewertende LinkedIn-Beitrag:\n\n{entwurf}",
-        max_tokens=2500,
+        max_tokens=4000,
     )
     score, feedback = parse_score(text)
     return {"pruefer": key, "name": PRUEFER[key]["name"], "rolle": PRUEFER[key]["rolle"],

@@ -114,15 +114,20 @@ def _claude_text(system, user_content, max_tokens):
 
 
 def linkedin_entwurf(item):
-    return _claude_text(SYSTEM, _user_content(item), max_tokens=2000)
+    return _claude_text(SYSTEM, _user_content(item), max_tokens=6000)
 
 
 _UEBERARBEITEN_SYSTEM = SYSTEM + """
 
-Du erhältst einen bestehenden Entwurf plus das Feedback echter IT-Leiter aus der Zielgruppe. Überarbeite den Post so, dass er die berechtigten Kritikpunkte aufnimmt — ohne die Positionslogik zu verwässern oder in Gefälligkeit zu kippen. Nimm ernst, was substanziell ist; ignoriere, was den Kern verraten würde, und triff bei widersprüchlichem Feedback eine klare Entscheidung. Antworte NUR mit dem überarbeiteten Post-Text, ohne Vorwort oder Kommentar."""
+Du erhältst einen bestehenden Entwurf plus das Feedback echter IT-Leiter aus der Zielgruppe. Überarbeite den Post so, dass er die berechtigten Kritikpunkte aufnimmt — ohne die Positionslogik zu verwässern oder in Gefälligkeit zu kippen. Nimm ernst, was substanziell ist; ignoriere, was den Kern verraten würde, und triff bei widersprüchlichem Feedback eine klare Entscheidung. Überarbeiten heißt schärfen, nicht verlängern: Die neue Fassung bleibt ein LinkedIn-Post innerhalb der Wortgrenze — wenn Feedback neue Elemente fordert, fliegt dafür Schwächeres raus. Antworte NUR mit dem überarbeiteten Post-Text, ohne Vorwort oder Kommentar."""
+
+_ABSCHNITT_HINWEIS = "[Hinweis: Antwort wurde am Token-Limit abgeschnitten]"
 
 
 def ueberarbeiten(entwurf, feedback_liste, anweisung=""):
+    # Falls eine frühere Runde abgeschnitten wurde: Hinweis-Zeile nicht
+    # als Post-Inhalt in die nächste Runde schleppen
+    entwurf = entwurf.replace(_ABSCHNITT_HINWEIS, "").strip()
     bloecke = []
     for f in feedback_liste:
         kopf = f.get("name", "IT-Leiter")
@@ -137,7 +142,7 @@ def ueberarbeiten(entwurf, feedback_liste, anweisung=""):
     if anweisung:
         user += ("\n\nRegie-Anweisung von Stefan — sie hat Vorrang vor dem Prüfer-Feedback "
                  f"und entscheidet, was davon umgesetzt wird: {anweisung.strip()}")
-    return _claude_text(_UEBERARBEITEN_SYSTEM, user, max_tokens=2000)
+    return _claude_text(_UEBERARBEITEN_SYSTEM, user, max_tokens=6000)
 
 
 EINORDNUNG_SYSTEM = """Du bewertest Fundstücke für Stefan Brutscher — Sparringspartner für IT-Leiter, deren wichtige Entscheidungen im Management-Gremium zu scheitern drohen. Positionierung: Entscheidungssicherheit in kritischen Managementmomenten, "Damit Entscheidungen durchgehen." Zielgruppe: IT-Leiter, CIOs, IT-Bereichsleiter im DACH-Raum — fachlich stark, unter Druck im Management.

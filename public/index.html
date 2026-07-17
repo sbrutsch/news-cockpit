@@ -1028,19 +1028,20 @@ function openDraft(d) {
   vw.draftId = d.id;
   vw.quelleText = d.item_title ? "Grundlage: " + d.item_title : "Freier Entwurf";
   vw.anweisung = "";
+  vw.gesichert = d.text;  // unverändertes Schließen braucht keine Nachfrage
   vwShow();
   renderDraft(d.text);
 }
 
 /* ---------- Verwerten: LinkedIn-Entwurf ---------- */
 const vw = { item: null, draft: "", results: {}, include: {}, draftId: null,
-             quelleText: "", anweisung: "", laufend: false };
+             quelleText: "", anweisung: "", laufend: false, gesichert: null };
 
 function vwShow() { $("vwOverlay").hidden = false; }
 function vwHide() {
   $("vwOverlay").hidden = true;
   vw.item = null; vw.draft = ""; vw.results = {}; vw.include = {};
-  vw.draftId = null; vw.quelleText = ""; vw.anweisung = "";
+  vw.draftId = null; vw.quelleText = ""; vw.anweisung = ""; vw.gesichert = null;
   $("vwBody").classList.remove("two-col");
   $("vwRevise").disabled = true;
   $("vwRevise").textContent = "Mit Feedback überarbeiten";
@@ -1086,6 +1087,7 @@ async function verwerten(item) {
   vw.draftId = null;   // frisch generiert = beim Speichern ein neuer Bibliothekseintrag
   vw.quelleText = "";
   vw.anweisung = "";
+  vw.gesichert = null;
   vwShow();
   vwLoading();
   try {
@@ -1312,21 +1314,24 @@ async function saveDraft() {
   if (!vw.draft.trim()) { toast("Leerer Entwurf — nichts zu speichern."); return; }
   const btn = $("vwSave");
   btn.disabled = true;
+  const text = vw.draft;
   const scores = Object.values(vw.results || {}).map(r => ({ pruefer: r.pruefer, name: r.name, score: r.score }));
   try {
     if (vw.draftId) {
-      const body = { text: vw.draft };
+      const body = { text };
       if (scores.length) body.scores = scores; // alte Urteile nicht mit leerer Liste überschreiben
       await api("/api/drafts/" + vw.draftId, { method: "PATCH", body: JSON.stringify(body) });
+      vw.gesichert = text;
       toast("Entwurf aktualisiert.");
     } else {
       const d = await api("/api/drafts", { method: "POST", body: JSON.stringify({
-        text: vw.draft,
+        text,
         item_id: vw.item ? vw.item.id : null,
         item_title: vw.item ? vw.item.title : "",
         scores
       }) });
       vw.draftId = d.id;
+      vw.gesichert = text;
       state.counts.drafts = (state.counts.drafts || 0) + 1;
       render_counts_only();
       toast("Gespeichert — zu finden im Tab „Entwürfe“.");
@@ -1337,10 +1342,20 @@ async function saveDraft() {
   btn.disabled = false;
 }
 
-$("vwClose").addEventListener("click", vwHide);
-$("vwCancel").addEventListener("click", vwHide);
-$("vwOverlay").addEventListener("click", (ev) => { if (ev.target === $("vwOverlay")) vwHide(); });
-document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !$("vwOverlay").hidden) vwHide(); });
+/* Schließen mit Verlust-Schutz: Klick NEBEN das Fenster schließt bewusst
+   NICHT mehr (dort liegt editierbare Arbeit). Explizites Schließen fragt
+   nach, wenn die Prüfschleife läuft oder ungesicherte Änderungen da sind. */
+function vwSchliessenAnfragen() {
+  if (vw.laufend) {
+    if (!confirm("Die Prüfschleife läuft noch — wirklich abbrechen und schließen?")) return;
+  } else if (vw.draft.trim() && vw.draft !== vw.gesichert) {
+    if (!confirm("Der Entwurf ist nicht gespeichert und geht beim Schließen verloren.\n(Der Speichern-Knopf legt ihn im Tab „Entwürfe“ ab.)\n\nTrotzdem schließen?")) return;
+  }
+  vwHide();
+}
+$("vwClose").addEventListener("click", vwSchliessenAnfragen);
+$("vwCancel").addEventListener("click", vwSchliessenAnfragen);
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !$("vwOverlay").hidden) vwSchliessenAnfragen(); });
 $("vwRetry").addEventListener("click", () => { if (vw.item) verwerten(vw.item); });
 $("vwRevise").addEventListener("click", ueberarbeiten);
 $("vwSave").addEventListener("click", saveDraft);

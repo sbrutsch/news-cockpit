@@ -81,6 +81,14 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   nach Säulen gruppiert inkl. Notizen; Download-Knopf in der Toolbar) und PWA
   (manifest.webmanifest, sw.js netz-zuerst ohne API-Caching, Icons via Pillow
   generiert). Auto-Deploy per GitHub-Webhook aktiv seit d48cfac.
+- **2026-07-17 (4):** **Verlust-Schutz + Token-Limit-Fix** (Stefans Befunde
+  aus Runde 3/4 der Praxis). (a) Klick neben das Modal schließt NICHT mehr;
+  explizites Schließen (×, Schließen, Esc) fragt nach, wenn die Prüfschleife
+  läuft oder der Entwurf vom letzten gespeicherten Stand abweicht
+  (vw.gesichert; openDraft/saveDraft setzen ihn). (b) max_tokens rauf:
+  Entwurf/Überarbeiten 2000→6000, Prüfen 2500→4000; Abschnitt-Hinweis wird
+  vor der nächsten Runde aus dem Entwurf entfernt; _UEBERARBEITEN_SYSTEM:
+  „schärfen, nicht verlängern" gegen rundenweises Aufblähen.
 - **2026-07-17 (3):** **Prüfschleife (Auto-Modus).** Neuer Knopf im
   Verwerten-Dialog automatisiert Stefans manuellen Ablauf: beide Prüfer
   parallel → bestes Urteil < 8 → Überarbeitung mit gesammeltem Feedback →
