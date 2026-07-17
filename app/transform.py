@@ -40,10 +40,16 @@ Positionierung (verbindlich): Entscheidungssicherheit in kritischen Managementmo
 
 Schreibregeln:
 - Deutsch. Direkt, präzise, auf Augenhöhe. Ziel-Reaktion des Lesers: "Das ist genau meine Situation."
-- Hook in der ersten Zeile: eine konkrete Situation oder eine überraschende Zahl. Danach kurze Absätze mit viel Weißraum. 120 bis 220 Wörter.
+- Hook in der ersten Zeile: eine konkrete Situation oder eine überraschende Zahl. Die ersten zwei Zeilen tragen die Position — wer nach dem ersten Absatz nicht weiß, worauf der Post hinauswill, scrollt weg. Danach kurze Absätze mit viel Weißraum. 120 bis 250 Wörter.
 - Keine Emojis. Höchstens 1-2 dezente Hashtags am Ende, gerne auch keine. Kein Motivations-Pathos, keine KI-Floskeln ("In der heutigen schnelllebigen Welt...", "Lassen Sie uns ehrlich sein").
 - Die Quelle nicht nacherzählen: den Entscheidungs- und Gremien-Winkel herausarbeiten. Der Leser soll sich wiedererkennen, nicht informiert fühlen.
-- Ende: eine Frage oder pointierte These, die Kommentare von IT-Leitern provoziert — kein Verkaufs-Aufruf.
+
+Qualitätslatte — der Entwurf wird von zwei sehr kritischen IT-Leitern aus der Zielgruppe gegengelesen (ein budgetverantwortlicher Praktiker mit 30 Jahren Betrieb, eine 60-Sekunden-Leserin auf Director-Ebene im Konzern). Schreibe so, dass er im ERSTEN Anlauf besteht:
+- Diagnose nie ohne Angebot: mindestens ein sofort anwendbares Element — ein kleines Prüfraster, zwei bis drei Selbstprüf-Fragen oder ein Formulierungsbaustein für die nächste Gremiumssitzung. Der Leser muss morgen etwas damit tun können.
+- Behauptung und Beleg trennen: Interpretation als Interpretation kennzeichnen, nichts als Fakt setzen, was Deutung ist. Keine erfundenen Zahlen oder Studien. Keine Ferndiagnosen über benannte reale Personen — deren Motive kennst du nicht.
+- Konzern-Beispiele in die Realität von Mittelstand und öffentlicher IT übersetzen — sonst bleibt es Bühnen-Kommentar, an dem die Hälfte der Zielgruppe vorbeigeht.
+- Verboten: "Mindset", "Transformationsreise", "Führung auf Augenhöhe" als Floskel, Adjektiv-Ketten, Berater-Selbstinszenierung.
+- Ende: eine konkret beantwortbare Frage (in einem Kommentar-Satz zu beantworten) oder eine pointierte These — keine offene Rhetorikfrage ohne Angebot, sie zu beantworten. Kein Verkaufs-Aufruf.
 - Antworte NUR mit dem Post-Text. Keine Anführungszeichen drumherum, kein Kommentar, keine Überschrift."""
 
 _KIND_ANWEISUNG = {
@@ -140,7 +146,7 @@ Bewerte das Fundstück in zwei Dimensionen:
 1. Nutzen für Stefans Geschäft: Taugt es als Content-Aufhänger, Gesprächseinstieg im Sparring, Keynote-Material oder Sichtbarkeits-Thema?
 2. Betroffenheit seiner Zielgruppe: Berührt es die Gremien-Realität von IT-Leitern — Budgetkonflikte, Durchsetzung, Machtdynamik, Rechtfertigungsdruck?
 
-Sei ehrlich und streng: "hoch" nur, wenn es direkt auf Entscheidungs- und Gremien-Momente einzahlt. Generische IT-Trends ohne Entscheidungswinkel sind "gering" — auch wenn sie technisch spannend sind. Keine Gefälligkeitsbewertung.
+Sei ehrlich und streng: "hoch" nur, wenn es direkt auf Entscheidungs- und Gremien-Momente einzahlt. Generische IT-Trends ohne Entscheidungswinkel sind "gering" — auch wenn sie technisch spannend sind. Keine Gefälligkeitsbewertung. Das Technologie-Label entscheidet dabei nicht: Auch ein KI-Thema ist "hoch", wenn es Budget-, Macht- oder Führungsrealität im Gremium berührt — KI nicht reflexhaft als Hype aussortieren.
 
 Antworte AUSSCHLIESSLICH mit einem JSON-Objekt, ohne Markdown, ohne Kommentar:
 {"relevanz": "hoch" oder "mittel" oder "gering", "resumee": "2 bis 4 Sätze auf Deutsch: Was bedeutet das konkret für Stefans Geschäft und seine IT-Leiter? Direkt und konkret, keine Floskeln. Bei gering: kurz begründen, warum es nicht einzahlt."}"""

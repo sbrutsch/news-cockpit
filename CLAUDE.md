@@ -81,6 +81,18 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   nach Säulen gruppiert inkl. Notizen; Download-Knopf in der Toolbar) und PWA
   (manifest.webmanifest, sw.js netz-zuerst ohne API-Caching, Icons via Pillow
   generiert). Auto-Deploy per GitHub-Webhook aktiv seit d48cfac.
+- **2026-07-17 (2):** **KI-Themen freigeschaltet + Qualitätslatte im Erstentwurf.**
+  Stefans Befund 1: Scout mied KI-Themen — Ursache: Scout-Prompt nannte
+  „KI-Einführung" als erstes Negativ-Beispiel und hatte kein KI-Suchfeld.
+  Fix in n8n-Workflow (1cBLyj7iC9dYW4gT, per API, bleibt aktiv) UND Quelle
+  KI/KI-Agenten/news-routine.md: Ausschluss nur noch „Tech als Selbstzweck",
+  KI ausdrücklich Kernmaterial bei Führungs-/Entscheidungswinkel; neues
+  Suchfeld „KI und Führung". EINORDNUNG_SYSTEM: Technologie-Label entscheidet
+  nicht. Befund 2: Erstentwürfe fielen bei den Prüfern mehrfach durch —
+  SYSTEM in transform.py um „Qualitätslatte" erweitert (destilliert aus den
+  wiederkehrenden Ronny/Claudia-Kritiken): Diagnose nie ohne anwendbares
+  Element, Behauptung/Beleg trennen, keine Ferndiagnosen über reale Personen,
+  Konzern→Mittelstand übersetzen, beantwortbare Schlussfrage; 120–250 Wörter.
 - **2026-07-17:** **Posteingangs-Sortierung.** Stefans Fund: Briefing meldete
   „heute 4 Fundstücke", Liste zeigte sie unter alten Datums-Trennern — Briefing
   zählte nach `ingested_at`, Liste sortierte/gruppierte nach
