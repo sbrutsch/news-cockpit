@@ -332,6 +332,7 @@
   .pruef-avatar { width: 34px; height: 34px; border-radius: 50%; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-weight: 700; font-size: 15px; color: var(--bg); }
   .pruef-avatar.ronny { background: linear-gradient(135deg, #6E8BB8, #3E577F); }
   .pruef-avatar.claudia { background: linear-gradient(135deg, #C98BA8, #9E5E7C); }
+  .pruef-avatar.markus { background: linear-gradient(135deg, #7FB89B, #4E7F66); }
   .pruef-wer { flex: 1; min-width: 0; }
   .pruef-name { font-size: 14px; font-weight: 650; color: var(--text); }
   .pruef-rolle { font-size: 12px; color: var(--faint); }
@@ -1078,7 +1079,8 @@ function vwQuelleZeile(item) {
 
 const PRUEFER_LISTE = [
   { key: "ronny", name: "Ronny Berger", rolle: "IT-Leiter, 30 Jahre Praxis", initial: "R" },
-  { key: "claudia", name: "Claudia Brenner", rolle: "IT-Directorin, Industrie", initial: "C" }
+  { key: "claudia", name: "Claudia Brenner", rolle: "IT-Directorin, Industrie", initial: "C" },
+  { key: "markus", name: "Markus Leitner", rolle: "Head of IT, Mittelstand — erste 100 Tage", initial: "M" }
 ];
 
 async function verwerten(item) {

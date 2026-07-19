@@ -81,6 +81,15 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   nach Säulen gruppiert inkl. Notizen; Download-Knopf in der Toolbar) und PWA
   (manifest.webmanifest, sw.js netz-zuerst ohne API-Caching, Icons via Pillow
   generiert). Auto-Deploy per GitHub-Webhook aktiv seit d48cfac.
+- **2026-07-17 (5):** **Dritter Prüfer: Markus Leitner** — destilliert und
+  hart anonymisiert aus Stefans realem IT-Leiter-Interview vom 17.07.
+  (Transkript auf Desktop; Firma/Branche/Namen/Historie im Code bewusst
+  entfernt, Tabu-Begriffe-Check gelaufen). Archetyp: KI-affiner
+  Erste-100-Tage-Head-of-IT im Mittelstand, Pilot erfolgreich, kämpft mit
+  Change-Widerstand der Head-of-Ebene; Struktur SO LESE ICH DAS / WAS ICH
+  MITNEHME / WAS MIR FEHLT. Dritte Karte im Prüfstand (grün-teal), Schleife
+  fragt jetzt alle drei. Aus dem Interview offen: Transkript-Eingangskanal
+  (Stefan hat sich vorerst nur für die Persona entschieden).
 - **2026-07-17 (4):** **Verlust-Schutz + Token-Limit-Fix** (Stefans Befunde
   aus Runde 3/4 der Praxis). (a) Klick neben das Modal schließt NICHT mehr;
   explizites Schließen (×, Schließen, Esc) fragt nach, wenn die Prüfschleife
