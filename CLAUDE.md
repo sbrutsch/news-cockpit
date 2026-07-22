@@ -81,6 +81,20 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   nach Säulen gruppiert inkl. Notizen; Download-Knopf in der Toolbar) und PWA
   (manifest.webmanifest, sw.js netz-zuerst ohne API-Caching, Icons via Pillow
   generiert). Auto-Deploy per GitHub-Webhook aktiv seit d48cfac.
+- **2026-07-17 (6):** **Layout-Fix, Schleifen-Stopp, Absturz-Sicherung**
+  (Stefans Befunde). (a) Sechs Fußleisten-Knöpfe sprengten das 640px-Panel
+  (Screenshot: umgebrochene Riesen-Knöpfe, „Schließen" ragte raus) →
+  vw-foot flex-wrap, „Mit Feedback überarbeiten"→„Überarbeiten", Panel-Breite
+  hängt an .vw-panel.breit und bleibt während Überarbeitungs-Laden stehen
+  (kein Springen 1160↔640). (b) Prüfschleife wirkte endlos/unaufhaltbar
+  (3 Prüfer × 3 Runden ≈ 5-7 Min, Karten resetten, Toasts flüchtig; Schleife
+  selbst ist hart gedeckelt — Code + Test): Knopf wird während des Laufs zum
+  „Stopp" (greift am nächsten Zwischenschritt), Titel zeigt „RUNDE n VON 3"
+  und bleibendes Fazit, Karten-Knöpfe während des Laufs gesperrt
+  (pruefenLassen-Guard). (c) Chrome-Absturz kostete 4 Runden Arbeit →
+  Auto-Sicherung in localStorage (cockpit_vw_autosave, bei jedem
+  renderDraft/Tastendruck; bewusstes Schließen räumt auf) + Wiederherstellungs-
+  Leiste beim Start („Öffnen"/„Verwerfen", 72h-Verfall).
 - **2026-07-17 (5):** **Dritter Prüfer: Markus Leitner** — destilliert und
   hart anonymisiert aus Stefans realem IT-Leiter-Interview vom 17.07.
   (Transkript auf Desktop; Firma/Branche/Namen/Historie im Code bewusst

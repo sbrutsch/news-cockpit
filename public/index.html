@@ -316,7 +316,7 @@
   .vw-dots span:nth-child(3) { animation-delay: .4s; }
   @keyframes vwpulse { 0%, 100% { opacity: .25; transform: scale(.85); } 50% { opacity: 1; transform: scale(1); } }
   .vw-error { color: var(--rot); font-size: 14px; padding: 30px 0; text-align: center; }
-  .vw-foot { display: flex; gap: 10px; padding: 14px 22px 18px; border-top: 1px solid var(--line-soft); }
+  .vw-foot { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px 22px 18px; border-top: 1px solid var(--line-soft); }
   .vw-btn { padding: 9px 18px; border-radius: 9px; font-size: 13.5px; font-weight: 700; border: 1px solid var(--line-soft); color: var(--muted); transition: all .15s; }
   .vw-btn:hover { color: var(--text); border-color: var(--line); background: var(--elev); }
   .vw-btn.primary { background: var(--text); color: var(--bg); border-color: transparent; }
@@ -365,9 +365,11 @@
   }
   textarea.vw-draft:focus { box-shadow: -14px 0 0 -12px var(--rot); }
 
-  /* Breites Zwei-Spalten-Modal auf dem Desktop: Entwurf links, Prüfstand rechts */
+  /* Breites Zwei-Spalten-Modal auf dem Desktop: Entwurf links, Prüfstand rechts.
+     Die Breite hängt an .breit (bleibt während Überarbeitungs-Laden erhalten),
+     damit das Fenster nicht bei jeder Runde schmal/breit springt. */
   @media (min-width: 1000px) {
-    .vw-panel:has(.two-col) { max-width: 1160px; }
+    .vw-panel.breit { max-width: 1160px; }
     .vw-body.two-col { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 0 30px; align-items: start; }
     .vw-body.two-col .pruef-zone {
       border-top: none; margin-top: 0; padding-top: 0;
@@ -390,6 +392,15 @@
   }
   .entry .d-text.open { display: block; -webkit-line-clamp: none; }
   .actions button.check-on { color: #6FCF97; }
+
+  /* Wiederherstellungs-Leiste nach Absturz/Reload */
+  .restore-bar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--amber-dim); border: 1px solid rgba(227,179,79,0.4);
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 18px;
+    font-size: 13.5px; color: var(--text);
+  }
+  .restore-bar span { flex: 1; min-width: 200px; }
 
   /* ---------- Toast ---------- */
   #toast {
@@ -490,8 +501,8 @@
     <div class="vw-foot">
       <button class="vw-btn primary" id="vwCopy" type="button" disabled>Kopieren</button>
       <button class="vw-btn" id="vwSave" type="button" disabled>Speichern</button>
-      <button class="vw-btn" id="vwLoop" type="button" disabled title="Beide Prüfer urteilen, bei Bedarf wird automatisch überarbeitet und erneut geprüft — bis ein Urteil mindestens 8/10 erreicht (max. 2 Überarbeitungen)">Prüfschleife</button>
-      <button class="vw-btn" id="vwRevise" type="button" disabled>Mit Feedback überarbeiten</button>
+      <button class="vw-btn" id="vwLoop" type="button" disabled title="Alle Prüfer urteilen; bei Bedarf wird automatisch überarbeitet und erneut geprüft — bis ein Urteil mindestens 8/10 erreicht (max. 2 Überarbeitungen). Während des Laufs wird dieser Knopf zum Stopp.">Prüfschleife</button>
+      <button class="vw-btn" id="vwRevise" type="button" disabled title="Überarbeitet den Entwurf mit dem angehakten Prüfer-Feedback">Überarbeiten</button>
       <button class="vw-btn" id="vwRetry" type="button" disabled>Neu generieren</button>
       <button class="vw-btn" id="vwCancel" type="button" style="margin-left:auto">Schließen</button>
     </div>
@@ -557,6 +568,7 @@ $("loginForm").addEventListener("submit", async (ev) => {
     $("pw").value = "";
     showApp();
     await load(true);
+    checkAutosave();
   } catch (e) {
     err.textContent = e.message === "nicht angemeldet" ? "Falsches Passwort" : e.message;
     const box = document.querySelector(".login-box");
@@ -1036,7 +1048,7 @@ function openDraft(d) {
 
 /* ---------- Verwerten: LinkedIn-Entwurf ---------- */
 const vw = { item: null, draft: "", results: {}, include: {}, draftId: null,
-             quelleText: "", anweisung: "", laufend: false, gesichert: null };
+             quelleText: "", anweisung: "", laufend: false, stoppen: false, gesichert: null };
 
 function vwShow() { $("vwOverlay").hidden = false; }
 function vwHide() {
@@ -1044,10 +1056,14 @@ function vwHide() {
   vw.item = null; vw.draft = ""; vw.results = {}; vw.include = {};
   vw.draftId = null; vw.quelleText = ""; vw.anweisung = ""; vw.gesichert = null;
   $("vwBody").classList.remove("two-col");
+  document.querySelector(".vw-panel").classList.remove("breit");
   $("vwRevise").disabled = true;
-  $("vwRevise").textContent = "Mit Feedback überarbeiten";
+  $("vwRevise").textContent = "Überarbeiten";
   $("vwSave").disabled = true;
   $("vwLoop").disabled = true;
+  // Bewusstes Schließen = Auto-Sicherung wird nicht mehr gebraucht
+  try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* egal */ }
+  const bar = $("restoreBar"); if (bar) bar.remove();
   if (state.tab === "drafts") load(true).catch(e => toast(e.message));
 }
 
@@ -1121,6 +1137,7 @@ function renderDraft(draft) {
   const body = $("vwBody");
   body.textContent = "";
   body.classList.add("two-col");
+  document.querySelector(".vw-panel").classList.add("breit");
 
   // Linke Spalte: Quelle + direkt editierbarer Entwurf
   const main = el("div", "vw-main");
@@ -1131,7 +1148,7 @@ function renderDraft(draft) {
   ta.value = draft;
   ta.maxLength = 12000;
   ta.spellcheck = false;
-  ta.addEventListener("input", () => { vw.draft = ta.value; });
+  ta.addEventListener("input", () => { vw.draft = ta.value; autosichern(); });
   if ("fieldSizing" in ta.style) {
     ta.style.fieldSizing = "content"; // Browser hält die Höhe selbst aktuell
   } else {
@@ -1165,6 +1182,59 @@ function renderDraft(draft) {
   $("vwRetry").disabled = vw.laufend || !vw.item;
   $("vwLoop").disabled = vw.laufend;
   syncUeberarbeiten();
+  autosichern();
+}
+
+/* ---------- Auto-Sicherung: übersteht Browser-Absturz und Reload ---------- */
+const AUTOSAVE_KEY = "cockpit_vw_autosave";
+
+function autosichern() {
+  try {
+    if (!vw.draft.trim()) return;
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+      draft: vw.draft,
+      anweisung: vw.anweisung || "",
+      quelle: vw.item ? vwQuelleZeile(vw.item) : (vw.quelleText || "Wiederhergestellter Entwurf"),
+      draftId: vw.draftId,
+      ts: Date.now()
+    }));
+  } catch { /* Speicher voll o. ä. — Sicherung ist Komfort, kein Muss */ }
+}
+
+function checkAutosave() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || "null"); } catch { data = null; }
+  if (!data || !data.draft || !data.draft.trim()) return;
+  if (Date.now() - (data.ts || 0) > 72 * 3600 * 1000) {
+    try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* egal */ }
+    return;
+  }
+  if ($("restoreBar")) return;
+  const bar = el("div", "restore-bar");
+  bar.id = "restoreBar";
+  const wann = new Date(data.ts).toLocaleString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  bar.append(el("span", "", "Nicht gesicherter LinkedIn-Entwurf gefunden (Stand " + wann + " Uhr) — vermutlich durch Absturz oder Neuladen unterbrochen."));
+  const oeffnen = el("button", "vw-btn primary", "Öffnen");
+  oeffnen.type = "button";
+  oeffnen.addEventListener("click", () => {
+    bar.remove();
+    vw.item = null;
+    vw.draftId = data.draftId || null;
+    vw.quelleText = (data.quelle || "Wiederhergestellter Entwurf");
+    vw.anweisung = data.anweisung || "";
+    vw.gesichert = null;
+    vwShow();
+    renderDraft(data.draft);
+  });
+  const weg = el("button", "vw-btn", "Verwerfen");
+  weg.type = "button";
+  weg.addEventListener("click", () => {
+    try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* egal */ }
+    bar.remove();
+  });
+  bar.append(oeffnen, weg);
+  const main = document.querySelector("main");
+  main.insertBefore(bar, main.firstChild);
 }
 
 function pruefKarte(p) {
@@ -1183,7 +1253,8 @@ function pruefKarte(p) {
   return karte;
 }
 
-async function pruefenLassen(p) {
+async function pruefenLassen(p, ausSchleife) {
+  if (vw.laufend && !ausSchleife) return null; // Karten-Knöpfe während der Schleife gesperrt
   const karte = $("pk-" + p.key);
   if (!karte) return null;
   const kopf = karte.querySelector(".pruef-kopf");
@@ -1241,8 +1312,7 @@ function syncUeberarbeiten() {
   const btn = $("vwRevise");
   if (btn) {
     btn.disabled = vw.laufend || anz === 0;
-    btn.textContent = anz === 0 ? "Mit Feedback überarbeiten"
-      : "Mit Feedback überarbeiten (" + anz + ")";
+    btn.textContent = anz === 0 ? "Überarbeiten" : "Überarbeiten (" + anz + ")";
   }
 }
 
@@ -1276,38 +1346,56 @@ const MAX_UEBERARBEITUNGEN = 2;
 async function pruefSchleife() {
   if (vw.laufend || !vw.draft.trim()) return;
   vw.laufend = true;
-  ["vwCopy", "vwSave", "vwRetry", "vwRevise", "vwLoop"].forEach(id => { $(id).disabled = true; });
+  vw.stoppen = false;
+  const loopBtn = $("vwLoop");
+  loopBtn.textContent = "Stopp";
+  loopBtn.title = "Prüfschleife anhalten — der aktuelle Stand bleibt stehen";
+  ["vwCopy", "vwSave", "vwRetry", "vwRevise"].forEach(id => { $(id).disabled = true; });
+  loopBtn.disabled = false; // bleibt bedienbar: er ist jetzt der Stopp-Knopf
+  const titelEl = () => document.querySelector("#vwBody .pruef-titel");
+  let fazit = "";
   try {
     for (let runde = 1; runde <= MAX_UEBERARBEITUNGEN + 1; runde++) {
-      if ($("vwOverlay").hidden) return;
-      const titel = document.querySelector("#vwBody .pruef-titel");
-      if (titel) titel.textContent = "PRÜFSTAND — RUNDE " + runde + " LÄUFT …";
-      const ergebnisse = (await Promise.all(PRUEFER_LISTE.map(p => pruefenLassen(p)))).filter(Boolean);
-      const t2 = document.querySelector("#vwBody .pruef-titel");
-      if (t2) t2.textContent = "PRÜFSTAND — WIE DIE ZIELGRUPPE URTEILT";
-      if (!ergebnisse.length) { toast("Prüfung fehlgeschlagen — bitte einzeln erneut versuchen."); return; }
+      if ($("vwOverlay").hidden || vw.stoppen) { fazit = "SCHLEIFE GESTOPPT"; return; }
+      const t = titelEl();
+      if (t) t.textContent = "PRÜFSTAND — RUNDE " + runde + " VON " + (MAX_UEBERARBEITUNGEN + 1) + " LÄUFT …";
+      const ergebnisse = (await Promise.all(PRUEFER_LISTE.map(p => pruefenLassen(p, true)))).filter(Boolean);
+      if (!ergebnisse.length) {
+        fazit = "PRÜFUNG FEHLGESCHLAGEN";
+        toast("Prüfung fehlgeschlagen — bitte einzeln erneut versuchen.");
+        return;
+      }
       const best = Math.max(...ergebnisse.map(r => r.score ?? 0));
       if (best >= BESTANDEN_AB) {
+        fazit = "BESTANDEN IN RUNDE " + runde + " — BESTES URTEIL " + best + "/10";
         toast("Bestanden in Runde " + runde + " — bestes Urteil " + best + "/10.");
         return;
       }
+      if (vw.stoppen) { fazit = "SCHLEIFE GESTOPPT — BESTES URTEIL " + best + "/10"; return; }
       if (runde === MAX_UEBERARBEITUNGEN + 1) {
+        fazit = "SCHLEIFE BEENDET — BESTES URTEIL " + best + "/10";
         toast("Bestes Urteil nach " + MAX_UEBERARBEITUNGEN + " Überarbeitungen: " + best + "/10 — ab hier hilft eine Regie-Anweisung oder Handarbeit.");
         return;
       }
       toast("Runde " + runde + ": bestes Urteil " + best + "/10 — überarbeite …");
-      if ($("vwOverlay").hidden) return;
       const ok = await ueberarbeiten();
-      if (!ok) return;
+      if (!ok) { fazit = "ABGEBROCHEN — FEHLER BEI DER ÜBERARBEITUNG"; return; }
     }
   } finally {
     vw.laufend = false;
+    vw.stoppen = false;
+    loopBtn.textContent = "Prüfschleife";
+    loopBtn.title = "Alle Prüfer urteilen; bei Bedarf wird automatisch überarbeitet und erneut geprüft — bis ein Urteil mindestens 8/10 erreicht (max. 2 Überarbeitungen). Während des Laufs wird dieser Knopf zum Stopp.";
+    const t = titelEl();
+    if (t && fazit) t.textContent = "PRÜFSTAND — " + fazit;
     if (!$("vwOverlay").hidden && $("vwBody").querySelector("textarea.vw-draft")) {
       $("vwCopy").disabled = false;
       $("vwSave").disabled = false;
       $("vwRetry").disabled = !vw.item;
-      $("vwLoop").disabled = false;
+      loopBtn.disabled = false;
       syncUeberarbeiten();
+    } else {
+      loopBtn.disabled = true;
     }
   }
 }
@@ -1361,7 +1449,16 @@ document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !$("vw
 $("vwRetry").addEventListener("click", () => { if (vw.item) verwerten(vw.item); });
 $("vwRevise").addEventListener("click", ueberarbeiten);
 $("vwSave").addEventListener("click", saveDraft);
-$("vwLoop").addEventListener("click", pruefSchleife);
+$("vwLoop").addEventListener("click", () => {
+  if (vw.laufend) {
+    // Läuft bereits → Knopf wirkt als Stopp (greift am nächsten Zwischenschritt)
+    vw.stoppen = true;
+    $("vwLoop").disabled = true;
+    $("vwLoop").textContent = "Stoppe …";
+  } else {
+    pruefSchleife();
+  }
+});
 $("vwCopy").addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(vw.draft);
@@ -1459,6 +1556,7 @@ if ("serviceWorker" in navigator) {
     await api("/api/me");
     showApp();
     await load(true);
+    checkAutosave();
   } catch { /* showLogin() lief bereits über den 401-Pfad */ }
 })();
 </script>
