@@ -81,6 +81,13 @@ Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
   nach Säulen gruppiert inkl. Notizen; Download-Knopf in der Toolbar) und PWA
   (manifest.webmanifest, sw.js netz-zuerst ohne API-Caching, Icons via Pillow
   generiert). Auto-Deploy per GitHub-Webhook aktiv seit d48cfac.
+- **2026-07-22:** **Update-Erkennung.** Stefans Doppel-Überarbeitungs-Meldung
+  entpuppte sich als altes JS in einem seit Stunden offenen PWA-Fenster —
+  offene Fenster bekommen Deployments nie mit. Neu: `GET /api/version`
+  (SOURCE_COMMIT von Coolify, Fallback Container-Startzeit) + Frontend-Check
+  (Start, visibilitychange, alle 15 Min) → Leiste „Neue Version verfügbar —
+  Jetzt neu laden / Später" (Später nervt pro Version nur einmal; offener
+  Entwurf ist durch die Auto-Sicherung geschützt).
 - **2026-07-17 (6):** **Layout-Fix, Schleifen-Stopp, Absturz-Sicherung**
   (Stefans Befunde). (a) Sechs Fußleisten-Knöpfe sprengten das 640px-Panel
   (Screenshot: umgebrochene Riesen-Knöpfe, „Schließen" ragte raus) →

@@ -78,6 +78,7 @@ sich also nichts merken.
 - `GET /api/drafts` · `POST /api/drafts` (`{text, item_id?, item_title?, scores?}`) · `PATCH /api/drafts/{id}` (`{text?, scores?, status?}`, Status `entwurf`|`gepostet`) · `DELETE /api/drafts/{id}` — gespeicherte LinkedIn-Entwürfe (Tab „Entwürfe" in der UI)
 - `DELETE /api/items/{id}` — Soft-Delete
 - `GET /api/export?days=7` — Wochen-Export: Wichtiges als Markdown-Download (gruppiert nach Content-Säule, inkl. Notizen; days 1–90)
+- `GET /api/version` — Build-Kennung (Update-Erkennung im Frontend; ohne Login)
 - `GET /healthz` — für Coolify-Healthcheck
 
 ## PWA

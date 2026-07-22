@@ -1543,6 +1543,39 @@ function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove("show"), 3500);
 }
 
+/* ---------- Update-Erkennung: offenes Fenster erfährt von neuen Deployments ---------- */
+let appBuild = null;
+let updateGemeldet = null;
+
+async function versionCheck() {
+  let v = null;
+  try {
+    const res = await fetch("/api/version", { cache: "no-store" });
+    if (!res.ok) return;
+    v = await res.json();
+  } catch { return; /* offline o. ä. — beim nächsten Mal wieder */ }
+  if (!v || !v.build) return;
+  if (appBuild === null) { appBuild = v.build; return; }
+  if (v.build === appBuild || v.build === updateGemeldet) return;
+  updateGemeldet = v.build;
+  if ($("updateBar")) return;
+  const bar = el("div", "restore-bar");
+  bar.id = "updateBar";
+  bar.append(el("span", "", "Eine neue Version des Cockpits ist verfügbar. Ein offener Entwurf ist über die Auto-Sicherung geschützt."));
+  const neu = el("button", "vw-btn primary", "Jetzt neu laden");
+  neu.type = "button";
+  neu.addEventListener("click", () => location.reload());
+  const spaeter = el("button", "vw-btn", "Später");
+  spaeter.type = "button";
+  spaeter.addEventListener("click", () => bar.remove());
+  bar.append(neu, spaeter);
+  const main = document.querySelector("main");
+  main.insertBefore(bar, main.firstChild);
+}
+
+setInterval(versionCheck, 15 * 60 * 1000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) versionCheck(); });
+
 /* ---------- Start ---------- */
 $("today").textContent = new Date().toLocaleDateString("de-DE",
   { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -1552,6 +1585,7 @@ if ("serviceWorker" in navigator) {
 }
 
 (async function init() {
+  versionCheck(); // merkt sich den aktuellen Stand fürs spätere Vergleichen
   try {
     await api("/api/me");
     showApp();

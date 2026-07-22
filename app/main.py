@@ -373,6 +373,18 @@ def export_markdown(days: int = 7):
     )
 
 
+# Versionskennung: Coolify setzt SOURCE_COMMIT beim Build; Fallback ist die
+# Container-Startzeit (jedes Deployment startet den Container neu). Das
+# Frontend vergleicht dagegen und bietet bei Abweichung "Neu laden" an —
+# ein offenes PWA-Fenster bekäme neue Deployments sonst nie mit.
+APP_BUILD = (os.environ.get("SOURCE_COMMIT") or "").strip()[:12] or f"start-{db.utcnow_iso()}"
+
+
+@app.get("/api/version")
+def version():
+    return {"build": APP_BUILD}
+
+
 @app.get("/healthz")
 def healthz():
     try:
