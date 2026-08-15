@@ -93,6 +93,29 @@ def require_ingest_token(request: Request):
         raise HTTPException(status_code=401, detail="Ungültiger oder fehlender Ingest-Token")
 
 
+def _bearer(request: Request) -> str:
+    header = request.headers.get("authorization", "")
+    return header[7:].strip() if header.lower().startswith("bearer ") else ""
+
+
+def require_session_oder_dienst(request: Request):
+    """Sitzung ODER Dienst-Token.
+
+    Nur für den Prüfstand. Er bewertet einen übergebenen Text und hängt an
+    nichts aus dieser Datenbank — deshalb darf ihn auch das Marketing-Cockpit
+    rufen, das seine Launch-Beiträge sonst ungeprüft verschickt.
+
+    Ausdrücklich NICHT auf den übrigen Routen: die geben Stefans Fundstücke,
+    Notizen und Entwürfe heraus. Ein Token, der versehentlich bekannt wird,
+    soll Beiträge benoten können und sonst nichts.
+    """
+    if auth.verify_session_token(request.cookies.get(auth.SESSION_COOKIE, "")):
+        return
+    if auth.verify_dienst_token(_bearer(request)):
+        return
+    raise HTTPException(status_code=401, detail="Nicht angemeldet und kein gültiger Dienst-Token")
+
+
 class LoginBody(BaseModel):
     password: str
 
@@ -211,7 +234,15 @@ class UeberarbeitenBody(BaseModel):
     anweisung: str = ""   # Stefans Regie-Anweisung, hat Vorrang vor dem Feedback
 
 
-@app.post("/api/pruefen", dependencies=[Depends(require_session)])
+@app.get("/api/pruefer", dependencies=[Depends(require_session_oder_dienst)])
+def pruefer_liste():
+    """Wer steht im Prüfstand. Damit ein anderer Dienst die Personas nicht fest
+    verdrahten muss und eine vierte hier automatisch dort ankommt."""
+    return {"pruefer": [{"schluessel": k, "name": v["name"], "rolle": v["rolle"]}
+                        for k, v in pruefer.PRUEFER.items()]}
+
+
+@app.post("/api/pruefen", dependencies=[Depends(require_session_oder_dienst)])
 def pruefen(body: PruefBody):
     if not body.entwurf.strip():
         raise HTTPException(status_code=400, detail="Kein Entwurf übergeben")
@@ -221,7 +252,7 @@ def pruefen(body: PruefBody):
         raise HTTPException(status_code=e.status, detail=str(e))
 
 
-@app.post("/api/ueberarbeiten", dependencies=[Depends(require_session)])
+@app.post("/api/ueberarbeiten", dependencies=[Depends(require_session_oder_dienst)])
 def ueberarbeiten(body: UeberarbeitenBody):
     if not body.entwurf.strip():
         raise HTTPException(status_code=400, detail="Kein Entwurf übergeben")

@@ -56,6 +56,32 @@ gilt als kompromittiert und wird rotiert.
 GitHub-Repo (privat) → Coolify (Dockerfile-Build) → `news.sternenozean.de`.
 Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
 
+## Der Prüfstand dient jetzt auch anderen Apps
+
+Seit 2026-08-15 nehmen **drei** Routen wahlweise einen Maschinen-Token statt eines
+Anmeldecookies an:
+
+| Route | Zweck |
+|---|---|
+| `GET /api/pruefer` | Wer im Prüfstand steht (Schlüssel, Name, Rolle) |
+| `POST /api/pruefen` | `{entwurf, pruefer}` → Note und Rückmeldung |
+| `POST /api/ueberarbeiten` | Entwurf anhand des Feedbacks neu schreiben |
+
+**Warum:** Das Marketing-Cockpit erzeugt je Launch drei LinkedIn-Beiträge und schickte sie
+bisher **ungeprüft** raus. Der Prüfstand hängt an nichts aus dieser Datenbank — er bewertet
+einen übergebenen Text. Ihn dort nachzubauen wäre eine zweite Fassung derselben Personas.
+
+**Eigener Token, nicht `INGEST_TOKEN`.** Neu: `DIENST_TOKEN`. Der eine liefert Inhalte ein,
+der andere lässt auf Stefans Rechnung generieren. Wird einer bekannt, bleibt der andere
+gültig.
+
+**Der Riegel gilt bewusst nur für diese drei.** Alle übrigen Routen geben Fundstücke,
+Notizen und Entwürfe heraus und bleiben an die Sitzung gebunden. Ein Token, der
+versehentlich bekannt wird, kann Beiträge benoten und sonst nichts.
+
+Ist `DIENST_TOKEN` nicht gesetzt, verhalten sich die Routen wie vorher: nur mit Anmeldung.
+Der Wert gehört in die Coolify-Envs beider Apps, **erzeugt und eingetragen von Stefan**.
+
 ## Änderungsprotokoll
 
 - **2026-07-15:** Projekt angelegt (MVP: Ingest-API, Items-API, Login,

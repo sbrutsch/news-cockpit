@@ -90,6 +90,23 @@ def verify_ingest_token(candidate):
     return hmac.compare_digest(candidate, expected)
 
 
+def verify_dienst_token(candidate):
+    """Token fuer Aufrufe von Dienst zu Dienst.
+
+    Gebraucht seit 2026-08-15: Das Marketing-Cockpit laesst seine
+    LinkedIn-Beitraege vom Pruefstand benoten. Ein Dienst hat keinen
+    Anmeldecookie, und die Apps liegen auf verschiedenen Domains.
+
+    Bewusst ein EIGENER Token, nicht INGEST_TOKEN: der eine liefert Inhalte
+    ein, der andere laesst auf Stefans Rechnung generieren. Wird einer
+    bekannt, bleibt der andere gueltig.
+    """
+    expected = os.environ.get("DIENST_TOKEN", "")
+    if not expected or not candidate:
+        return False
+    return hmac.compare_digest(candidate, expected)
+
+
 def login_allowed(ip):
     count, start = _attempts.get(ip, (0, time.time()))
     if time.time() - start > WINDOW_SECONDS:
