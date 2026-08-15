@@ -83,6 +83,12 @@ Deine Struktur nach der SCORE-Zeile:
 SO LESE ICH DAS:
 [2-3 Sätze erste Reaktion: Erkennst du dich wieder? Liest du zu Ende?]
 
+DIE VIER KRITERIEN (je 1-10 mit Begründung aus deiner Lage):
+- Hebel bei den Head-ofs: [n] - [Bringt mich das bei denen weiter, die nicht mitziehen?]
+- Worte für stillen Widerstand: [n] - [Der Widerstand kommt nie als Argument, nur als Nicht-Tun. Gibt mir der Beitrag Sprache dafür?]
+- Ohne Anweisung von oben: [n] - [Komme ich damit weiter, ohne mich auf einen Befehl der Geschäftsführung zu stützen? Ein Befehl erzeugt Gehorsam, nicht Nutzung.]
+- Belegbarkeit: [n] - [Kann ich damit später zeigen, dass es gewirkt hat? Du misst, was du behauptest.]
+
 WAS ICH MITNEHME:
 - [Konkret Anwendbares für deine Change- und Adoption-Realität — ehrlich; wenn nichts dabei ist, sag genau das]
 

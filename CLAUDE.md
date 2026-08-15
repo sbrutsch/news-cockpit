@@ -56,6 +56,46 @@ gilt als kompromittiert und wird rotiert.
 GitHub-Repo (privat) → Coolify (Dockerfile-Build) → `news.sternenozean.de`.
 Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
 
+## Die drei Prüfer .. Herkunft und Belegwert
+
+Am 2026-08-15 nachgeprüft, weil die Pfade in diesem Dokument ins Leere zeigten.
+
+| Persona | Woraus entstanden | Quelle liegt |
+|---|---|---|
+| **Ronny Berger** | Originalinterview | `Claude-Code/skills-bibliothek/claude-ai/marktfilter-ronny/references/ronny-marktfilter.md`, dazu `Dokumente/KI/KI-Agenten/Ronny-IT-Leiter.docx` |
+| **Markus Leitner** | Originalinterview vom 2026-07-17 | `Claude-Code/Marketing-Cockpit/material/Client - … - 2026-07-17.txt` |
+| **Claudia Brenner** | **konstruiert** aus Kundendaten, kein einzelnes Interview | `Dokumente/KI/KI-Agenten/Tagesworkshop/Agent-Material/simulator-claudia-prompt.md` |
+
+**Der Unterschied zählt.** Bei Ronny und Markus ist jede Eigenschaft belegt. Was dort
+ergänzt wird, ohne im Interview zu stehen, ist erfunden und senkt den Belegwert genau um
+dieses Maß. Claudia darf freier gestaltet werden, weil sie ohnehin eine Zusammensetzung ist.
+
+Die Transkripte nennen Firmen, Kunden und Personen im Klartext. **Nichts davon gehört in
+einen Prompt** — Firma, Branche, Namen und Unternehmenshistorie sind bei Markus bewusst
+entfernt, ebenso Kennzahlen wie Fluktuation oder Preissteigerung. Sie würden ihn
+identifizierbar machen, ohne die Bewertung zu verbessern.
+
+## Zwei von drei Prüfern geben Teilnoten
+
+Seit 2026-08-15 bewerten **Ronny und Markus** je vier Kriterien mit 1 bis 10 und
+Begründung. `parse_dimensionen()` liest sie aus dem Fließtext, ohne ihn zu verändern.
+
+| Ronny | Markus |
+|---|---|
+| Umsetzbarkeit | Hebel bei den Head-ofs |
+| Problemlösung | Worte für stillen Widerstand |
+| Substanz statt Coaching-Gelaber | Ohne Anweisung von oben |
+| Budget-Entscheidung | Belegbarkeit |
+
+**Markus' vier stammen aus seinem Interview**, jedes mit Belegstelle: die Head-of-Ebene ist
+sein einziger echter Blocker; der Widerstand kam nie als Argument, nur als Nicht-Tun
+(„Hat er einen Einwand gegeben? — Nein, natürlich nicht"); eine Anweisung von oben erzeugt
+Gehorsam statt Nutzung; und er baut sich selbst eine Metrik aus Wissensbeauftragten und
+Beitragszahlen.
+
+**Claudia hat noch keine.** Sie ist die einzige ohne Instrumentierung — und die einzige,
+bei der wir Kriterien frei setzen dürften, ohne einen Beleg zu beschädigen.
+
 ## Der Prüfstand dient jetzt auch anderen Apps
 
 Seit 2026-08-15 nehmen **drei** Routen wahlweise einen Maschinen-Token statt eines
