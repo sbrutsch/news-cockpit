@@ -99,6 +99,43 @@ PRUEFER = {
 
 _SCORE_RE = re.compile(r"SCORE:\s*(\d{1,2})", re.IGNORECASE)
 
+# Teilnoten der Bauart "- Umsetzbarkeit: 8 - Begruendung".
+# Ronny liefert vier davon, seit es ihn gibt — sie wurden bisher nur nie gelesen.
+# Bewusst allgemein gehalten: sobald eine andere Persona denselben Aufbau
+# ausgibt, wird sie ohne Codeaenderung mitgelesen.
+_DIM_RE = re.compile(
+    r"^[ \t]*[-*•]\s*"          # Aufzaehlungszeichen
+    r"([^:\n\[\]]{2,60}?)\s*:\s*"    # Name der Dimension
+    r"\[?\s*(\d{1,2})\s*\]?"         # Note, Klammern optional (Vorlage nutzt [n])
+    r"\s*(?:[-–—]\s*(.*))?$",  # Begruendung, freiwillig
+    re.MULTILINE,
+)
+
+
+def parse_dimensionen(text):
+    """Teilnoten aus dem Fliesstext holen.
+
+    Gibt eine Liste aus {name, score, begruendung} zurueck. Der Text bleibt
+    unangetastet — die Zeilen stehen weiterhin im Feedback, damit die
+    bestehende Oberflaeche unveraendert weiterlaeuft.
+    """
+    gefunden = []
+    gesehen = set()
+    for m in _DIM_RE.finditer(text):
+        name = " ".join(m.group(1).split())
+        wert = int(m.group(2))
+        # Nur 1 bis 10 gilt als Note. Alles andere ist eine Zahl im Fliesstext,
+        # etwa ein Preis oder eine Jahreszahl.
+        if not 1 <= wert <= 10:
+            continue
+        schluessel = name.casefold()
+        if schluessel in gesehen:
+            continue
+        gesehen.add(schluessel)
+        begruendung = (m.group(3) or "").strip().strip("[]").strip()
+        gefunden.append({"name": name, "score": wert, "begruendung": begruendung})
+    return gefunden
+
 
 def parse_score(text):
     """Erste SCORE-Zeile extrahieren; Rest bleibt Feedback. (None, text) wenn keine gefunden."""
@@ -120,4 +157,5 @@ def pruefen(entwurf, key):
     )
     score, feedback = parse_score(text)
     return {"pruefer": key, "name": PRUEFER[key]["name"], "rolle": PRUEFER[key]["rolle"],
-            "score": score, "feedback": feedback}
+            "score": score, "feedback": feedback,
+            "dimensionen": parse_dimensionen(feedback)}
