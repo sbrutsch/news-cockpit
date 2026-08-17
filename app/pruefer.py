@@ -159,12 +159,39 @@ def parse_score(text):
     return score, rest
 
 
-def pruefen(entwurf, key):
+# Zweiter Rahmen: dieselbe Persona liest keinen Feed-Beitrag, sondern eine
+# Landing Page, auf die sie aus einem Beitrag oder einer Mail geklickt hat.
+# Die Identitaet bleibt unveraendert .. nur Lesesituation und Score-Anker
+# wechseln. Gebraucht vom Marketing-Cockpit seit 2026-08-17.
+_SEITEN_RAHMEN = """
+
+ABWEICHUNG FUER DIESEN EINEN AUFTRAG:
+Dir liegt heute KEIN LinkedIn-Beitrag vor, sondern der vollstaendige Text einer
+Landing Page, auf die du aus einem Beitrag oder einer Mail geklickt hast. Du
+bist also schon interessiert .. die Frage ist, ob die Seite dich traegt.
+Bewerte aus deiner Ich-Perspektive als moeglicher Kaeufer, mit deinem Alltag
+und deiner Skepsis. Deine Struktur und deine vier Kriterien gelten weiter,
+gelesen als Fragen an die SEITE.
+
+Score-Referenz fuer Seiten (ersetzt die fuer Beitraege): 1-3 nach dem ersten
+Abschnitt geschlossen / 4-6 gelesen, aber nicht verstanden was es kostet oder
+was ich bekomme / 7 zu Ende gelesen, ohne Handlungsimpuls / 8 Termin-Knopf
+angesehen oder Seite gespeichert / 9 Termin gebucht oder intern weitergeleitet
+/ 10 gebucht und einem Kollegen empfohlen."""
+
+
+def pruefen(entwurf, key, art="beitrag"):
     if key not in PRUEFER:
         raise TransformError("Unbekannter Pruefer.", status=400)
+    if art == "seite":
+        system = PRUEFER[key]["system"] + _SEITEN_RAHMEN
+        einleitung = "Hier ist der vollstaendige Text der zu bewertenden Landing Page:"
+    else:
+        system = PRUEFER[key]["system"]
+        einleitung = "Hier ist der zu bewertende LinkedIn-Beitrag:"
     text = _claude_text(
-        PRUEFER[key]["system"],
-        f"Hier ist der zu bewertende LinkedIn-Beitrag:\n\n{entwurf}",
+        system,
+        f"{einleitung}\n\n{entwurf}",
         max_tokens=4000,
     )
     score, feedback = parse_score(text)

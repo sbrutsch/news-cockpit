@@ -225,7 +225,8 @@ def verwerten(item_id: int):
 
 class PruefBody(BaseModel):
     entwurf: str
-    pruefer: str  # 'ronny' oder 'claudia'
+    pruefer: str  # 'ronny', 'claudia' oder 'markus'
+    art: str = "beitrag"  # 'beitrag' oder 'seite' — die Lesesituation der Persona
 
 
 class UeberarbeitenBody(BaseModel):
@@ -246,8 +247,10 @@ def pruefer_liste():
 def pruefen(body: PruefBody):
     if not body.entwurf.strip():
         raise HTTPException(status_code=400, detail="Kein Entwurf übergeben")
+    if body.art not in ("beitrag", "seite"):
+        raise HTTPException(status_code=400, detail="art muss 'beitrag' oder 'seite' sein")
     try:
-        return pruefer.pruefen(body.entwurf, body.pruefer)
+        return pruefer.pruefen(body.entwurf, body.pruefer, body.art)
     except pruefer.TransformError as e:
         raise HTTPException(status_code=e.status, detail=str(e))
 
