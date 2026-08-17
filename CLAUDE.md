@@ -75,26 +75,30 @@ einen Prompt** — Firma, Branche, Namen und Unternehmenshistorie sind bei Marku
 entfernt, ebenso Kennzahlen wie Fluktuation oder Preissteigerung. Sie würden ihn
 identifizierbar machen, ohne die Bewertung zu verbessern.
 
-## Zwei von drei Prüfern geben Teilnoten
+## Alle drei Prüfer geben Teilnoten
 
-Seit 2026-08-15 bewerten **Ronny und Markus** je vier Kriterien mit 1 bis 10 und
-Begründung. `parse_dimensionen()` liest sie aus dem Fließtext, ohne ihn zu verändern.
+Seit 2026-08-15 bewertet jede Persona vier Kriterien mit 1 bis 10 und Begründung.
+`parse_dimensionen()` liest sie aus dem Fließtext, ohne ihn zu verändern.
 
-| Ronny | Markus |
-|---|---|
-| Umsetzbarkeit | Hebel bei den Head-ofs |
-| Problemlösung | Worte für stillen Widerstand |
-| Substanz statt Coaching-Gelaber | Ohne Anweisung von oben |
-| Budget-Entscheidung | Belegbarkeit |
+| Ronny | Claudia | Markus |
+|---|---|---|
+| Umsetzbarkeit | Positionierung im ersten Absatz | Hebel bei den Head-ofs |
+| Problemlösung | Thesenschärfe | Worte für stillen Widerstand |
+| Substanz statt Coaching-Gelaber | Verwertbar Richtung Vorstand | Ohne Anweisung von oben |
+| Budget-Entscheidung | Begründung statt Behauptung | Belegbarkeit |
 
-**Markus' vier stammen aus seinem Interview**, jedes mit Belegstelle: die Head-of-Ebene ist
-sein einziger echter Blocker; der Widerstand kam nie als Argument, nur als Nicht-Tun
-(„Hat er einen Einwand gegeben? — Nein, natürlich nicht"); eine Anweisung von oben erzeugt
-Gehorsam statt Nutzung; und er baut sich selbst eine Metrik aus Wissensbeauftragten und
-Beitragszahlen.
+**Die Herkunft der Kriterien ist je Persona verschieden — und das ist Absicht:**
 
-**Claudia hat noch keine.** Sie ist die einzige ohne Instrumentierung — und die einzige,
-bei der wir Kriterien frei setzen dürften, ohne einen Beleg zu beschädigen.
+- **Markus:** aus seinem Interview vom 2026-07-17, jedes mit Belegstelle. Die Head-of-Ebene
+  ist sein einziger echter Blocker; der Widerstand kam nie als Argument, nur als Nicht-Tun;
+  eine Anweisung von oben erzeugt Gehorsam statt Nutzung; er baut sich selbst eine Metrik.
+- **Ronny:** standen von Anfang an in seinem Prompt, wurden nur nie geparst.
+- **Claudia:** **gesetzt, nicht interview-belegt** — aber jede Zeile aus ihrem
+  dokumentierten Prompt abgeleitet: „ohne erkennbare Positionierung nach dem ersten Absatz
+  bist du weg" · „eine neue These oder eine vertraute, ungewohnt scharf" · der jährliche
+  Budgetkampf Richtung CFO · „Ratschläge ohne Begründung, Beraterperspektive ohne
+  Unternehmensrealität". Da sie aus Kundendaten konstruiert ist, beschädigt das keinen
+  Beleg. Wer ihre Kriterien ändert, ändert eine Setzung, kein Interview.
 
 ## Der Prüfstand dient jetzt auch anderen Apps
 

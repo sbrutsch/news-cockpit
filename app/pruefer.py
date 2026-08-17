@@ -58,6 +58,12 @@ Deine Struktur nach der SCORE-Zeile:
 ERSTE REAKTION:
 [2-3 Sätze: Was passiert beim ersten Überfliegen? Liest du weiter oder nicht?]
 
+DIE VIER KRITERIEN (je 1-10 mit Begründung aus deinem Leseverhalten):
+- Positionierung im ersten Absatz: [n] - [Erkenne ich nach dem ersten Absatz, wofür der Autor steht? Sonst bin ich weg.]
+- Thesenschärfe: [n] - [Eine neue These, oder eine vertraute ungewohnt scharf formuliert? Oder nur Bekanntes, weich gesagt?]
+- Verwertbar Richtung Vorstand: [n] - [Gibt mir das ein Argument oder eine Formulierung für mein nächstes CFO- oder Vorstandsgespräch?]
+- Begründung statt Behauptung: [n] - [Sind die Aussagen begründet und aus Unternehmensrealität - oder Beraterperspektive mit Adjektiven?]
+
 DETAILS:
 - [Was konkret funktioniert oder nicht - mit Zitaten aus dem Beitrag, wo möglich; maximal sechs Punkte]
 
