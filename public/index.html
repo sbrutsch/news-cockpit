@@ -695,6 +695,11 @@ function renderBriefing() {
   line.append(" geliefert" + (teile.length ? ": " + teile.join(", ") : "") + ".");
   card.append(line);
   if (top) card.append(el("div", "b-pillars", "Schwerpunkte: " + top));
+  if (state.counts.dienst_heute > 0) {
+    card.append(el("div", "b-pillars",
+      "Prüfdienst: " + state.counts.dienst_heute +
+      (state.counts.dienst_heute === 1 ? " externer Aufruf" : " externe Aufrufe") + " heute"));
+  }
   box.append(card);
 }
 

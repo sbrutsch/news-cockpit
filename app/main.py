@@ -29,6 +29,9 @@ _load_env_file()
 
 import json  # noqa: E402
 import logging  # noqa: E402
+import threading  # noqa: E402
+import time  # noqa: E402
+from collections import deque  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from datetime import datetime, timedelta, timezone  # noqa: E402
 
@@ -98,6 +101,14 @@ def _bearer(request: Request) -> str:
     return header[7:].strip() if header.lower().startswith("bearer ") else ""
 
 
+# Drossel für Dienst-Token-Aufrufe: gleitendes Stundenfenster, nur die
+# kostenpflichtigen POST-Routen. Zweite Schicht hinter dem Token — ein
+# geleakter Token kann damit begrenzt Kosten erzeugen, nicht unbegrenzt.
+DIENST_LIMIT_PRO_STUNDE = int(os.environ.get("DIENST_LIMIT_PRO_STUNDE", "100"))
+_dienst_lock = threading.Lock()
+_dienst_fenster = deque()
+
+
 def require_session_oder_dienst(request: Request):
     """Sitzung ODER Dienst-Token.
 
@@ -110,8 +121,24 @@ def require_session_oder_dienst(request: Request):
     soll Beiträge benoten können und sonst nichts.
     """
     if auth.verify_session_token(request.cookies.get(auth.SESSION_COOKIE, "")):
+        request.state.dienst = False
         return
     if auth.verify_dienst_token(_bearer(request)):
+        request.state.dienst = True
+        if request.method == "POST":  # nur die kostenpflichtigen Routen drosseln
+            jetzt = time.monotonic()
+            with _dienst_lock:
+                while _dienst_fenster and jetzt - _dienst_fenster[0] > 3600:
+                    _dienst_fenster.popleft()
+                if len(_dienst_fenster) >= DIENST_LIMIT_PRO_STUNDE:
+                    raise HTTPException(
+                        status_code=429,
+                        detail=f"Prüfdienst-Limit erreicht ({DIENST_LIMIT_PRO_STUNDE} Aufrufe/Stunde) — bitte später erneut versuchen")
+                _dienst_fenster.append(jetzt)
+        try:
+            db.dienst_zaehlen(request.url.path.rsplit("/", 1)[-1])
+        except Exception:
+            log.exception("Dienst-Tageszähler fehlgeschlagen (Aufruf läuft trotzdem weiter)")
         return
     raise HTTPException(status_code=401, detail="Nicht angemeldet und kein gültiger Dienst-Token")
 
@@ -247,16 +274,45 @@ def pruefer_liste():
                         for k, v in pruefer.PRUEFER.items()]}
 
 
+# Rückfluss: extern geprüfte LinkedIn-Beiträge landen (dedupliziert über den
+# Text) in der Entwurfs-Bibliothek — abschaltbar mit DIENST_RUECKFLUSS=0.
+# Landingpages (art=seite) bleiben bewusst draußen: das ist keine LinkedIn-Bibliothek.
+DIENST_RUECKFLUSS = os.environ.get("DIENST_RUECKFLUSS", "1") != "0"
+
+
+def _rueckfluss_beitrag(entwurf, ergebnis):
+    """Legt den Beitrag als Bibliotheks-Entwurf an bzw. ergänzt den Score der Persona."""
+    try:
+        eintrag = {"pruefer": ergebnis["pruefer"], "name": ergebnis["name"], "score": ergebnis["score"]}
+        vorhanden = db.find_draft_by_text(entwurf)
+        if vorhanden:
+            try:
+                scores = json.loads(vorhanden["scores"] or "[]")
+            except ValueError:
+                scores = []
+            scores = [s for s in scores if s.get("pruefer") != eintrag["pruefer"]] + [eintrag]
+            db.update_draft(vorhanden["id"], scores=json.dumps(scores[:8]))
+        else:
+            db.insert_draft(entwurf, item_title="Prüfdienst (extern)",
+                            scores=json.dumps([eintrag]))
+    except Exception:
+        log.exception("Rückfluss in die Entwurfs-Bibliothek fehlgeschlagen (Prüfung selbst war erfolgreich)")
+
+
 @app.post("/api/pruefen", dependencies=[Depends(require_session_oder_dienst)])
-def pruefen(body: PruefBody):
+def pruefen(body: PruefBody, request: Request):
     if not body.entwurf.strip():
         raise HTTPException(status_code=400, detail="Kein Entwurf übergeben")
     if body.art not in ("beitrag", "seite"):
         raise HTTPException(status_code=400, detail="art muss 'beitrag' oder 'seite' sein")
     try:
-        return pruefer.pruefen(body.entwurf, body.pruefer, body.art)
+        ergebnis = pruefer.pruefen(body.entwurf, body.pruefer, body.art)
     except pruefer.TransformError as e:
         raise HTTPException(status_code=e.status, detail=str(e))
+    if (DIENST_RUECKFLUSS and body.art == "beitrag"
+            and getattr(request.state, "dienst", False)):
+        _rueckfluss_beitrag(body.entwurf.strip(), ergebnis)
+    return ergebnis
 
 
 @app.post("/api/ueberarbeiten", dependencies=[Depends(require_session_oder_dienst)])

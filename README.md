@@ -32,6 +32,9 @@ Copy-Item .env.example .env
 | `SECRET_KEY` | empfohlen | Signiert Session-Cookies; ohne Angabe enden Sessions beim Neustart |
 | `ANTHROPIC_API_KEY` | für Verwerten | Serverseitiger Claude-Key für den Verwerten-Knopf (LinkedIn-Entwürfe); ohne Key antwortet der Endpunkt mit 503 |
 | `TRANSFORM_MODEL` | nein | Modell für Verwerten (Standard `claude-sonnet-5`) |
+| `DIENST_TOKEN` | nein | Maschinen-Token für den Prüfstand (`/api/pruefer`, `/api/pruefen`, `/api/ueberarbeiten`); ohne Wert sind diese Routen rein sitzungsgebunden |
+| `DIENST_LIMIT_PRO_STUNDE` | nein | Drossel für Dienst-Token-POSTs, gleitendes Stundenfenster (Standard 100) |
+| `DIENST_RUECKFLUSS` | nein | `0` schaltet ab, dass extern geprüfte Beiträge (art=beitrag) in der Entwurfs-Bibliothek landen (Standard: an) |
 | `HOST` / `PORT` | nein | Standard `127.0.0.1` / `8080` (Docker setzt `HOST=0.0.0.0`) |
 
 ¹ Eines von beiden. Secrets niemals ins Repo — in Produktion in der Coolify-UI pflegen.

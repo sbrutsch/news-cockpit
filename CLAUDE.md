@@ -132,10 +132,29 @@ Notizen und Entwürfe heraus und bleiben an die Sitzung gebunden. Ein Token, der
 versehentlich bekannt wird, kann Beiträge benoten und sonst nichts.
 
 Ist `DIENST_TOKEN` nicht gesetzt, verhalten sich die Routen wie vorher: nur mit Anmeldung.
-Der Wert gehört in die Coolify-Envs beider Apps, **erzeugt und eingetragen von Stefan**.
+Der Wert gehört in die Coolify-Envs beider Apps, **erzeugt und eingetragen von Stefan**
+(erledigt am 2026-08-20).
+
+**Drossel, Tageszähler, Rückfluss (seit 2026-08-20).** Token-Aufrufe laufen durch eine
+zweite Sicherheitsschicht: POSTs sind auf `DIENST_LIMIT_PRO_STUNDE` (Standard 100,
+gleitendes Stundenfenster, In-Memory) gedrosselt — ein geleakter Token erzeugt begrenzt
+Kosten, nicht unbegrenzt. Jeder durchgelassene Token-Aufruf wird in `dienst_log`
+(tag/route/anzahl) gezählt; das Tagesbriefing zeigt „Prüfdienst: n externe Aufrufe heute".
+Sitzungs-Aufrufe (Stefans eigene UI) zählen nicht. **Rückfluss:** Extern geprüfte
+Beiträge (`art=beitrag`) landen dedupliziert über den exakten Text in der
+Entwurfs-Bibliothek (Quelle „Prüfdienst (extern)"), die Persona-Scores sammeln sich am
+selben Eintrag (je Persona ersetzt, nicht dupliziert). Landingpages (`art=seite`) bleiben
+bewusst draußen. Abschaltbar mit `DIENST_RUECKFLUSS=0`; Fehler im Rückfluss brechen die
+Prüfung nie ab (nur Log).
 
 ## Änderungsprotokoll
 
+- **2026-08-20 (2):** **Dienst-Drossel, Tageszähler, Rückfluss** (Details im
+  Prüfstand-Abschnitt oben). Neu: Tabelle `dienst_log`, Envs
+  `DIENST_LIMIT_PRO_STUNDE` (100) und `DIENST_RUECKFLUSS` (an),
+  `counts.dienst_heute` + Briefing-Zeile. Getestet: Drossel greift ab
+  Limit+1 (429), GET zählt ohne Drossel, Session-Aufrufe zählen nicht,
+  Rückfluss dedupliziert und ersetzt Scores je Persona.
 - **2026-08-20:** **Verwertungs-Kennzeichnung.** Stefans Befund: In der Liste
   ist nicht erkennbar, welche Funde schon zu Entwürfen verarbeitet wurden.
   Automatisch aus der bestehenden Verknüpfung `drafts.item_id` abgeleitet

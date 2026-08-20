@@ -101,6 +101,16 @@ CREATE TABLE IF NOT EXISTS drafts (
   updated_at  TEXT NOT NULL
 )"""
 
+# Tageszähler für Dienst-Token-Aufrufe (Kostentransparenz + Leck-Erkennung).
+# Identisches SQL für beide Backends — bewusst ohne Serial-Spalte.
+_SCHEMA_DIENST_LOG = """
+CREATE TABLE IF NOT EXISTS dienst_log (
+  tag    TEXT NOT NULL,
+  route  TEXT NOT NULL,
+  anzahl INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (tag, route)
+)"""
+
 
 def utcnow_iso():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -214,6 +224,7 @@ def init():
         cur.execute(_SCHEMA_PG if IS_POSTGRES else _SCHEMA_SQLITE)
         cur.execute(_SCHEMA_DRAFTS_PG if IS_POSTGRES else _SCHEMA_DRAFTS_SQLITE)
         cur.execute("CREATE INDEX IF NOT EXISTS idx_drafts_updated ON drafts(updated_at)")
+        cur.execute(_SCHEMA_DIENST_LOG)
         for stmt in _INDEXES:
             cur.execute(stmt)
         # Nachrüst-Migration für Bestände, die vor kind/pillar angelegt wurden
@@ -278,6 +289,27 @@ def list_items(tab="new", q="", limit=50, offset=0, kind=""):
         return [_row(r) for r in cur.fetchall()]
 
 
+def dienst_zaehlen(route):
+    """Zählt einen Dienst-Token-Aufruf für heute (UTC-Tag) hoch."""
+    tag = utcnow_iso()[:10]
+    with cursor() as cur:
+        cur.execute(_q("INSERT INTO dienst_log (tag, route, anzahl) VALUES (?, ?, 1) "
+                       "ON CONFLICT (tag, route) DO UPDATE SET anzahl = dienst_log.anzahl + 1"
+                       if IS_POSTGRES else
+                       "INSERT INTO dienst_log (tag, route, anzahl) VALUES (?, ?, 1) "
+                       "ON CONFLICT (tag, route) DO UPDATE SET anzahl = anzahl + 1"),
+                    (tag, route[:40]))
+
+
+def find_draft_by_text(text):
+    """Erster Entwurf mit exakt diesem Text — für den Rückfluss-Dedupe."""
+    with cursor() as cur:
+        cur.execute(_q(f"SELECT {DRAFT_SELECT} FROM drafts WHERE text = ? "
+                       "ORDER BY id DESC LIMIT 1"), (text,))
+        r = cur.fetchone()
+    return _draft_row(r) if r else None
+
+
 def draft_flags(item_ids):
     """Für Item-IDs: {item_id: 'gepostet'|'entwurf'} — hat der Fund schon Entwürfe?
 
@@ -305,7 +337,11 @@ def counts():
         new_c, imp_c, arch_c = cur.fetchone()
         cur.execute("SELECT COUNT(*) FROM drafts")
         drafts_c = cur.fetchone()[0]
-    return {"new": new_c, "important": imp_c, "archived": arch_c, "drafts": drafts_c}
+        cur.execute(_q("SELECT COALESCE(SUM(anzahl), 0) FROM dienst_log WHERE tag = ?"),
+                    (utcnow_iso()[:10],))
+        dienst_c = cur.fetchone()[0]
+    return {"new": new_c, "important": imp_c, "archived": arch_c,
+            "drafts": drafts_c, "dienst_heute": dienst_c}
 
 
 def export_items(since_iso):
