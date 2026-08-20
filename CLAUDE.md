@@ -108,8 +108,16 @@ Anmeldecookies an:
 | Route | Zweck |
 |---|---|
 | `GET /api/pruefer` | Wer im Prüfstand steht (Schlüssel, Name, Rolle) |
-| `POST /api/pruefen` | `{entwurf, pruefer}` → Note und Rückmeldung |
+| `POST /api/pruefen` | `{entwurf, pruefer, art?}` → Note und Rückmeldung |
 | `POST /api/ueberarbeiten` | Entwurf anhand des Feedbacks neu schreiben |
+
+**`art` wechselt die Lesesituation (seit 2026-08-17, 4d8b6cc).** `"beitrag"` (Vorgabe)
+heißt: die Persona scrollt durch LinkedIn, der Score misst Leseverhalten. `"seite"` heißt:
+sie hat auf einen Verweis geklickt und liest eine Landingpage — `pruefer.pruefen()` hängt
+dann `_SEITEN_RAHMEN` an, und **der Score misst Kaufnähe** (1–3 nach dem ersten Abschnitt
+geschlossen · 8 Termin-Knopf angesehen · 10 gebucht und weiterempfohlen). Die beiden
+Skalen sind nicht vergleichbar. Andere Werte weist `main.py` mit 400 ab; die eigene
+Oberfläche des News-Cockpits schickt kein `art` und bleibt unverändert.
 
 **Warum:** Das Marketing-Cockpit erzeugt je Launch drei LinkedIn-Beiträge und schickte sie
 bisher **ungeprüft** raus. Der Prüfstand hängt an nichts aus dieser Datenbank — er bewertet
