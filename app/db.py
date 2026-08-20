@@ -278,6 +278,22 @@ def list_items(tab="new", q="", limit=50, offset=0, kind=""):
         return [_row(r) for r in cur.fetchall()]
 
 
+def draft_flags(item_ids):
+    """Für Item-IDs: {item_id: 'gepostet'|'entwurf'} — hat der Fund schon Entwürfe?
+
+    'gepostet' gewinnt, sobald mindestens ein verknüpfter Entwurf gepostet ist.
+    """
+    ids = [i for i in item_ids if i is not None]
+    if not ids:
+        return {}
+    ph = ", ".join("?" * len(ids))
+    sql = (f"SELECT item_id, MAX(CASE WHEN status = 'gepostet' THEN 2 ELSE 1 END) "
+           f"FROM drafts WHERE item_id IN ({ph}) GROUP BY item_id")
+    with cursor() as cur:
+        cur.execute(_q(sql), ids)
+        return {r[0]: ("gepostet" if r[1] == 2 else "entwurf") for r in cur.fetchall()}
+
+
 def counts():
     sql = ("SELECT "
            "COUNT(*) FILTER (WHERE status = 'new'), "

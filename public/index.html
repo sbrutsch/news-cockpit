@@ -380,6 +380,7 @@
 
   /* ---------- Entwürfe-Tab ---------- */
   .chip.gepostet { color: #6FCF97; border-color: rgba(111,207,151,0.35); background: rgba(111,207,151,0.08); }
+  .chip.verwertet { color: #8FBFA9; border-color: rgba(111,207,151,0.3); }
   .d-score { font-size: 11.5px; font-weight: 700; padding: 1.5px 8px; border-radius: 5px; font-variant-numeric: tabular-nums; }
   .d-score.hoch { color: #6FCF97; background: rgba(111,207,151,0.12); }
   .d-score.mittel { color: var(--amber); background: var(--amber-dim); }
@@ -739,6 +740,20 @@ function entryNode(item, index) {
   if (item.kind === "zitat") meta.append(el("span", "chip zitat", "Zitat"));
   if (item.pillar) meta.append(el("span", "chip pillar", item.pillar));
   if (state.tab === "important" && item.status === "archived") meta.append(el("span", "chip archiviert", "archiviert"));
+  if (item.verwertet) {
+    const vc = el("span", "chip " + (item.verwertet === "gepostet" ? "gepostet" : "verwertet"),
+                  item.verwertet === "gepostet" ? "gepostet" : "verwertet");
+    vc.title = "Zum gespeicherten Entwurf springen";
+    vc.style.cursor = "pointer";
+    vc.addEventListener("click", () => {
+      state.tab = "drafts";
+      state.q = item.title;
+      $("searchInput").value = item.title;
+      state.initialRender = true;
+      load(true).catch(e => toast(e.message));
+    });
+    meta.append(vc);
+  }
 
   const h2 = el("h2");
   // Nur echte externe Quellen verlinken — Platzhalter-URLs (eigene Domain,
@@ -1012,7 +1027,14 @@ async function toggleGepostet(d, li) {
     Object.assign(d, updated);
     state.initialRender = false;
     li.replaceWith(draftNode(d, 0));
-    toast(target === "gepostet" ? "Als gepostet markiert." : "Zurück auf „Entwurf“.");
+    if (updated.item_archiviert) {
+      state.counts.new = Math.max(0, (state.counts.new || 0) - 1);
+      state.counts.archived = (state.counts.archived || 0) + 1;
+      render_counts_only();
+      toast("Als gepostet markiert — der zugehörige Fund wurde archiviert.");
+    } else {
+      toast(target === "gepostet" ? "Als gepostet markiert." : "Zurück auf „Entwurf“.");
+    }
   } catch (e) { toast(e.message); }
 }
 

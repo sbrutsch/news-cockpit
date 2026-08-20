@@ -195,6 +195,10 @@ def get_items(tab: str = "new", q: str = "", limit: int = 50, offset: int = 0, k
     if kind and kind not in db.KINDS:
         raise HTTPException(status_code=400, detail="kind muss news, idee oder zitat sein")
     items = db.list_items(tab=tab, q=q.strip(), limit=limit, offset=offset, kind=kind)
+    # Verwertungs-Kennzeichnung: hat ein Fund gespeicherte/gepostete Entwürfe?
+    flags = db.draft_flags([it["id"] for it in items])
+    for it in items:
+        it["verwertet"] = flags.get(it["id"], "")
     return {"items": items, "counts": db.counts()}
 
 
@@ -314,7 +318,15 @@ def patch_draft(draft_id: int, body: DraftPatchBody):
     d = db.update_draft(draft_id, text=body.text,
                         scores=json.dumps(body.scores[:8]) if body.scores is not None else None,
                         status=body.status)
-    return _draft_out(d)
+    # Automatismus: "gepostet" heißt verarbeitet — der Quell-Fund wandert
+    # aus dem Posteingang ins Archiv (Rücknahme bewusst manuell).
+    item_archiviert = False
+    if body.status == "gepostet" and d.get("item_id"):
+        item = db.get_item(d["item_id"])
+        if item and item["status"] == "new":
+            db.update_item(d["item_id"], status="archived")
+            item_archiviert = True
+    return {**_draft_out(d), "item_archiviert": item_archiviert}
 
 
 @app.delete("/api/drafts/{draft_id}", dependencies=[Depends(require_session)])

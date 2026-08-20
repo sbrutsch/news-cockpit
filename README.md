@@ -69,7 +69,7 @@ sich also nichts merken.
 ## Weitere Endpunkte
 
 - `POST /api/login` · `POST /api/logout` · `GET /api/me` — Session (Cookie, HttpOnly)
-- `GET /api/items?tab=new|important|archived&q=&limit=&offset=` — Liste + Zähler
+- `GET /api/items?tab=new|important|archived&q=&limit=&offset=` — Liste + Zähler; jedes Item trägt `verwertet` (`""`|`entwurf`|`gepostet`), abgeleitet aus verknüpften Entwürfen
 - `PATCH /api/items/{id}` — `{"important": true}`, `{"status": "archived"|"new"}` und/oder `{"note": "…"}` (leere Notiz löscht; Notiz fließt beim Verwerten als gewünschter Winkel in den Entwurf)
 - `POST /api/items/{id}/verwerten` — LinkedIn-Entwurf zum Eintrag (Claude serverseitig, Positionierungs-Prompt)
 - `POST /api/items/{id}/einordnen` — Resümee: Relevanz für Stefans Geschäft und IT-Leiter (hoch/mittel/gering + 2–4 Sätze, gespeichert am Eintrag)

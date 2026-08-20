@@ -136,6 +136,16 @@ Der Wert gehört in die Coolify-Envs beider Apps, **erzeugt und eingetragen von 
 
 ## Änderungsprotokoll
 
+- **2026-08-20:** **Verwertungs-Kennzeichnung.** Stefans Befund: In der Liste
+  ist nicht erkennbar, welche Funde schon zu Entwürfen verarbeitet wurden.
+  Automatisch aus der bestehenden Verknüpfung `drafts.item_id` abgeleitet
+  (kein neues Feld, keine Handarbeit): `db.draft_flags()` liefert je Fund
+  `entwurf`/`gepostet`, `/api/items` hängt es als `verwertet` an, die Karte
+  zeigt einen klickbaren Chip (grün-Outline „verwertet" bzw. gefüllt
+  „gepostet"; Klick springt zum Entwurf im Entwürfe-Tab). Automatismus:
+  Entwurf auf „gepostet" → Quell-Fund wandert automatisch aus Neu ins Archiv
+  (`item_archiviert` in der PATCH-Antwort; Rücknahme bewusst manuell).
+
 - **2026-07-15:** Projekt angelegt (MVP: Ingest-API, Items-API, Login,
   Pressespiegel-UI, Dockerfile). Plattform-Entscheidung: Coolify auf
   Hostinger-VPS, Beschluss siehe Plan `zippy-snacking-jellyfish`.
