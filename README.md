@@ -29,6 +29,8 @@ Copy-Item .env.example .env
 | `APP_PASSWORD_HASH` | ja¹ | Login-Passwort als PBKDF2-Hash — erzeugen mit `python scripts/make_password_hash.py` |
 | `APP_PASSWORD` | ja¹ | Alternative: Klartext-Passwort (nur wenn kein Hash gesetzt ist) |
 | `INGEST_TOKEN` | ja | Bearer-Token für `POST /api/ingest`; ohne Token ist Ingest deaktiviert |
+| `INGEST_LIMIT_PRO_STUNDE` | nein | Drossel für `POST /api/ingest`, gleitendes Stundenfenster (Standard 60) |
+| `TRUSTED_PROXY_HOPS` | nein | Wie viele `X-Forwarded-For`-Einträge von eigenen Proxys stammen (Standard 1 = Coolify/Traefik). Ohne Proxy davor: `0`. Bestimmt, welche Absender-Adresse die Login-Drossel zählt |
 | `SECRET_KEY` | empfohlen | Signiert Session-Cookies; ohne Angabe enden Sessions beim Neustart |
 | `ANTHROPIC_API_KEY` | für Verwerten | Serverseitiger Claude-Key für den Verwerten-Knopf (LinkedIn-Entwürfe); ohne Key antwortet der Endpunkt mit 503 |
 | `TRANSFORM_MODEL` | nein | Modell für Verwerten (Standard `claude-sonnet-5`) |

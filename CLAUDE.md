@@ -129,7 +129,15 @@ gültig.
 
 **Der Riegel gilt bewusst nur für diese drei.** Alle übrigen Routen geben Fundstücke,
 Notizen und Entwürfe heraus und bleiben an die Sitzung gebunden. Ein Token, der
-versehentlich bekannt wird, kann Beiträge benoten und sonst nichts.
+versehentlich bekannt wird, kann **lesend** nichts erreichen.
+
+**Korrektur 2026-08-22 (Sicherheits-Check).** Hier stand bis dahin, ein bekannt
+gewordener Token könne „Beiträge benoten und sonst nichts". Das gilt seit dem
+Rückfluss vom 20.08. nicht mehr: `art=beitrag` **schreibt** den übergebenen Text
+dauerhaft in die Entwurfs-Bibliothek (bis zu `DIENST_LIMIT_PRO_STUNDE` mal pro
+Stunde) und erzeugt dabei je Aufruf Anthropic-Kosten. Lesen kann er weiterhin
+nichts — der Riegel hält, er ist nur einseitig geworden. Wer den Rückfluss nicht
+braucht, setzt `DIENST_RUECKFLUSS=0`.
 
 Ist `DIENST_TOKEN` nicht gesetzt, verhalten sich die Routen wie vorher: nur mit Anmeldung.
 Der Wert gehört in die Coolify-Envs beider Apps, **erzeugt und eingetragen von Stefan**
@@ -149,6 +157,34 @@ Prüfung nie ab (nur Log).
 
 ## Änderungsprotokoll
 
+- **2026-08-22:** **Sicherheits-Check und sechs Reparaturen.** Bestandsaufnahme
+  über Code, alle 19 Routen und die gesamte Git-Historie: keine Geheimnisse im
+  Repo (`.env` war nie eingecheckt), keine Tabelle ohne Anmeldung lesbar, kein
+  SQL-Injection- oder XSS-Weg. Repariert wurden:
+  (a) **Login-Drossel war umgehbar** — `client_ip()` nahm den ERSTEN
+  `X-Forwarded-For`-Eintrag, den der Aufrufer selbst schreibt; 500 Versuche mit
+  wechselndem Wert wurden nachweislich nie gesperrt. Jetzt wird von rechts
+  gezählt (`TRUSTED_PROXY_HOPS`, Standard 1).
+  (b) **Sitzungen hingen nicht am Passwort** — ein Passwortwechsel warf ein
+  gestohlenes Cookie 30 Tage lang nicht raus. Der Signierschlüssel wird jetzt
+  aus `SECRET_KEY` + Passwort abgeleitet (`auth._session_key`), damit beendet
+  jeder Passwortwechsel alle offenen Sitzungen. **Bestandscookies werden
+  ungültig — nach dem Deploy einmal neu anmelden.**
+  (c) **Signierter Klartext war vorhersagbar** (nur ein Unix-Zeitstempel) —
+  jetzt mit Zufallsanteil, damit ein schwacher `SECRET_KEY` nicht offline gegen
+  ein bekanntes Ziel geraten werden kann.
+  (d) **Ingest hatte keine Mengengrenze** (500 Einträge je Aufruf, beliebig
+  oft) — neu `INGEST_LIMIT_PRO_STUNDE` (Standard 60) über den neuen Baustein
+  `_Stundenfenster`, den sich Ingest und Prüfdienst jetzt teilen.
+  (e) **CSP und HSTS ergänzt**; HSTS bewusst nur über HTTPS, sonst würde der
+  Browser den lokalen Entwicklungs-Port dauerhaft auf HTTPS umbiegen.
+  (f) **Bibliotheks-Versionen exakt festgeschrieben** statt frei mitwandernd.
+  Getestet: 26 End-to-End-Prüfungen gegen die echte App (Drossel greift trotz
+  gefälschtem Header, anderer Absender bleibt frei, Passwortwechsel entwertet
+  Cookies, Ingest-Drossel, alle Header, Anmeldung und Oberfläche unverändert).
+  Offen und bewusst nicht angefasst: Prompt-Injection über eingelieferte Texte
+  (Schutz bleibt Stefans Sichtung vor dem Posten) und die Frage, ob die
+  Coolify-Oberfläche öffentlich erreichbar ist.
 - **2026-08-20 (2):** **Dienst-Drossel, Tageszähler, Rückfluss** (Details im
   Prüfstand-Abschnitt oben). Neu: Tabelle `dienst_log`, Envs
   `DIENST_LIMIT_PRO_STUNDE` (100) und `DIENST_RUECKFLUSS` (an),
