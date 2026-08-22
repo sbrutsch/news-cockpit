@@ -1,4 +1,12 @@
-fastapi>=0.115,<1
-uvicorn>=0.30,<1
-psycopg[binary]>=3.2,<4
-anthropic>=0.116,<1
+# Versionen exakt festgeschrieben (Sicherheits-Check 2026-08-22): Ein Build
+# zieht damit genau das, was hier geprüft wurde — und nicht automatisch eine
+# neuere, womöglich kompromittierte Fassung. Bewusst aktualisieren statt
+# unbemerkt mitwandern lassen.
+#
+# Hinweis zu anthropic: 1.0.0 ist erschienen. Die bisherige Grenze "<1" hat
+# den Sprung ausgeschlossen, deshalb steht hier die höchste 0.x. Der Umstieg
+# auf 1.x ist eine eigene Entscheidung, kein Sicherheits-Thema.
+fastapi==0.141.1
+uvicorn==0.52.4
+psycopg[binary]==3.3.4
+anthropic==0.125.0

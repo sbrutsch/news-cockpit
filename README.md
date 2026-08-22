@@ -21,6 +21,22 @@ Copy-Item .env.example .env
 # → http://127.0.0.1:8100
 ```
 
+## Tests
+
+```powershell
+& "$env:LOCALAPPDATA\venvs\news-cockpit\Scripts\pip" install -r requirements-dev.txt
+& "$env:LOCALAPPDATA\venvs\news-cockpit\Scripts\python" tests\test_sicherheit.py
+```
+
+`tests/test_sicherheit.py` bewacht die Befunde des Sicherheits-Checks vom
+2026-08-22: Login-Drossel gegen gefälschte `X-Forwarded-For`-Header, Sitzungen
+am Passwort, Ingest-Drossel, Schutz-Header, und dass ohne Anmeldung keine Route
+Daten herausgibt. 34 Prüfungen, Rückgabewert 0 = alles gut. Läuft gegen eine
+Wegwerf-SQLite im Temp-Ordner und fasst weder eine laufende Instanz noch die
+Produktionsdatenbank an.
+
+**Wird der Test rot, ist eine Lücke zurückgekehrt — nicht nur ein Test kaputt.**
+
 ## Konfiguration (Umgebungsvariablen)
 
 | Variable | Pflicht | Bedeutung |
@@ -29,6 +45,8 @@ Copy-Item .env.example .env
 | `APP_PASSWORD_HASH` | ja¹ | Login-Passwort als PBKDF2-Hash — erzeugen mit `python scripts/make_password_hash.py` |
 | `APP_PASSWORD` | ja¹ | Alternative: Klartext-Passwort (nur wenn kein Hash gesetzt ist) |
 | `INGEST_TOKEN` | ja | Bearer-Token für `POST /api/ingest`; ohne Token ist Ingest deaktiviert |
+| `INGEST_LIMIT_PRO_STUNDE` | nein | Drossel für `POST /api/ingest`, gleitendes Stundenfenster (Standard 60) |
+| `TRUSTED_PROXY_HOPS` | nein | Wie viele `X-Forwarded-For`-Einträge von eigenen Proxys stammen (Standard 1 = Coolify/Traefik). Ohne Proxy davor: `0`. Bestimmt, welche Absender-Adresse die Login-Drossel zählt |
 | `SECRET_KEY` | empfohlen | Signiert Session-Cookies; ohne Angabe enden Sessions beim Neustart |
 | `ANTHROPIC_API_KEY` | für Verwerten | Serverseitiger Claude-Key für den Verwerten-Knopf (LinkedIn-Entwürfe); ohne Key antwortet der Endpunkt mit 503 |
 | `TRANSFORM_MODEL` | nein | Modell für Verwerten (Standard `claude-sonnet-5`) |
