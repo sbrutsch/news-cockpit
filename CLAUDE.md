@@ -148,7 +148,15 @@ gültig.
 
 **Der Riegel gilt bewusst nur für diese drei.** Alle übrigen Routen geben Fundstücke,
 Notizen und Entwürfe heraus und bleiben an die Sitzung gebunden. Ein Token, der
-versehentlich bekannt wird, kann Beiträge benoten und sonst nichts.
+versehentlich bekannt wird, kann **lesend** nichts erreichen.
+
+**Korrektur 2026-08-22 (Sicherheits-Check).** Hier stand bis dahin, ein bekannt
+gewordener Token könne „Beiträge benoten und sonst nichts". Das gilt seit dem
+Rückfluss vom 20.08. nicht mehr: `art=beitrag` **schreibt** den übergebenen Text
+dauerhaft in die Entwurfs-Bibliothek (bis zu `DIENST_LIMIT_PRO_STUNDE` mal pro
+Stunde) und erzeugt dabei je Aufruf Anthropic-Kosten. Lesen kann er weiterhin
+nichts — der Riegel hält, er ist nur einseitig geworden. Wer den Rückfluss nicht
+braucht, setzt `DIENST_RUECKFLUSS=0`.
 
 Ist `DIENST_TOKEN` nicht gesetzt, verhalten sich die Routen wie vorher: nur mit Anmeldung.
 Der Wert gehört in die Coolify-Envs beider Apps, **erzeugt und eingetragen von Stefan**

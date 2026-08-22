@@ -65,20 +65,53 @@ def get_password_hash():
     return _pw_hash_cache
 
 
+_session_key_cache = None
+
+
+def _session_key():
+    """Signierschlüssel der Sitzungen: SECRET_KEY, verknüpft mit dem Passwort.
+
+    Dadurch beendet ein Passwortwechsel automatisch ALLE offenen Sitzungen —
+    ohne dass Sitzungen serverseitig gespeichert werden müssten. Vorher hing
+    das Cookie nur am SECRET_KEY: Ein neues Passwort warf einen Eindringling
+    mit gestohlenem Cookie nicht raus.
+
+    Bewusst die konfigurierte Zeichenkette und nicht get_password_hash():
+    der Klartext-Fallback APP_PASSWORD erzeugt bei jedem Start ein neues Salz
+    und würde sonst bei jedem Neustart alle Sitzungen beenden.
+    """
+    global _session_key_cache
+    if _session_key_cache is None:
+        cred = (os.environ.get("APP_PASSWORD_HASH", "").strip()
+                or os.environ.get("APP_PASSWORD", ""))
+        _session_key_cache = hmac.new(SECRET_KEY.encode(),
+                                      b"nc-session-v2|" + cred.encode(),
+                                      hashlib.sha256).digest()
+    return _session_key_cache
+
+
 def create_session_token(now=None):
-    exp = str(int((now or time.time()) + SESSION_TTL)).encode()
-    sig = hmac.new(SECRET_KEY.encode(), exp, hashlib.sha256).digest()
-    return f"{_b64e(exp)}.{_b64e(sig)}"
+    """Cookie-Inhalt: Ablaufzeit + Zufallsanteil, zusammen signiert.
+
+    Der Zufallsanteil wird bei der Prüfung nicht ausgewertet — er sorgt nur
+    dafür, dass der signierte Klartext nicht vorhersagbar ist. Vorher stand
+    dort ausschließlich ein Unix-Zeitstempel; damit ließe sich ein schwacher
+    SECRET_KEY offline gegen ein bekanntes Ziel durchprobieren.
+    """
+    exp = int((now or time.time()) + SESSION_TTL)
+    payload = f"{exp}:{secrets.token_urlsafe(12)}".encode()
+    sig = hmac.new(_session_key(), payload, hashlib.sha256).digest()
+    return f"{_b64e(payload)}.{_b64e(sig)}"
 
 
 def verify_session_token(token):
     try:
         payload_s, sig_s = token.split(".")
         payload = _b64d(payload_s)
-        expected = hmac.new(SECRET_KEY.encode(), payload, hashlib.sha256).digest()
+        expected = hmac.new(_session_key(), payload, hashlib.sha256).digest()
         if not hmac.compare_digest(expected, _b64d(sig_s)):
             return False
-        return int(payload) > time.time()
+        return int(payload.split(b":", 1)[0]) > time.time()
     except Exception:
         return False
 
