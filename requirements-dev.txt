@@ -1,2 +1,13 @@
-pytest>=8,<10
-httpx>=0.27,<1
+# Nur für die Tests, NICHT im Produktions-Image (das Dockerfile installiert
+# ausschliesslich requirements.txt). Aufruf:
+#
+#   pip install -r requirements.txt -r requirements-dev.txt
+#   pytest -q
+#
+# Versionen exakt festgeschrieben wie in requirements.txt (Sicherheits-Check
+# 2026-08-22): ein Lauf zieht genau das, was hier geprüft wurde.
+#
+# httpx2 statt httpx: starlette.testclient bevorzugt es und warnt sonst.
+-r requirements.txt
+pytest==9.1.1
+httpx2==2.12.0
