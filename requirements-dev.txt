@@ -1,0 +1,10 @@
+# Nur für die Tests, NICHT im Produktions-Image (das Dockerfile installiert
+# ausschliesslich requirements.txt). Erst die Laufzeit-Abhängigkeiten
+# installieren, dann diese Datei:
+#
+#   pip install -r requirements.txt -r requirements-dev.txt
+#   python tests/test_sicherheit.py
+#
+# httpx2 statt httpx: starlette.testclient bevorzugt es und warnt sonst.
+-r requirements.txt
+httpx2==2.12.0

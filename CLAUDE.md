@@ -50,6 +50,12 @@ gilt als kompromittiert und wird rotiert.
 - Start: `& "$env:LOCALAPPDATA\venvs\news-cockpit\Scripts\python" -m app.main`
   aus dem Projektordner (liest `.env`, SQLite unter `data/`)
 - Nach jeder Python-Änderung: `python -m py_compile app/main.py app/db.py app/auth.py`
+- Nach Änderungen an Anmeldung, Token, Drosseln oder Headern zusätzlich
+  `python tests/test_sicherheit.py` (34 Prüfungen, Rückgabewert 0 = alles gut).
+  Der Test bewacht die Befunde des Sicherheits-Checks vom 2026-08-22 — wird er
+  rot, ist eine Lücke zurückgekehrt, nicht nur ein Test kaputt. Braucht
+  `pip install -r requirements-dev.txt`; läuft gegen eine Wegwerf-SQLite im
+  Temp-Ordner, fasst die Produktion nie an.
 
 ## Deployment-Weg
 
