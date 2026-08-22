@@ -67,19 +67,61 @@ app = FastAPI(title="News-Cockpit", lifespan=lifespan,
               docs_url=None, redoc_url=None, openapi_url=None)
 
 
+# Inhaltsregel für den Browser. Die Oberfläche lädt nichts von fremden
+# Servern, deshalb reicht überall 'self'. 'unsafe-inline' bleibt nötig, weil
+# CSS und JS direkt in index.html stehen (bewusste Entscheidung: kein
+# Build-Schritt). Der eigentliche Gewinn ist connect-src: Selbst wenn doch
+# einmal Fremdcode liefe, könnte er nichts nach draußen schicken.
+CSP = ("default-src 'self'; "
+       "script-src 'self' 'unsafe-inline'; "
+       "style-src 'self' 'unsafe-inline'; "
+       "img-src 'self' data:; "
+       "connect-src 'self'; "
+       "form-action 'self'; "
+       "base-uri 'none'; "
+       "object-src 'none'; "
+       "frame-ancestors 'none'")
+
+
+def _ist_https(request: Request) -> bool:
+    return (request.headers.get("x-forwarded-proto") or request.url.scheme) == "https"
+
+
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
     response = await call_next(request)
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault("Content-Security-Policy", CSP)
+    # Verschlüsselungszwang nur über HTTPS setzen: Lokal (http://127.0.0.1)
+    # würde der Browser den Entwicklungs-Port sonst dauerhaft auf HTTPS
+    # umbiegen und die lokale Entwicklung lahmlegen.
+    if _ist_https(request):
+        response.headers.setdefault("Strict-Transport-Security",
+                                    "max-age=31536000; includeSubDomains")
     return response
 
 
+# Wie viele Einträge in X-Forwarded-For stammen von EIGENEN Proxys? In
+# Produktion hängt Coolifys Traefik genau einen an; ohne Proxy davor: 0.
+TRUSTED_PROXY_HOPS = max(0, int(os.environ.get("TRUSTED_PROXY_HOPS", "1")))
+
+
 def client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
+    """Absender-Adresse für die Login-Drossel.
+
+    Von RECHTS zählen. Nur die Einträge, die unsere eigenen Proxys angehängt
+    haben, sind vertrauenswürdig; alles links davon hat der Aufrufer selbst
+    in den Header geschrieben. Wer den ERSTEN Eintrag nimmt, lässt sich die
+    Drossel mit einem frei erfundenen Wert pro Versuch aushebeln — dann
+    zählt jeder Fehlversuch auf ein anderes Konto und die Sperre greift nie.
+    """
+    if TRUSTED_PROXY_HOPS:
+        kette = [t.strip() for t in request.headers.get("x-forwarded-for", "").split(",")
+                 if t.strip()]
+        if len(kette) >= TRUSTED_PROXY_HOPS:
+            return kette[-TRUSTED_PROXY_HOPS]
     return request.client.host if request.client else "?"
 
 
@@ -89,24 +131,55 @@ def require_session(request: Request):
         raise HTTPException(status_code=401, detail="Nicht angemeldet")
 
 
-def require_ingest_token(request: Request):
-    header = request.headers.get("authorization", "")
-    candidate = header[7:].strip() if header.lower().startswith("bearer ") else ""
-    if not auth.verify_ingest_token(candidate):
-        raise HTTPException(status_code=401, detail="Ungültiger oder fehlender Ingest-Token")
-
-
 def _bearer(request: Request) -> str:
     header = request.headers.get("authorization", "")
     return header[7:].strip() if header.lower().startswith("bearer ") else ""
 
 
-# Drossel für Dienst-Token-Aufrufe: gleitendes Stundenfenster, nur die
-# kostenpflichtigen POST-Routen. Zweite Schicht hinter dem Token — ein
-# geleakter Token kann damit begrenzt Kosten erzeugen, nicht unbegrenzt.
+class _Stundenfenster:
+    """Gleitendes Stundenfenster im Arbeitsspeicher.
+
+    Zweite Schicht hinter einem Maschinen-Token: Wird einer bekannt, erzeugt
+    er begrenzten Schaden statt unbegrenztem. Bewusst pro Prozess und ohne
+    Persistenz — die App läuft als einzelner uvicorn-Worker.
+    """
+
+    def __init__(self, limit):
+        self.limit = limit
+        self._lock = threading.Lock()
+        self._treffer = deque()
+
+    def frei(self) -> bool:
+        """True und zählt den Aufruf mit, solange noch Platz im Fenster ist."""
+        jetzt = time.monotonic()
+        with self._lock:
+            while self._treffer and jetzt - self._treffer[0] > 3600:
+                self._treffer.popleft()
+            if len(self._treffer) >= self.limit:
+                return False
+            self._treffer.append(jetzt)
+            return True
+
+
+# Drossel für Dienst-Token-Aufrufe: nur die kostenpflichtigen POST-Routen.
 DIENST_LIMIT_PRO_STUNDE = int(os.environ.get("DIENST_LIMIT_PRO_STUNDE", "100"))
-_dienst_lock = threading.Lock()
-_dienst_fenster = deque()
+_dienst_fenster = _Stundenfenster(DIENST_LIMIT_PRO_STUNDE)
+
+# Ingest hatte bislang gar keine Grenze: 500 Einträge je Aufruf, beliebig oft.
+# Ein bekannt gewordener INGEST_TOKEN konnte damit die Datenbank volllaufen
+# lassen oder gefälschte Meldungen einschleusen. n8n liefert wenige Male am
+# Tag — 60 Aufrufe pro Stunde sind reichlich Luft, auch für Wiederholungen.
+INGEST_LIMIT_PRO_STUNDE = int(os.environ.get("INGEST_LIMIT_PRO_STUNDE", "60"))
+_ingest_fenster = _Stundenfenster(INGEST_LIMIT_PRO_STUNDE)
+
+
+def require_ingest_token(request: Request):
+    if not auth.verify_ingest_token(_bearer(request)):
+        raise HTTPException(status_code=401, detail="Ungültiger oder fehlender Ingest-Token")
+    if not _ingest_fenster.frei():
+        raise HTTPException(
+            status_code=429,
+            detail=f"Ingest-Limit erreicht ({INGEST_LIMIT_PRO_STUNDE} Aufrufe/Stunde) — bitte später erneut versuchen")
 
 
 def require_session_oder_dienst(request: Request):
@@ -125,16 +198,11 @@ def require_session_oder_dienst(request: Request):
         return
     if auth.verify_dienst_token(_bearer(request)):
         request.state.dienst = True
-        if request.method == "POST":  # nur die kostenpflichtigen Routen drosseln
-            jetzt = time.monotonic()
-            with _dienst_lock:
-                while _dienst_fenster and jetzt - _dienst_fenster[0] > 3600:
-                    _dienst_fenster.popleft()
-                if len(_dienst_fenster) >= DIENST_LIMIT_PRO_STUNDE:
-                    raise HTTPException(
-                        status_code=429,
-                        detail=f"Prüfdienst-Limit erreicht ({DIENST_LIMIT_PRO_STUNDE} Aufrufe/Stunde) — bitte später erneut versuchen")
-                _dienst_fenster.append(jetzt)
+        if request.method == "POST" and not _dienst_fenster.frei():
+            # nur die kostenpflichtigen Routen drosseln
+            raise HTTPException(
+                status_code=429,
+                detail=f"Prüfdienst-Limit erreicht ({DIENST_LIMIT_PRO_STUNDE} Aufrufe/Stunde) — bitte später erneut versuchen")
         try:
             db.dienst_zaehlen(request.url.path.rsplit("/", 1)[-1])
         except Exception:
@@ -176,10 +244,9 @@ def login(body: LoginBody, request: Request, response: Response):
         log.warning("Fehlgeschlagener Login von %s", ip)
         raise HTTPException(status_code=401, detail="Falsches Passwort")
     auth.clear_failures(ip)
-    secure = (request.headers.get("x-forwarded-proto") or request.url.scheme) == "https"
     response.set_cookie(auth.SESSION_COOKIE, auth.create_session_token(),
                         max_age=auth.SESSION_TTL, httponly=True,
-                        samesite="lax", secure=secure, path="/")
+                        samesite="lax", secure=_ist_https(request), path="/")
     return {"ok": True}
 
 
