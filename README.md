@@ -11,7 +11,10 @@ und lassen sich als wichtig markieren, archivieren, löschen und durchsuchen.
 ```powershell
 # Einmalig: virtuelles Environment AUSSERHALB von OneDrive anlegen
 python -m venv "$env:LOCALAPPDATA\venvs\news-cockpit"
-& "$env:LOCALAPPDATA\venvs\news-cockpit\Scripts\pip" install -r requirements.txt
+
+# Abhängigkeiten: requirements.txt reicht zum Starten, requirements-dev.txt
+# kommt für `pytest` dazu (getrennt, weil das Docker-Image nur erstere bekommt)
+& "$env:LOCALAPPDATA\venvs\news-cockpit\Scripts\python" -m pip install -r requirements.txt -r requirements-dev.txt
 
 # .env anlegen (Vorlage kopieren, Werte setzen)
 Copy-Item .env.example .env
@@ -19,6 +22,9 @@ Copy-Item .env.example .env
 # Starten (nutzt lokal SQLite unter data/news.db)
 & "$env:LOCALAPPDATA\venvs\news-cockpit\Scripts\python" -m app.main
 # → http://127.0.0.1:8100
+
+# Tests (kein Netz, keine Claude-Aufrufe) — laufen auch bei jedem Push in der CI
+& "$env:LOCALAPPDATA\venvs\news-cockpit\Scripts\python" -m pytest -q
 ```
 
 ## Konfiguration (Umgebungsvariablen)
