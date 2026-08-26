@@ -180,7 +180,13 @@ Prüfung nie ab (nur Log).
   über `UNIQUE(url)`, `draft_flags` lässt „gepostet" gewinnen, Sitzungstoken
   weist Manipulation und Ablauf ab. Gegenprobe: drei absichtlich eingebaute
   Fehler (Drossel-Off-by-one, Dedupe ausgehebelt, `art`-Filter entfernt) wurden
-  je vom richtigen Test gefangen.
+  je vom richtigen Test gefangen. Damit die Prüfung nicht wieder an der
+  Erinnerung hängt, läuft sie seit demselben Tag in GitHub Actions
+  (`.github/workflows/tests.yml`, bei Pull Requests und bei Push nach `main`;
+  keine Secrets nötig, weil kein Test die Claude-API ruft). Dabei aufgefallen:
+  `pytest -q` fand das Paket `app` nicht — das Konsolenskript legt, anders als
+  `python -m pytest`, das Arbeitsverzeichnis nicht in den `sys.path`. Behoben
+  mit `pytest.ini` (`pythonpath = .`), gilt jetzt für alle Aufrufarten.
 - **2026-08-20 (2):** **Dienst-Drossel, Tageszähler, Rückfluss** (Details im
   Prüfstand-Abschnitt oben). Neu: Tabelle `dienst_log`, Envs
   `DIENST_LIMIT_PRO_STUNDE` (100) und `DIENST_RUECKFLUSS` (an),
