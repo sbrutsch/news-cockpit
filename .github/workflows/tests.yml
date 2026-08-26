@@ -1,6 +1,6 @@
 name: Tests
 
-# Die neun Tests sollen nicht davon abhängen, dass jemand daran denkt, sie
+# Die Tests sollen nicht davon abhängen, dass jemand daran denkt, sie
 # lokal zu starten — genau daran ist die Handprüfung schon einmal verfallen
 # (siehe Änderungsprotokoll 2026-08-26 in CLAUDE.md).
 on:

@@ -36,8 +36,14 @@ Copy-Item .env.example .env
 | `DIENST_LIMIT_PRO_STUNDE` | nein | Drossel für Dienst-Token-POSTs, gleitendes Stundenfenster (Standard 100) |
 | `DIENST_RUECKFLUSS` | nein | `0` schaltet ab, dass extern geprüfte Beiträge (art=beitrag) in der Entwurfs-Bibliothek landen (Standard: an) |
 | `HOST` / `PORT` | nein | Standard `127.0.0.1` / `8080` (Docker setzt `HOST=0.0.0.0`) |
+| `SOURCE_COMMIT` | nein | Setzt Coolify beim Build; speist `GET /api/version` und die Update-Erkennung. Ohne Wert: Container-Startzeit |
+| `ENV_FILE` | nein | Anderer Pfad zur `.env` (Standard `.env`). Nur für Sonderfälle — die Tests zeigen ihn ins Leere |
 
 ¹ Eines von beiden. Secrets niemals ins Repo — in Produktion in der Coolify-UI pflegen.
+
+**Diese Tabelle ist die maßgebliche Liste.** `tests/test_env_doku.py` prüft, dass
+jede Variable, die `app/` wirklich liest, hier auch steht — damit Code und Doku
+nicht wieder auseinanderlaufen wie bis 2026-08-26 bei `DIENST_TOKEN`.
 
 ## Ingest-API (für n8n und claude.ai-Routine)
 
