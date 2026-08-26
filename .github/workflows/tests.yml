@@ -1,0 +1,33 @@
+name: Tests
+
+# Die neun Tests sollen nicht davon abhängen, dass jemand daran denkt, sie
+# lokal zu starten — genau daran ist die Handprüfung schon einmal verfallen
+# (siehe Änderungsprotokoll 2026-08-26 in CLAUDE.md).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"   # wie im Dockerfile
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Abhängigkeiten
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Syntaxprüfung (alle fünf Module)
+        run: python -m py_compile app/main.py app/db.py app/auth.py app/pruefer.py app/transform.py
+
+      - name: Tests
+        # Kein Netz, keine Claude-Aufrufe — deshalb sind hier keine Secrets nötig.
+        run: pytest -q
