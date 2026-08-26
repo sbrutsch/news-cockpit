@@ -38,10 +38,15 @@ Domain `news.itcoach.cloud` (Domain liegt ebenfalls bei Hostinger)
 
 ## Secrets (Governance-Regel 3)
 
-`APP_PASSWORD_HASH`, `INGEST_TOKEN`, `SECRET_KEY`, `DATABASE_URL` **nur** als
-Umgebungsvariablen (lokal `.env` — ist in `.gitignore`; Produktion: Coolify-UI).
-Nie in Code, Doku oder Chat-Ausgaben. Ein Token, das je in OneDrive/Git lag,
-gilt als kompromittiert und wird rotiert.
+Secrets **ausschließlich** als Umgebungsvariablen — lokal `.env` (ist in
+`.gitignore`), Produktion: Coolify-UI. Nie in Code, Doku oder Chat-Ausgaben.
+Ein Token, das je in OneDrive/Git lag, gilt als kompromittiert und wird rotiert.
+
+**Welche Variablen es gibt, steht in genau einer Datei: der Env-Tabelle in
+`README.md`.** Hier stand bis 2026-08-26 eine zweite, kürzere Liste — und die
+war zurückgeblieben (`ANTHROPIC_API_KEY` und `DIENST_TOKEN` fehlten, obwohl
+beides Secrets sind). Zwei Listen für dieselbe Sache driften; deshalb steht
+hier nur noch das Prinzip.
 
 ## Lokale Entwicklung
 
@@ -49,11 +54,17 @@ gilt als kompromittiert und wird rotiert.
   (windows-safe-editing Regel 7)
 - Start: `& "$env:LOCALAPPDATA\venvs\news-cockpit\Scripts\python" -m app.main`
   aus dem Projektordner (liest `.env`, SQLite unter `data/`)
-- Nach jeder Python-Änderung: `python -m py_compile app/main.py app/db.py app/auth.py`
+- Nach jeder Python-Änderung:
+  `python -m py_compile app/main.py app/db.py app/auth.py app/pruefer.py app/transform.py`
+  (alle fünf Module — `pruefer.py` und `transform.py` fehlten hier lange)
+- Nach jeder Änderung an `app/`: `pytest -q` (einmalig
+  `pip install -r requirements-dev.txt`). Neun Tests, kein Netz, keine
+  Claude-Aufrufe. Was bewusst ungetestet bleibt, steht im Kopf von
+  `tests/conftest.py`.
 
 ## Deployment-Weg
 
-GitHub-Repo (privat) → Coolify (Dockerfile-Build) → `news.sternenozean.de`.
+GitHub-Repo (privat) → Coolify (Dockerfile-Build) → `news.itcoach.cloud`.
 Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
 
 ## Die drei Prüfer .. Herkunft und Belegwert
@@ -149,6 +160,27 @@ Prüfung nie ab (nur Log).
 
 ## Änderungsprotokoll
 
+- **2026-08-26:** **Testgerüst + Doku-Abgleich.** Anlass: Bewertung eines
+  fremden Regelwerks (die „Karpathy"-Prinzipien aus
+  `multica-ai/andrej-karpathy-skills`). Übernommen wurde daraus nur, was
+  prüfbar ist; die allgemeinen Arbeitsregeln liegen jetzt in
+  `docs/claude-globale-regeln.md` (zum Einfügen in `~/.claude/CLAUDE.md`) und
+  bewusst NICHT hier — projektweit kopierte Regeln driften. Befunde beim
+  Abgleich Doku↔Code: Deployment-Ziel nannte noch `news.sternenozean.de`
+  (seit 2026-07-15 (2) überholt); die Secrets-Liste kannte `ANTHROPIC_API_KEY`
+  und `DIENST_TOKEN` nicht; `py_compile` deckte 3 von 5 Modulen ab. Alle drei
+  behoben, die Secrets-Liste durch einen Verweis auf die vollständige
+  Env-Tabelle in `README.md` ersetzt. Neu: `tests/` mit neun Tests auf
+  `pytest`, dazu `requirements-dev.txt` — bewusst getrennt von
+  `requirements.txt`, das Dockerfile installiert nur letztere und das
+  Produktionsimage bleibt unverändert. Getestet: Drossel greift ab Limit+1
+  (429) und lässt den teuren Aufruf gar nicht erst zu, GET zählt ohne Drossel,
+  Session-Aufrufe zählen nicht, `art=seite` bleibt aus der Bibliothek,
+  Rückfluss dedupliziert über den Text und ersetzt je Persona, Ingest-Dedupe
+  über `UNIQUE(url)`, `draft_flags` lässt „gepostet" gewinnen, Sitzungstoken
+  weist Manipulation und Ablauf ab. Gegenprobe: drei absichtlich eingebaute
+  Fehler (Drossel-Off-by-one, Dedupe ausgehebelt, `art`-Filter entfernt) wurden
+  je vom richtigen Test gefangen.
 - **2026-08-20 (2):** **Dienst-Drossel, Tageszähler, Rückfluss** (Details im
   Prüfstand-Abschnitt oben). Neu: Tabelle `dienst_log`, Envs
   `DIENST_LIMIT_PRO_STUNDE` (100) und `DIENST_RUECKFLUSS` (an),
