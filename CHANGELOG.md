@@ -9,6 +9,21 @@ Ausgelagert am 2026-08-26 aus `CLAUDE.md`: Das Protokoll war dort auf 161 von
 Weg, die Claude bei jeder Sitzung liest. In `CLAUDE.md` stehen jetzt nur noch
 die letzten drei Einträge plus ein Verweis hierher.
 
+- **2026-08-26 (3):** **Sicherheits-Check vom 22.08. nachgezogen und gemergt**
+  ([PR #1](https://github.com/sbrutsch/news-cockpit/pull/1), vier Tage offen
+  liegengeblieben; die ausführliche Fassung steht im
+  [`CHANGELOG.md`](CHANGELOG.md) unter 2026-08-22). Vier Lücken repariert:
+  umgehbare Login-Drossel, Sitzungen ohne Bindung ans Passwort, vorhersagbarer
+  Cookie-Klartext, Ingest ohne Mengengrenze; dazu CSP/HSTS und feste
+  Bibliotheks-Versionen. Beim Nachziehen auf den heutigen Stand:
+  `tests/test_sicherheit.py` von einem eigenständigen Skript auf `pytest`
+  umgestellt, damit die Prüfungen in der CI mitlaufen statt nur auf Zuruf — die
+  ursprüngliche Begründung („bewusst ohne pytest, passend zum Rest des
+  Projekts") war durch das Testgerüst von heute früh überholt.
+  `requirements-dev.txt` zusammengeführt, `httpx2` statt `httpx`, damit
+  `starlette.testclient` nicht mehr warnt. Gegenprobe: alle fünf Reparaturen
+  einzeln wieder ausgebaut, jede wurde vom richtigen Test gefangen.
+  **Bestandscookies werden ungültig — nach dem Deploy einmal neu anmelden.**
 - **2026-08-26 (2):** **Aufräumen der Reste aus dem Doku-Abgleich.** (a)
   Architektur-Baum zeigte fünf Dateien, die es teils nicht mehr so gab:
   `pruefer.py`, `transform.py`, PWA-Dateien, `tests/`, `docs/`, der Workflow und

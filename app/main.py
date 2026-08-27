@@ -160,6 +160,11 @@ class _Stundenfenster:
             self._treffer.append(jetzt)
             return True
 
+    def clear(self):
+        """Fenster leeren. Fuer Tests, damit sie sich nicht gegenseitig zaehlen."""
+        with self._lock:
+            self._treffer.clear()
+
 
 # Drossel für Dienst-Token-Aufrufe: nur die kostenpflichtigen POST-Routen.
 DIENST_LIMIT_PRO_STUNDE = int(os.environ.get("DIENST_LIMIT_PRO_STUNDE", "100"))

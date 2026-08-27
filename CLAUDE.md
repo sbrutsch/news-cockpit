@@ -69,6 +69,10 @@ hier nur noch das Prinzip.
   `pip install -r requirements-dev.txt`). Kein Netz, keine Claude-Aufrufe.
   Was bewusst ungetestet bleibt, steht im Kopf von `tests/conftest.py`.
   Dieselben Prüfungen laufen bei jedem Push in GitHub Actions.
+- **`tests/test_sicherheit.py` ist kein gewöhnlicher Test.** Er bewacht die
+  Befunde des Sicherheits-Checks vom 2026-08-22 (Login-Drossel, Sitzungen am
+  Passwort, Ingest-Grenze, Schutz-Header). Wird er rot, ist eine Lücke
+  zurückgekehrt — nicht nur ein Test kaputt.
 
 ## Deployment-Weg
 
@@ -176,6 +180,21 @@ Prüfung nie ab (nur Log).
 
 ## Änderungsprotokoll
 
+- **2026-08-26 (3):** **Sicherheits-Check vom 22.08. nachgezogen und gemergt**
+  ([PR #1](https://github.com/sbrutsch/news-cockpit/pull/1), vier Tage offen
+  liegengeblieben; die ausführliche Fassung steht im
+  [`CHANGELOG.md`](CHANGELOG.md) unter 2026-08-22). Vier Lücken repariert:
+  umgehbare Login-Drossel, Sitzungen ohne Bindung ans Passwort, vorhersagbarer
+  Cookie-Klartext, Ingest ohne Mengengrenze; dazu CSP/HSTS und feste
+  Bibliotheks-Versionen. Beim Nachziehen auf den heutigen Stand:
+  `tests/test_sicherheit.py` von einem eigenständigen Skript auf `pytest`
+  umgestellt, damit die Prüfungen in der CI mitlaufen statt nur auf Zuruf — die
+  ursprüngliche Begründung („bewusst ohne pytest, passend zum Rest des
+  Projekts") war durch das Testgerüst von heute früh überholt.
+  `requirements-dev.txt` zusammengeführt, `httpx2` statt `httpx`, damit
+  `starlette.testclient` nicht mehr warnt. Gegenprobe: alle fünf Reparaturen
+  einzeln wieder ausgebaut, jede wurde vom richtigen Test gefangen.
+  **Bestandscookies werden ungültig — nach dem Deploy einmal neu anmelden.**
 - **2026-08-26 (2):** **Aufräumen der Reste aus dem Doku-Abgleich.** (a)
   Architektur-Baum zeigte fünf Dateien, die es teils nicht mehr so gab:
   `pruefer.py`, `transform.py`, PWA-Dateien, `tests/`, `docs/`, der Workflow und
@@ -224,14 +243,7 @@ Prüfung nie ab (nur Log).
   `pytest -q` fand das Paket `app` nicht — das Konsolenskript legt, anders als
   `python -m pytest`, das Arbeitsverzeichnis nicht in den `sys.path`. Behoben
   mit `pytest.ini` (`pythonpath = .`), gilt jetzt für alle Aufrufarten.
-- **2026-08-20 (2):** **Dienst-Drossel, Tageszähler, Rückfluss** (Details im
-  Prüfstand-Abschnitt oben). Neu: Tabelle `dienst_log`, Envs
-  `DIENST_LIMIT_PRO_STUNDE` (100) und `DIENST_RUECKFLUSS` (an),
-  `counts.dienst_heute` + Briefing-Zeile. Getestet: Drossel greift ab
-  Limit+1 (429), GET zählt ohne Drossel, Session-Aufrufe zählen nicht,
-  Rückfluss dedupliziert und ersetzt Scores je Persona.
 
-**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (16 weitere,
-zurück bis zum Projektstart am 2026-07-15). Ausgelagert am 2026-08-26, weil das
-Protokoll auf die Hälfte dieser Datei angewachsen war. Neue Einträge kommen hier
-oben dazu und wandern weiter, sobald mehr als drei zusammenkommen.
+**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (18 weitere,
+zurück bis zum Projektstart am 2026-07-15). Neue Einträge kommen hier oben dazu
+und wandern weiter, sobald mehr als drei zusammenkommen.
