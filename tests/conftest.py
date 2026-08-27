@@ -28,8 +28,11 @@ os.environ["SECRET_KEY"] = "test-schluessel-ohne-bedeutung"
 os.environ["INGEST_TOKEN"] = "test-ingest-token"
 os.environ["DIENST_TOKEN"] = "test-dienst-token"
 os.environ["APP_PASSWORD"] = "test-passwort"
-# Klein genug, dass der Drossel-Test drei Aufrufe braucht statt 101.
+# Klein genug, dass die Drossel-Tests wenige Aufrufe brauchen statt hunderter.
 os.environ["DIENST_LIMIT_PRO_STUNDE"] = "2"
+os.environ["INGEST_LIMIT_PRO_STUNDE"] = "3"
+# Wie in Produktion hinter Coolify/Traefik: genau ein eigener Proxy haengt an.
+os.environ["TRUSTED_PROXY_HOPS"] = "1"
 os.environ.pop("ANTHROPIC_API_KEY", None)
 
 import pytest  # noqa: E402
@@ -40,18 +43,24 @@ from app import auth, db, main  # noqa: E402
 db.init()
 
 
-@pytest.fixture(autouse=True)
-def sauberer_zustand():
-    """Jeder Test startet mit leeren Tabellen und leerem Drossel-Fenster.
-
-    `_dienst_fenster` ist modulglobal und überlebt sonst von Test zu Test.
-    """
+def _zustand_leeren():
+    """Alles, was modulglobal ist und sonst von Test zu Test überlebt."""
     with db.cursor() as cur:
         for tabelle in ("items", "drafts", "dienst_log"):
             cur.execute("DELETE FROM " + tabelle)
     main._dienst_fenster.clear()
+    main._ingest_fenster.clear()
+    auth._attempts.clear()          # Login-Sperren je Absender
+    auth._session_key_cache = None  # haengt am Passwort, das Tests wechseln
+    auth._pw_hash_cache = None
+
+
+@pytest.fixture(autouse=True)
+def sauberer_zustand():
+    """Jeder Test startet auf der grünen Wiese."""
+    _zustand_leeren()
     yield
-    main._dienst_fenster.clear()
+    _zustand_leeren()
 
 
 @pytest.fixture

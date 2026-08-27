@@ -30,18 +30,19 @@ Copy-Item .env.example .env
 ## Tests
 
 ```powershell
-& "$env:LOCALAPPDATA\venvs\news-cockpit\Scripts\pip" install -r requirements-dev.txt
-& "$env:LOCALAPPDATA\venvs\news-cockpit\Scripts\python" tests\test_sicherheit.py
+& "$env:LOCALAPPDATA\venvs\news-cockpit\Scripts\python" -m pytest -q
 ```
 
 `tests/test_sicherheit.py` bewacht die Befunde des Sicherheits-Checks vom
 2026-08-22: Login-Drossel gegen gefälschte `X-Forwarded-For`-Header, Sitzungen
 am Passwort, Ingest-Drossel, Schutz-Header, und dass ohne Anmeldung keine Route
-Daten herausgibt. 34 Prüfungen, Rückgabewert 0 = alles gut. Läuft gegen eine
-Wegwerf-SQLite im Temp-Ordner und fasst weder eine laufende Instanz noch die
-Produktionsdatenbank an.
+Daten herausgibt. Läuft gegen eine Wegwerf-SQLite im Temp-Ordner und fasst
+weder eine laufende Instanz noch die Produktionsdatenbank an.
 
-**Wird der Test rot, ist eine Lücke zurückgekehrt — nicht nur ein Test kaputt.**
+**Wird dieser Test rot, ist eine Lücke zurückgekehrt — nicht nur ein Test
+kaputt.**
+
+Dieselben Prüfungen laufen bei jedem Push und Pull Request in GitHub Actions.
 
 ## Konfiguration (Umgebungsvariablen)
 
