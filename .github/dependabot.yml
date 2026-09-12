@@ -1,0 +1,9 @@
+# Hält die per Commit-SHA angepinnten GitHub Actions aktuell: ein Pull Request je neuer
+# Version, monatlich gebündelt. Ohne Merge ändert sich nichts. Die Python-Pakete in
+# requirements*.txt bleiben bewusst ausserhalb (Regel dort: bewusst aktualisieren).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

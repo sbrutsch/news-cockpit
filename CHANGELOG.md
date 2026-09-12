@@ -9,6 +9,15 @@ Ausgelagert am 2026-08-26 aus `CLAUDE.md`: Das Protokoll war dort auf 161 von
 Weg, die Claude bei jeder Sitzung liest. In `CLAUDE.md` stehen jetzt nur noch
 die letzten drei Einträge plus ein Verweis hierher.
 
+- **2026-09-12 (2):** **Workflow-Actions auf Node 24, per Commit-SHA angepinnt.**
+  `tests.yml` nutzte `actions/checkout@v4` und `actions/setup-python@v5`; beide laufen auf
+  Node 20, das GitHub abkündigt (Warnung in jedem Lauf seit September). Jetzt checkout
+  v7.0.1 und setup-python v7.0.0 (Node 24), nicht mehr über den beweglichen Tag, sondern
+  über den Commit-SHA der Version mit Versionskommentar: ein verschobener Tag kann so
+  keinen fremden Code in den Workflow bringen. Neu `.github/dependabot.yml`, nur für
+  Actions, monatlich; die Python-Pakete bleiben bewusst draußen (Regel in
+  `requirements.txt`). Geprüft: YAML lädt, Testlauf in der CI auf dem PR grün, Warnung
+  weg. Gleiches Muster wie in `wissensbasis` am selben Tag.
 - **2026-09-12:** **Personas aus dem Kanon, dritte Lesesituation `audit`.** Die
   System-Prompts standen als Konstanten in `pruefer.py` und als Kopien in drei Skills;
   jetzt liest `pruefer.py` beim Start `app/personas/*.md`, erzeugt vom Generator des
