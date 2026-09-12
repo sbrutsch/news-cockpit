@@ -328,8 +328,8 @@ def verwerten(item_id: int):
 
 class PruefBody(BaseModel):
     entwurf: str
-    pruefer: str  # 'ronny', 'claudia' oder 'markus'
-    art: str = "beitrag"  # 'beitrag' oder 'seite' — die Lesesituation der Persona
+    pruefer: str  # Schluessel einer Persona aus app/personas/ (siehe GET /api/pruefer)
+    art: str = "beitrag"  # 'beitrag', 'seite' oder 'audit' — die Lesesituation der Persona
 
 
 class UeberarbeitenBody(BaseModel):
@@ -341,8 +341,10 @@ class UeberarbeitenBody(BaseModel):
 @app.get("/api/pruefer", dependencies=[Depends(require_session_oder_dienst)])
 def pruefer_liste():
     """Wer steht im Prüfstand. Damit ein anderer Dienst die Personas nicht fest
-    verdrahten muss und eine vierte hier automatisch dort ankommt."""
-    return {"pruefer": [{"schluessel": k, "name": v["name"], "rolle": v["rolle"]}
+    verdrahten muss und eine neue Datei in app/personas/ automatisch dort ankommt.
+    `arten` sagt je Persona, welche Lesesituationen sie beherrscht."""
+    return {"pruefer": [{"schluessel": k, "name": v["name"], "rolle": v["rolle"],
+                         "arten": pruefer.arten_fuer(k)}
                         for k, v in pruefer.PRUEFER.items()]}
 
 
@@ -375,12 +377,15 @@ def _rueckfluss_beitrag(entwurf, ergebnis):
 def pruefen(body: PruefBody, request: Request):
     if not body.entwurf.strip():
         raise HTTPException(status_code=400, detail="Kein Entwurf übergeben")
-    if body.art not in ("beitrag", "seite"):
-        raise HTTPException(status_code=400, detail="art muss 'beitrag' oder 'seite' sein")
+    if body.art not in pruefer.ARTEN:
+        raise HTTPException(status_code=400, detail="art muss 'beitrag', 'seite' oder 'audit' sein")
     try:
         ergebnis = pruefer.pruefen(body.entwurf, body.pruefer, body.art)
     except pruefer.TransformError as e:
         raise HTTPException(status_code=e.status, detail=str(e))
+    # Rueckfluss nur fuer Beitraege. Landingpages (seite) sind keine LinkedIn-Bibliothek,
+    # und Audit-Vorlagen (audit) sind Kundenmaterial: Sie werden geprueft und danach
+    # nirgends gespeichert und nirgends im Wortlaut geloggt (Bauplan Schritt 7).
     if (DIENST_RUECKFLUSS and body.art == "beitrag"
             and getattr(request.state, "dienst", False)):
         _rueckfluss_beitrag(body.entwurf.strip(), ergebnis)

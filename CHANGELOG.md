@@ -9,6 +9,12 @@ Ausgelagert am 2026-08-26 aus `CLAUDE.md`: Das Protokoll war dort auf 161 von
 Weg, die Claude bei jeder Sitzung liest. In `CLAUDE.md` stehen jetzt nur noch
 die letzten drei Einträge plus ein Verweis hierher.
 
+- **2026-09-12:** **Personas aus dem Kanon, dritte Lesesituation `audit`.** Die
+  System-Prompts standen als Konstanten in `pruefer.py` und als Kopien in drei Skills;
+  jetzt liest `pruefer.py` beim Start `app/personas/*.md`, erzeugt vom Generator des
+  Repos `wissensbasis` mit Kopfzeile. Neu: CFO und Vorstand für die Gremium-Simulation,
+  `art=audit` ohne Rückfluss und ohne Wortlaut-Log, `arten` in `GET /api/pruefer`.
+  Tests in `tests/test_personas.py`. Ausführlich in `CLAUDE.md`.
 - **2026-08-26 (3):** **Sicherheits-Check vom 22.08. nachgezogen und gemergt**
   ([PR #1](https://github.com/sbrutsch/news-cockpit/pull/1), vier Tage offen
   liegengeblieben; die ausführliche Fassung steht im
