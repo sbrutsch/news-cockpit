@@ -189,6 +189,15 @@ Prüfung nie ab (nur Log).
 
 ## Änderungsprotokoll
 
+- **2026-09-12 (2):** **Workflow-Actions auf Node 24, per Commit-SHA angepinnt.**
+  `tests.yml` nutzte `actions/checkout@v4` und `actions/setup-python@v5`; beide laufen auf
+  Node 20, das GitHub abkündigt (Warnung in jedem Lauf seit September). Jetzt checkout
+  v7.0.1 und setup-python v7.0.0 (Node 24), nicht mehr über den beweglichen Tag, sondern
+  über den Commit-SHA der Version mit Versionskommentar: ein verschobener Tag kann so
+  keinen fremden Code in den Workflow bringen. Neu `.github/dependabot.yml`, nur für
+  Actions, monatlich; die Python-Pakete bleiben bewusst draußen (Regel in
+  `requirements.txt`). Geprüft: YAML lädt, Testlauf in der CI auf dem PR grün, Warnung
+  weg. Gleiches Muster wie in `wissensbasis` am selben Tag.
 - **2026-09-12:** **Personas aus dem Kanon, dritte Lesesituation `audit`.** Die drei
   System-Prompts standen als Konstanten in `pruefer.py` und als Kopien in drei Skills der
   Skills-Bibliothek; Änderungen mussten an vier Orten nachgezogen werden. Jetzt liest
@@ -218,27 +227,6 @@ Prüfung nie ab (nur Log).
   `starlette.testclient` nicht mehr warnt. Gegenprobe: alle fünf Reparaturen
   einzeln wieder ausgebaut, jede wurde vom richtigen Test gefangen.
   **Bestandscookies werden ungültig — nach dem Deploy einmal neu anmelden.**
-- **2026-08-26 (2):** **Aufräumen der Reste aus dem Doku-Abgleich.** (a)
-  Architektur-Baum zeigte fünf Dateien, die es teils nicht mehr so gab:
-  `pruefer.py`, `transform.py`, PWA-Dateien, `tests/`, `docs/`, der Workflow und
-  `requirements-dev.txt` fehlten, `anthropic` fehlte bei den Abhängigkeiten.
-  (b) Änderungsprotokoll nach `CHANGELOG.md` ausgelagert — es war auf 161 von
-  321 Zeilen gewachsen und stand damit den Regeln im Weg, die bei jeder Sitzung
-  gelesen werden. In `CLAUDE.md` bleiben die letzten drei Einträge plus Verweis;
-  nichts gekürzt, nichts verloren (geprüft: 18 Einträge vorher, 18 nachher).
-  (c) `.env.example` kannte `ANTHROPIC_API_KEY`, `TRANSFORM_MODEL` und die drei
-  `DIENST_*`-Variablen nicht — ein frisches lokales Setup konnte Verwerten und
-  Prüfstand deshalb nicht starten. (d) Die Env-Tabelle in `README.md` nennt jetzt
-  auch `SOURCE_COMMIT` und `ENV_FILE`; sie soll die vollständige Liste sein, also
-  gehören die beiden hinein. (e) **Neu: `tests/test_env_doku.py`** macht die
-  Governance-Regel prüfbar — jede Variable, die `app/` liest, muss in der
-  Tabelle stehen, und `.env.example` darf keine toten Variablen nennen. Die
-  erste Fassung dieses Tests war wertlos: sie suchte im ganzen README und liess
-  sich von einer Erwähnung im Fliesstext täuschen (aufgefallen an der
-  Gegenprobe, nicht am grünen Lauf). Sie prüft jetzt die erste Tabellenspalte.
-  Gegenprobe: Zeile aus der Tabelle entfernt, tote Variable in `.env.example`,
-  neue undokumentierte Env-Lesung im Code, Abschnittsüberschrift umbenannt —
-  alle vier wurden gefangen.
-**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (19 weitere,
+**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (20 weitere,
 zurück bis zum Projektstart am 2026-07-15). Neue Einträge kommen hier oben dazu
 und wandern weiter, sobald mehr als drei zusammenkommen.
