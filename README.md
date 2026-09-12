@@ -107,7 +107,8 @@ sich also nichts merken.
 - `PATCH /api/items/{id}` — `{"important": true}`, `{"status": "archived"|"new"}` und/oder `{"note": "…"}` (leere Notiz löscht; Notiz fließt beim Verwerten als gewünschter Winkel in den Entwurf)
 - `POST /api/items/{id}/verwerten` — LinkedIn-Entwurf zum Eintrag (Claude serverseitig, Positionierungs-Prompt)
 - `POST /api/items/{id}/einordnen` — Resümee: Relevanz für Stefans Geschäft und IT-Leiter (hoch/mittel/gering + 2–4 Sätze, gespeichert am Eintrag)
-- `POST /api/pruefen` — `{entwurf, pruefer}` (`ronny`|`claudia`|`markus`): IT-Leiter-Persona bewertet den Entwurf → `{score 1–10, feedback, name, rolle}`
+- `GET /api/pruefer` — die Personas aus `app/personas/*.md` (generiert aus dem Repo `wissensbasis`) mit `schluessel`, `name`, `rolle` und `arten` (Lesesituationen, die die Persona beherrscht)
+- `POST /api/pruefen` — `{entwurf, pruefer, art?}`: Persona bewertet den Text → `{score 1–10, feedback, name, rolle, dimensionen}`. `art`: `beitrag` (LinkedIn, Standard), `seite` (Landingpage, Score misst Kaufnähe), `audit` (anonymisierte Entscheidungsvorlage, Persona liefert Einwände im O-Ton; wird nie gespeichert)
 - `POST /api/ueberarbeiten` — `{entwurf, feedback:[…], anweisung?}`: überarbeitet den Entwurf anhand des ausgewählten Prüfer-Feedbacks; `anweisung` = optionale Regie-Anweisung mit Vorrang → `{draft}`
 - `GET /api/drafts` · `POST /api/drafts` (`{text, item_id?, item_title?, scores?}`) · `PATCH /api/drafts/{id}` (`{text?, scores?, status?}`, Status `entwurf`|`gepostet`) · `DELETE /api/drafts/{id}` — gespeicherte LinkedIn-Entwürfe (Tab „Entwürfe" in der UI)
 - `DELETE /api/items/{id}` — Soft-Delete

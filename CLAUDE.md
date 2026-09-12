@@ -17,7 +17,8 @@ Domain `news.itcoach.cloud` (Domain liegt ebenfalls bei Hostinger)
 │   ├── main.py       # FastAPI: Routen, Auth-Dependencies, Dienst-Drossel, Security-Header, .env-Loader
 │   ├── db.py         # Speicherschicht: Postgres (psycopg) ODER SQLite über DATABASE_URL
 │   ├── auth.py       # PBKDF2-Hash, signierte Session-Cookies, Login-Drossel (stdlib)
-│   ├── pruefer.py    # Die drei Ziel-Personas, Score- und Dimensionen-Parser
+│   ├── pruefer.py    # Prüfstand: lädt app/personas/*.md (generiert aus wissensbasis), Score- und Dimensionen-Parser
+│   ├── personas/     # GENERIERT aus dem Kanon (wissensbasis/personas), nie hier editieren
 │   └── transform.py  # Claude-Aufrufe: Entwurf, Überarbeiten, Einordnen (`_claude_text`)
 ├── public/
 │   ├── index.html    # Komplette UI: Vanilla HTML/CSS/JS, kein Build-Step, keine CDN-Abhängigkeit
@@ -79,15 +80,23 @@ hier nur noch das Prinzip.
 GitHub-Repo (privat) → Coolify (Dockerfile-Build) → `news.itcoach.cloud`.
 Healthcheck: `GET /healthz`. Env-Vars in Coolify pflegen. Auto-Deploy bei Push.
 
-## Die drei Prüfer .. Herkunft und Belegwert
+## Die Prüfer .. Herkunft, Belegwert, Quelle
 
-Am 2026-08-15 nachgeprüft, weil die Pfade in diesem Dokument ins Leere zeigten.
+**Seit 2026-09-12 liegen die Personas nicht mehr im Code.** Quelle ist das Repo
+`wissensbasis` (Kanon), Ordner `personas/`. Der Generator dort schreibt sie nach
+`app/personas/<schluessel>.md`, je mit Kopfzeile „Generiert aus wissensbasis@…".
+`pruefer.py` liest beim Start Frontmatter, `## System-Prompt`, `## Rahmen: Seite` und
+`## Rahmen: Audit`. **Diese Dateien hier nie editieren**: Der Drift-Check im Kanon meldet
+es täglich, der nächste Generator-Lauf überschreibt es. Eine neue Persona ist eine neue
+Datei im Kanon, keine Codeänderung. Herkunft und Belegwert stehen in jeder Datei.
 
-| Persona | Woraus entstanden | Quelle liegt |
-|---|---|---|
-| **Ronny Berger** | Originalinterview | `Claude-Code/skills-bibliothek/claude-ai/marktfilter-ronny/references/ronny-marktfilter.md`, dazu `Dokumente/KI/KI-Agenten/Ronny-IT-Leiter.docx` |
-| **Markus Leitner** | Originalinterview vom 2026-07-17 | `Claude-Code/Marketing-Cockpit/material/Client - … - 2026-07-17.txt` |
-| **Claudia Brenner** | **konstruiert** aus Kundendaten, kein einzelnes Interview | `Dokumente/KI/KI-Agenten/Tagesworkshop/Agent-Material/simulator-claudia-prompt.md` |
+| Persona | Woraus entstanden | Zählt bei Beiträgen | Zählt bei Audits |
+|---|---|---|---|
+| **Ronny Berger** | Originalinterview | wird gefragt, entscheidet nicht | ja |
+| **Markus Leitner** | Originalinterview vom 2026-07-17, anonymisiert | ja | ja |
+| **Claudia Brenner** | **konstruiert** aus Kundendaten | ja | ja |
+| **CFO** (konstruiert, 2026-09-12) | gesetzt für die Gremium-Simulation | nein | ja |
+| **Vorstand** (konstruiert, 2026-09-12) | gesetzt für die Gremium-Simulation | nein | ja |
 
 **Der Unterschied zählt.** Bei Ronny und Markus ist jede Eigenschaft belegt. Was dort
 ergänzt wird, ohne im Interview zu stehen, ist erfunden und senkt den Belegwert genau um
@@ -180,6 +189,20 @@ Prüfung nie ab (nur Log).
 
 ## Änderungsprotokoll
 
+- **2026-09-12:** **Personas aus dem Kanon, dritte Lesesituation `audit`.** Die drei
+  System-Prompts standen als Konstanten in `pruefer.py` und als Kopien in drei Skills der
+  Skills-Bibliothek; Änderungen mussten an vier Orten nachgezogen werden. Jetzt liest
+  `pruefer.py` beim Start `app/personas/*.md` (Frontmatter, `## System-Prompt`,
+  `## Rahmen: Seite`, `## Rahmen: Audit`); die Dateien erzeugt der Generator des Repos
+  `wissensbasis`, je mit Kopfzeile. Neu: CFO und Vorstand als konstruierte Personas für
+  die Gremium-Simulation des Audit-Skeletts; `art=audit` liefert Einwände im O-Ton statt
+  Content-Noten, wird nie in die Entwurfs-Bibliothek zurückgeführt und nie im Wortlaut
+  geloggt; `GET /api/pruefer` nennt je Persona `arten`. Getestet
+  (`tests/test_personas.py`): fünf Personas geladen, Kopfzeile vorhanden, Wortlaut kommt
+  aus der Datei, Rahmen je Lesesituation, nicht vorgesehene Lesesituation bricht vor dem
+  Modellaufruf ab, `art=audit` hinterlässt keinen Entwurf, `art` kennt genau drei Werte.
+  Bestehende 29 Tests unverändert grün. Wortlaut der drei alten Prompts ist identisch
+  übernommen, der Prüfstand bewertet also weiter wie zuvor.
 - **2026-08-26 (3):** **Sicherheits-Check vom 22.08. nachgezogen und gemergt**
   ([PR #1](https://github.com/sbrutsch/news-cockpit/pull/1), vier Tage offen
   liegengeblieben; die ausführliche Fassung steht im
@@ -216,34 +239,6 @@ Prüfung nie ab (nur Log).
   Gegenprobe: Zeile aus der Tabelle entfernt, tote Variable in `.env.example`,
   neue undokumentierte Env-Lesung im Code, Abschnittsüberschrift umbenannt —
   alle vier wurden gefangen.
-- **2026-08-26:** **Testgerüst + Doku-Abgleich.** Anlass: Bewertung eines
-  fremden Regelwerks (die „Karpathy"-Prinzipien aus
-  `multica-ai/andrej-karpathy-skills`). Übernommen wurde daraus nur, was
-  prüfbar ist; die allgemeinen Arbeitsregeln liegen jetzt in
-  `docs/claude-globale-regeln.md` (zum Einfügen in `~/.claude/CLAUDE.md`) und
-  bewusst NICHT hier — projektweit kopierte Regeln driften. Befunde beim
-  Abgleich Doku↔Code: Deployment-Ziel nannte noch `news.sternenozean.de`
-  (seit 2026-07-15 (2) überholt); die Secrets-Liste kannte `ANTHROPIC_API_KEY`
-  und `DIENST_TOKEN` nicht; `py_compile` deckte 3 von 5 Modulen ab. Alle drei
-  behoben, die Secrets-Liste durch einen Verweis auf die vollständige
-  Env-Tabelle in `README.md` ersetzt. Neu: `tests/` mit neun Tests auf
-  `pytest`, dazu `requirements-dev.txt` — bewusst getrennt von
-  `requirements.txt`, das Dockerfile installiert nur letztere und das
-  Produktionsimage bleibt unverändert. Getestet: Drossel greift ab Limit+1
-  (429) und lässt den teuren Aufruf gar nicht erst zu, GET zählt ohne Drossel,
-  Session-Aufrufe zählen nicht, `art=seite` bleibt aus der Bibliothek,
-  Rückfluss dedupliziert über den Text und ersetzt je Persona, Ingest-Dedupe
-  über `UNIQUE(url)`, `draft_flags` lässt „gepostet" gewinnen, Sitzungstoken
-  weist Manipulation und Ablauf ab. Gegenprobe: drei absichtlich eingebaute
-  Fehler (Drossel-Off-by-one, Dedupe ausgehebelt, `art`-Filter entfernt) wurden
-  je vom richtigen Test gefangen. Damit die Prüfung nicht wieder an der
-  Erinnerung hängt, läuft sie seit demselben Tag in GitHub Actions
-  (`.github/workflows/tests.yml`, bei Pull Requests und bei Push nach `main`;
-  keine Secrets nötig, weil kein Test die Claude-API ruft). Dabei aufgefallen:
-  `pytest -q` fand das Paket `app` nicht — das Konsolenskript legt, anders als
-  `python -m pytest`, das Arbeitsverzeichnis nicht in den `sys.path`. Behoben
-  mit `pytest.ini` (`pythonpath = .`), gilt jetzt für alle Aufrufarten.
-
-**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (18 weitere,
+**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (19 weitere,
 zurück bis zum Projektstart am 2026-07-15). Neue Einträge kommen hier oben dazu
 und wandern weiter, sobald mehr als drei zusammenkommen.
