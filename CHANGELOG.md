@@ -9,6 +9,17 @@ Ausgelagert am 2026-08-26 aus `CLAUDE.md`: Das Protokoll war dort auf 161 von
 Weg, die Claude bei jeder Sitzung liest. In `CLAUDE.md` stehen jetzt nur noch
 die letzten drei Einträge plus ein Verweis hierher.
 
+- **2026-10-11 (2):** **Claudia geeicht, Teilnoten gespeichert.** Befund aus den
+  Produktionsdaten: Claudia vergab 25 von 28 mal die 8, Ronny nie, die Prüfschleife
+  endete in 29 von 29 Fällen in Runde 1. Claudia ist im Kanon geeicht
+  (`wissensbasis@85c4041`, `personas/claudia.md`, neuer Abschnitt Eichung): drei
+  Maßstäbe aus echten LinkedIn-Reaktionen auf eigene Beiträge (Entwürfe 6, 16, 25 als
+  8, 6, 4), Grundrate höchstens eine 8 je zehn Beiträge, SCORE nie über dem Durchschnitt
+  der vier Kriterien; Kopie per Generator nach `app/personas/claudia.md`. Teilnoten
+  landen jetzt in `drafts.scores[].dimensionen`, aus der Oberfläche wie aus dem
+  Rückfluss, Tooltip am Score-Chip; zwei Tests in `tests/test_teilnoten.py`.
+  Prüfkriterium der Eichung: sechs Beiträge, die nicht Maßstab sind, ergeben mindestens
+  drei verschiedene Noten, starke über schwachen. Messung: siehe Folgeeintrag.
 - **2026-10-11:** **Rückkanal von ContentIn** (`app/contentin.py`, Abschnitt
   in `CLAUDE.md`). Anlass war die Auswertung der Generierung gegen 30 Entwürfe
   und 41 veröffentlichte Beiträge: Prüfer ohne Trennschärfe (Claudia 25 von 28

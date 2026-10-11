@@ -111,7 +111,11 @@ identifizierbar machen, ohne die Bewertung zu verbessern.
 ## Alle drei Prüfer geben Teilnoten
 
 Seit 2026-08-15 bewertet jede Persona vier Kriterien mit 1 bis 10 und Begründung.
-`parse_dimensionen()` liest sie aus dem Fließtext, ohne ihn zu verändern.
+`parse_dimensionen()` liest sie aus dem Fließtext, ohne ihn zu verändern. **Seit
+2026-10-11 werden sie gespeichert:** `drafts.scores[].dimensionen` trägt je Persona Name
+und Note der Kriterien (die Begründung bleibt im Feedback), aus der Oberfläche wie aus dem
+Rückfluss; der Score-Chip im Entwürfe-Tab zeigt sie als Tooltip. Damit lässt sich erstmals
+auswerten, welches Kriterium einen Beitrag trägt oder reißt.
 
 | Ronny | Claudia | Markus |
 |---|---|---|
@@ -132,6 +136,10 @@ Seit 2026-08-15 bewertet jede Persona vier Kriterien mit 1 bis 10 und Begründun
   Budgetkampf Richtung CFO · „Ratschläge ohne Begründung, Beraterperspektive ohne
   Unternehmensrealität". Da sie aus Kundendaten konstruiert ist, beschädigt das keinen
   Beleg. Wer ihre Kriterien ändert, ändert eine Setzung, kein Interview.
+  **Seit 2026-10-11 geeicht** (Kanon `personas/claudia.md`, Abschnitt Eichung): Sie
+  vergab 25 von 28 mal die 8 und trennte nichts. Jetzt drei Maßstäbe aus echten
+  LinkedIn-Reaktionen auf eigene Beiträge (Entwürfe 6, 16, 25 als 8, 6, 4), Grundrate
+  höchstens eine 8 je zehn Beiträge, SCORE nie über dem Durchschnitt ihrer vier Kriterien.
 
 ## Der Prüfstand dient jetzt auch anderen Apps
 
@@ -219,6 +227,20 @@ Hand getaggt werden.
 
 ## Änderungsprotokoll
 
+- **2026-10-11 (2):** **Claudia geeicht, Teilnoten gespeichert.** Befund aus den
+  Produktionsdaten: Claudia vergab 25 von 28 mal die 8, Ronny nie, die Prüfschleife
+  endete in 29 von 29 Fällen in Runde 1. Claudia ist im Kanon geeicht
+  (`wissensbasis@85c4041`, `personas/claudia.md`, neuer Abschnitt Eichung; Vertrag in
+  `personas/README.md` um den optionalen Abschnitt ergänzt): drei Maßstäbe aus echten
+  LinkedIn-Reaktionen auf eigene Beiträge (Entwürfe 6, 16, 25 als 8, 6, 4), Grundrate
+  höchstens eine 8 je zehn Beiträge, SCORE nie über dem Durchschnitt der vier Kriterien.
+  Kopie per Generator nach `app/personas/claudia.md`; die Skills-Bibliothek trägt keine
+  Claudia-Kopie (Generator-Check: nichts zu schreiben). Teilnoten landen jetzt in
+  `drafts.scores[].dimensionen`, aus der Oberfläche wie aus dem Rückfluss, Tooltip am
+  Score-Chip; zwei Tests in `tests/test_teilnoten.py`. Prüfkriterium der Eichung: sechs
+  Beiträge, die nicht Maßstab sind, ergeben mindestens drei verschiedene Noten, und die
+  zwei mit den meisten Reaktionen liegen über den zwei mit den wenigsten. Messung nach
+  dem Deploy: siehe Folgeeintrag.
 - **2026-10-11:** **Rückkanal von ContentIn** (`app/contentin.py`, Abschnitt
   oben). Anlass war die Auswertung der Generierung gegen 30 Entwürfe und 41
   veröffentlichte Beiträge: Prüfer ohne Trennschärfe (Claudia 25 von 28 mal
@@ -242,20 +264,6 @@ Hand getaggt werden.
   Actions, monatlich; die Python-Pakete bleiben bewusst draußen (Regel in
   `requirements.txt`). Geprüft: YAML lädt, Testlauf in der CI auf dem PR grün, Warnung
   weg. Gleiches Muster wie in `wissensbasis` am selben Tag.
-- **2026-09-12:** **Personas aus dem Kanon, dritte Lesesituation `audit`.** Die drei
-  System-Prompts standen als Konstanten in `pruefer.py` und als Kopien in drei Skills der
-  Skills-Bibliothek; Änderungen mussten an vier Orten nachgezogen werden. Jetzt liest
-  `pruefer.py` beim Start `app/personas/*.md` (Frontmatter, `## System-Prompt`,
-  `## Rahmen: Seite`, `## Rahmen: Audit`); die Dateien erzeugt der Generator des Repos
-  `wissensbasis`, je mit Kopfzeile. Neu: CFO und Vorstand als konstruierte Personas für
-  die Gremium-Simulation des Audit-Skeletts; `art=audit` liefert Einwände im O-Ton statt
-  Content-Noten, wird nie in die Entwurfs-Bibliothek zurückgeführt und nie im Wortlaut
-  geloggt; `GET /api/pruefer` nennt je Persona `arten`. Getestet
-  (`tests/test_personas.py`): fünf Personas geladen, Kopfzeile vorhanden, Wortlaut kommt
-  aus der Datei, Rahmen je Lesesituation, nicht vorgesehene Lesesituation bricht vor dem
-  Modellaufruf ab, `art=audit` hinterlässt keinen Entwurf, `art` kennt genau drei Werte.
-  Bestehende 29 Tests unverändert grün. Wortlaut der drei alten Prompts ist identisch
-  übernommen, der Prüfstand bewertet also weiter wie zuvor.
-**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (21 weitere,
+**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (22 weitere,
 zurück bis zum Projektstart am 2026-07-15). Neue Einträge kommen hier oben dazu
 und wandern weiter, sobald mehr als drei zusammenkommen.

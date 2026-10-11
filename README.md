@@ -112,7 +112,7 @@ sich also nichts merken.
 - `GET /api/pruefer` — die Personas aus `app/personas/*.md` (generiert aus dem Repo `wissensbasis`) mit `schluessel`, `name`, `rolle` und `arten` (Lesesituationen, die die Persona beherrscht)
 - `POST /api/pruefen` — `{entwurf, pruefer, art?}`: Persona bewertet den Text → `{score 1–10, feedback, name, rolle, dimensionen}`. `art`: `beitrag` (LinkedIn, Standard), `seite` (Landingpage, Score misst Kaufnähe), `audit` (anonymisierte Entscheidungsvorlage, Persona liefert Einwände im O-Ton; wird nie gespeichert)
 - `POST /api/ueberarbeiten` — `{entwurf, feedback:[…], anweisung?}`: überarbeitet den Entwurf anhand des ausgewählten Prüfer-Feedbacks; `anweisung` = optionale Regie-Anweisung mit Vorrang → `{draft}`
-- `GET /api/drafts` · `POST /api/drafts` (`{text, item_id?, item_title?, scores?}`) · `PATCH /api/drafts/{id}` (`{text?, scores?, status?}`, Status `entwurf`|`gepostet`) · `DELETE /api/drafts/{id}` — gespeicherte LinkedIn-Entwürfe (Tab „Entwürfe" in der UI)
+- `GET /api/drafts` · `POST /api/drafts` (`{text, item_id?, item_title?, scores?}`) · `PATCH /api/drafts/{id}` (`{text?, scores?, status?}`, Status `entwurf`|`gepostet`) · `DELETE /api/drafts/{id}` — gespeicherte LinkedIn-Entwürfe (Tab „Entwürfe" in der UI); `scores` je Persona `{pruefer, name, score, dimensionen: [{name, score}]}`
 - `DELETE /api/items/{id}` — Soft-Delete
 - `GET /api/export?days=7` — Wochen-Export: Wichtiges als Markdown-Download (gruppiert nach Content-Säule, inkl. Notizen; days 1–90)
 - `GET /api/version` — Build-Kennung (Update-Erkennung im Frontend; ohne Login)

@@ -1000,8 +1000,12 @@ function draftNode(d, index) {
   if (d.status === "gepostet") meta.append(el("span", "chip gepostet", "gepostet"));
   (d.scores || []).forEach(s => {
     if (s.score !== null && s.score !== undefined) {
-      meta.append(el("span", "d-score " + scoreKlasse(s.score),
-        ((s.name || "?").split(" ")[0]) + " " + s.score));
+      const badge = el("span", "d-score " + scoreKlasse(s.score),
+        ((s.name || "?").split(" ")[0]) + " " + s.score);
+      if (Array.isArray(s.dimensionen) && s.dimensionen.length) {
+        badge.title = s.dimensionen.map(t => t.name + " " + t.score).join(" · ");
+      }
+      meta.append(badge);
     }
   });
 
@@ -1443,7 +1447,11 @@ async function saveDraft() {
   const btn = $("vwSave");
   btn.disabled = true;
   const text = vw.draft;
-  const scores = Object.values(vw.results || {}).map(r => ({ pruefer: r.pruefer, name: r.name, score: r.score }));
+  // Gesamtnote plus Teilnoten je Persona; die Begründungen bleiben im Feedback-Text
+  const scores = Object.values(vw.results || {}).map(r => ({
+    pruefer: r.pruefer, name: r.name, score: r.score,
+    dimensionen: (r.dimensionen || []).map(t => ({ name: t.name, score: t.score }))
+  }));
   try {
     if (vw.draftId) {
       const body = { text };

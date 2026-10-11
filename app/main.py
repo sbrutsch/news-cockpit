@@ -375,7 +375,10 @@ DIENST_RUECKFLUSS = os.environ.get("DIENST_RUECKFLUSS", "1") != "0"
 def _rueckfluss_beitrag(entwurf, ergebnis):
     """Legt den Beitrag als Bibliotheks-Entwurf an bzw. ergänzt den Score der Persona."""
     try:
-        eintrag = {"pruefer": ergebnis["pruefer"], "name": ergebnis["name"], "score": ergebnis["score"]}
+        eintrag = {"pruefer": ergebnis["pruefer"], "name": ergebnis["name"], "score": ergebnis["score"],
+                   # Teilnoten mitnehmen (Name und Note); die Begründung steht im Feedback
+                   "dimensionen": [{"name": t.get("name"), "score": t.get("score")}
+                                   for t in (ergebnis.get("dimensionen") or [])]}
         vorhanden = db.find_draft_by_text(entwurf)
         if vorhanden:
             try:
