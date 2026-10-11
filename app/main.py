@@ -40,7 +40,7 @@ from fastapi.responses import JSONResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
-from app import auth, db, pruefer, transform  # noqa: E402
+from app import auth, contentin, db, pruefer, transform  # noqa: E402
 
 log = logging.getLogger("news-cockpit")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -60,6 +60,11 @@ async def lifespan(_app):
         log.warning("INGEST_TOKEN nicht gesetzt — Ingest-API antwortet mit 401.")
     if not auth.get_password_hash():
         log.warning("APP_PASSWORD_HASH/APP_PASSWORD nicht gesetzt — Login ist deaktiviert.")
+    if contentin.mcp_key():
+        threading.Thread(target=_contentin_zeitplan, daemon=True, name="contentin-abgleich").start()
+        log.info("ContentIn-Rückkanal aktiv: Abgleich täglich 01:10 UTC, beim Start falls heute noch nicht.")
+    else:
+        log.info("CONTENTIN_MCP_KEY nicht gesetzt — Rückkanal von ContentIn bleibt aus.")
     yield
 
 
@@ -134,6 +139,19 @@ def require_session(request: Request):
 def _bearer(request: Request) -> str:
     header = request.headers.get("authorization", "")
     return header[7:].strip() if header.lower().startswith("bearer ") else ""
+
+
+def require_session_oder_ingest(request: Request):
+    """Sitzung ODER Ingest-Token — für Abgleiche, die n8n oder Stefan anstoßen.
+
+    Der Ingest-Token darf Inhalte einliefern; einen Abgleich anzustoßen, der
+    nur liest und Status setzt, passt in dieselbe Vertrauensstufe.
+    """
+    if auth.verify_session_token(request.cookies.get(auth.SESSION_COOKIE, "")):
+        return
+    if auth.verify_ingest_token(_bearer(request)):
+        return
+    raise HTTPException(status_code=401, detail="Nicht angemeldet und kein gültiger Ingest-Token")
 
 
 class _Stundenfenster:
@@ -422,6 +440,10 @@ def _draft_out(d):
         d["scores"] = json.loads(d["scores"] or "[]")
     except ValueError:
         d["scores"] = []
+    try:
+        d["kennzahlen"] = json.loads(d["kennzahlen"]) if d.get("kennzahlen") else None
+    except ValueError:
+        d["kennzahlen"] = None
     return d
 
 
@@ -455,11 +477,57 @@ def patch_draft(draft_id: int, body: DraftPatchBody):
     # aus dem Posteingang ins Archiv (Rücknahme bewusst manuell).
     item_archiviert = False
     if body.status == "gepostet" and d.get("item_id"):
-        item = db.get_item(d["item_id"])
-        if item and item["status"] == "new":
-            db.update_item(d["item_id"], status="archived")
-            item_archiviert = True
+        item_archiviert = db.archiviere_fund(d["item_id"])
     return {**_draft_out(d), "item_archiviert": item_archiviert}
+
+
+# ---------- Rückkanal von ContentIn ----------
+# ContentIn hat keine REST-API; sein MCP-Server ist die Schnittstelle
+# (app/contentin.py). Der Abgleich läuft nachts im eigenen Thread und beim
+# Containerstart, falls heute noch nicht — und von Hand über diese Route.
+
+def _contentin_abgleich():
+    key = contentin.mcp_key()
+    if not key:
+        raise HTTPException(status_code=503,
+                            detail="CONTENTIN_MCP_KEY ist nicht gesetzt — Rückkanal nicht freigeschaltet")
+    try:
+        ergebnis = contentin.abgleich(contentin.Client(key))
+    except contentin.ContentInError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    db.sync_merken("contentin", json.dumps(ergebnis))
+    return {**ergebnis, "zuletzt": db.utcnow_iso()}
+
+
+@app.post("/api/sync/contentin", dependencies=[Depends(require_session_oder_ingest)])
+def sync_contentin():
+    return _contentin_abgleich()
+
+
+def _sekunden_bis(stunde_utc, minute_utc):
+    jetzt = datetime.now(timezone.utc)
+    ziel = jetzt.replace(hour=stunde_utc, minute=minute_utc, second=0, microsecond=0)
+    if ziel <= jetzt:
+        ziel += timedelta(days=1)
+    return max(60.0, (ziel - jetzt).total_seconds())
+
+
+def _contentin_zeitplan():
+    """Täglich 01:10 UTC (02:10/03:10 deutscher Zeit). Beim Start sofort, falls
+    heute noch kein erfolgreicher Lauf steht — ein Deploy kostet so höchstens
+    einen Abgleich pro Tag. Ein Fehlschlag wird geloggt, nicht gemerkt, damit
+    der nächste Lauf es erneut versucht."""
+    while True:
+        try:
+            stand = db.sync_zuletzt("contentin")
+            heute = db.utcnow_iso()[:10]
+            if contentin.mcp_key() and (not stand or stand["zuletzt"][:10] != heute):
+                ergebnis = contentin.abgleich(contentin.Client(contentin.mcp_key()))
+                db.sync_merken("contentin", json.dumps(ergebnis))
+                log.info("ContentIn-Abgleich: %s", ergebnis)
+        except Exception:
+            log.exception("ContentIn-Abgleich fehlgeschlagen — nächster Versuch beim nächsten Lauf")
+        time.sleep(_sekunden_bis(1, 10))
 
 
 @app.delete("/api/drafts/{draft_id}", dependencies=[Depends(require_session)])

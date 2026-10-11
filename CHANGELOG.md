@@ -9,6 +9,21 @@ Ausgelagert am 2026-08-26 aus `CLAUDE.md`: Das Protokoll war dort auf 161 von
 Weg, die Claude bei jeder Sitzung liest. In `CLAUDE.md` stehen jetzt nur noch
 die letzten drei Einträge plus ein Verweis hierher.
 
+- **2026-10-11:** **Rückkanal von ContentIn** (`app/contentin.py`, Abschnitt
+  in `CLAUDE.md`). Anlass war die Auswertung der Generierung gegen 30 Entwürfe
+  und 41 veröffentlichte Beiträge: Prüfer ohne Trennschärfe (Claudia 25 von 28
+  mal 8, Ronny nie 8, Schleife endet in 29 von 29 Fällen in Runde 1),
+  Kommentare je Beitrag von 2,0 (Frühjahr) auf 0,2 (Sept/Okt), und das Cockpit
+  wusste seit 20.08. nicht mehr, was gepostet wurde. Neu: Spalten
+  `contentin_post_id`, `veroeffentlicht_am`, `kennzahlen` an `drafts`
+  (Migration in `db.init`), Tabelle `sync_log`, `db.archiviere_fund` statt
+  Inline-Code in `patch_draft`, Envs `CONTENTIN_MCP_KEY`/`CONTENTIN_MCP_URL`,
+  Route `POST /api/sync/contentin`, Abgleich-Knopf und Kennzahlen-Zeile im
+  Entwürfe-Tab. Getestet ohne Netz: Zuordnung über Textanfang inkl. HTML und
+  Entities, Textvariante wird nicht zugeordnet, Markieren mit Kennzahlen und
+  Auto-Archiv, Idempotenz und kein zweiter Analytics-Abruf für alte Beiträge,
+  401/503/200 am Endpunkt, SSE- und JSON-Antworten, Session-Id-Mitführung,
+  Fehlerpfad.
 - **2026-09-12 (2):** **Workflow-Actions auf Node 24, per Commit-SHA angepinnt.**
   `tests.yml` nutzte `actions/checkout@v4` und `actions/setup-python@v5`; beide laufen auf
   Node 20, das GitHub abkündigt (Warnung in jedem Lauf seit September). Jetzt checkout

@@ -19,6 +19,7 @@ Domain `news.itcoach.cloud` (Domain liegt ebenfalls bei Hostinger)
 │   ├── auth.py       # PBKDF2-Hash, signierte Session-Cookies, Login-Drossel (stdlib)
 │   ├── pruefer.py    # Prüfstand: lädt app/personas/*.md (generiert aus wissensbasis), Score- und Dimensionen-Parser
 │   ├── personas/     # GENERIERT aus dem Kanon (wissensbasis/personas), nie hier editieren
+│   ├── contentin.py  # Rückkanal: ContentIn-MCP (JSON-RPC), Zuordnung, Kennzahlen, nächtlicher Abgleich
 │   └── transform.py  # Claude-Aufrufe: Entwurf, Überarbeiten, Einordnen (`_claude_text`)
 ├── public/
 │   ├── index.html    # Komplette UI: Vanilla HTML/CSS/JS, kein Build-Step, keine CDN-Abhängigkeit
@@ -187,8 +188,51 @@ selben Eintrag (je Persona ersetzt, nicht dupliziert). Landingpages (`art=seite`
 bewusst draußen. Abschaltbar mit `DIENST_RUECKFLUSS=0`; Fehler im Rückfluss brechen die
 Prüfung nie ab (nur Log).
 
+## Der Rückkanal von ContentIn
+
+Seit 2026-10-11 weiß das Cockpit, was draußen passiert. Anlass: Seit dem 20.08.
+war kein Entwurf mehr als „gepostet" markiert, obwohl 13 nachweislich live
+gingen. Der Auto-Archiv-Automatismus griff nicht, der Posteingang wuchs auf
+244 Funde, und eine Kalibrierung der Prüfer an echten Reaktionen war unmöglich.
+
+ContentIn hat keine REST-API; der MCP-Server ist die Schnittstelle
+(`app/contentin.py`, Streamable HTTP = JSON-RPC über HTTPS, Header `X-MCP-Key`,
+`Mcp-Session-Id` wird mitgeführt, JSON- und SSE-Antworten werden gelesen).
+Gerufen werden nur `list_posts` und `get_post_analytics`, nie etwas, das
+veröffentlicht. Der Abgleich ordnet Beiträge über den normierten Textanfang
+(60 Zeichen, ohne HTML/Entities/Typografie) den Entwürfen zu, setzt „gepostet",
+speichert `contentin_post_id`, `veroeffentlicht_am` und `kennzahlen` (JSON) am
+Entwurf und nimmt den Quell-Fund aus dem Posteingang (`db.archiviere_fund`,
+dieselbe Funktion wie beim Markieren von Hand). Kennzahlen der letzten 30 Tage
+werden bei jedem Lauf erneuert, ältere nur einmal.
+
+Läuft täglich 01:10 UTC im eigenen Thread, kein n8n nötig, und beim
+Containerstart, falls heute noch nicht (Stand in `sync_log`). Von Hand:
+`POST /api/sync/contentin` (Sitzung oder Ingest-Token) oder der Knopf neben
+dem Export. Ohne `CONTENTIN_MCP_KEY` bleibt alles aus. Ein fehlgeschlagener
+Lauf wird geloggt, nicht gemerkt, damit der nächste es erneut versucht.
+
+**Bewusst nicht:** Veröffentlichen oder Planen über ContentIn, und
+ContentIn-Themen setzen: `schedule_post` kennt kein Thema-Feld. ContentIns
+Säulen-Berichte bleiben deshalb ein Artefakt, solange Beiträge dort nicht von
+Hand getaggt werden.
+
 ## Änderungsprotokoll
 
+- **2026-10-11:** **Rückkanal von ContentIn** (`app/contentin.py`, Abschnitt
+  oben). Anlass war die Auswertung der Generierung gegen 30 Entwürfe und 41
+  veröffentlichte Beiträge: Prüfer ohne Trennschärfe (Claudia 25 von 28 mal
+  8, Ronny nie 8, Schleife endet in 29 von 29 Fällen in Runde 1), Kommentare
+  je Beitrag von 2,0 (Frühjahr) auf 0,2 (Sept/Okt), und das Cockpit wusste
+  seit 20.08. nicht mehr, was gepostet wurde. Neu: Spalten `contentin_post_id`,
+  `veroeffentlicht_am`, `kennzahlen` an `drafts` (Migration in `db.init`),
+  Tabelle `sync_log`, `db.archiviere_fund` statt Inline-Code in `patch_draft`,
+  Envs `CONTENTIN_MCP_KEY`/`CONTENTIN_MCP_URL`, Route `POST /api/sync/contentin`,
+  Abgleich-Knopf und Kennzahlen-Zeile im Entwürfe-Tab. Getestet ohne Netz:
+  Zuordnung über Textanfang inkl. HTML und Entities, Textvariante wird nicht
+  zugeordnet, Markieren mit Kennzahlen und Auto-Archiv, Idempotenz und kein
+  zweiter Analytics-Abruf für alte Beiträge, 401/503/200 am Endpunkt, SSE-
+  und JSON-Antworten, Session-Id-Mitführung, Fehlerpfad.
 - **2026-09-12 (2):** **Workflow-Actions auf Node 24, per Commit-SHA angepinnt.**
   `tests.yml` nutzte `actions/checkout@v4` und `actions/setup-python@v5`; beide laufen auf
   Node 20, das GitHub abkündigt (Warnung in jedem Lauf seit September). Jetzt checkout
@@ -212,21 +256,6 @@ Prüfung nie ab (nur Log).
   Modellaufruf ab, `art=audit` hinterlässt keinen Entwurf, `art` kennt genau drei Werte.
   Bestehende 29 Tests unverändert grün. Wortlaut der drei alten Prompts ist identisch
   übernommen, der Prüfstand bewertet also weiter wie zuvor.
-- **2026-08-26 (3):** **Sicherheits-Check vom 22.08. nachgezogen und gemergt**
-  ([PR #1](https://github.com/sbrutsch/news-cockpit/pull/1), vier Tage offen
-  liegengeblieben; die ausführliche Fassung steht im
-  [`CHANGELOG.md`](CHANGELOG.md) unter 2026-08-22). Vier Lücken repariert:
-  umgehbare Login-Drossel, Sitzungen ohne Bindung ans Passwort, vorhersagbarer
-  Cookie-Klartext, Ingest ohne Mengengrenze; dazu CSP/HSTS und feste
-  Bibliotheks-Versionen. Beim Nachziehen auf den heutigen Stand:
-  `tests/test_sicherheit.py` von einem eigenständigen Skript auf `pytest`
-  umgestellt, damit die Prüfungen in der CI mitlaufen statt nur auf Zuruf — die
-  ursprüngliche Begründung („bewusst ohne pytest, passend zum Rest des
-  Projekts") war durch das Testgerüst von heute früh überholt.
-  `requirements-dev.txt` zusammengeführt, `httpx2` statt `httpx`, damit
-  `starlette.testclient` nicht mehr warnt. Gegenprobe: alle fünf Reparaturen
-  einzeln wieder ausgebaut, jede wurde vom richtigen Test gefangen.
-  **Bestandscookies werden ungültig — nach dem Deploy einmal neu anmelden.**
-**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (20 weitere,
+**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (21 weitere,
 zurück bis zum Projektstart am 2026-07-15). Neue Einträge kommen hier oben dazu
 und wandern weiter, sobald mehr als drei zusammenkommen.

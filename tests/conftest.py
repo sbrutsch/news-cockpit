@@ -34,6 +34,8 @@ os.environ["INGEST_LIMIT_PRO_STUNDE"] = "3"
 # Wie in Produktion hinter Coolify/Traefik: genau ein eigener Proxy haengt an.
 os.environ["TRUSTED_PROXY_HOPS"] = "1"
 os.environ.pop("ANTHROPIC_API_KEY", None)
+# Genauso der ContentIn-Key: kein Test darf den echten MCP-Server erreichen.
+os.environ.pop("CONTENTIN_MCP_KEY", None)
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -46,7 +48,7 @@ db.init()
 def _zustand_leeren():
     """Alles, was modulglobal ist und sonst von Test zu Test überlebt."""
     with db.cursor() as cur:
-        for tabelle in ("items", "drafts", "dienst_log"):
+        for tabelle in ("items", "drafts", "dienst_log", "sync_log"):
             cur.execute("DELETE FROM " + tabelle)
     main._dienst_fenster.clear()
     main._ingest_fenster.clear()

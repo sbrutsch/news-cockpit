@@ -60,6 +60,8 @@ Dieselben Prüfungen laufen bei jedem Push und Pull Request in GitHub Actions.
 | `DIENST_TOKEN` | nein | Maschinen-Token für den Prüfstand (`/api/pruefer`, `/api/pruefen`, `/api/ueberarbeiten`); ohne Wert sind diese Routen rein sitzungsgebunden |
 | `DIENST_LIMIT_PRO_STUNDE` | nein | Drossel für Dienst-Token-POSTs, gleitendes Stundenfenster (Standard 100) |
 | `DIENST_RUECKFLUSS` | nein | `0` schaltet ab, dass extern geprüfte Beiträge (art=beitrag) in der Entwurfs-Bibliothek landen (Standard: an) |
+| `CONTENTIN_MCP_KEY` | nein | MCP-Key von ContentIn (Settings → „Connect AI clients", eigener Key nur fürs Cockpit). Schaltet den Rückkanal frei: veröffentlichte Beiträge werden „gepostet", LinkedIn-Kennzahlen landen am Entwurf, der Quell-Fund wandert ins Archiv. Läuft täglich 01:10 UTC und beim Start |
+| `CONTENTIN_MCP_URL` | nein | Adresse des ContentIn-MCP-Servers (Standard `https://mcp.contentin.io/mcp-server`) |
 | `HOST` / `PORT` | nein | Standard `127.0.0.1` / `8080` (Docker setzt `HOST=0.0.0.0`) |
 | `SOURCE_COMMIT` | nein | Setzt Coolify beim Build; speist `GET /api/version` und die Update-Erkennung. Ohne Wert: Container-Startzeit |
 | `ENV_FILE` | nein | Anderer Pfad zur `.env` (Standard `.env`). Nur für Sonderfälle — die Tests zeigen ihn ins Leere |
@@ -114,6 +116,7 @@ sich also nichts merken.
 - `DELETE /api/items/{id}` — Soft-Delete
 - `GET /api/export?days=7` — Wochen-Export: Wichtiges als Markdown-Download (gruppiert nach Content-Säule, inkl. Notizen; days 1–90)
 - `GET /api/version` — Build-Kennung (Update-Erkennung im Frontend; ohne Login)
+- `POST /api/sync/contentin` — Rückkanal von Hand anstoßen (Sitzung oder Ingest-Token); läuft sonst täglich 01:10 UTC → `{beitraege, zugeordnet, neu_gepostet, kennzahlen_aktualisiert, archiviert, ohne_entwurf, …}`
 - `GET /healthz` — für Coolify-Healthcheck
 
 ## PWA

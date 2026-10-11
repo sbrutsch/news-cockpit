@@ -469,6 +469,9 @@
       <button class="tool-btn" id="exportBtn" type="button" title="Wochen-Export: Wichtiges der letzten 7 Tage als Markdown" aria-label="Wochen-Export herunterladen">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 19h16"/></svg>
       </button>
+      <button class="tool-btn" id="syncBtn" type="button" title="ContentIn abgleichen: veröffentlichte Beiträge als „gepostet“ markieren und LinkedIn-Kennzahlen holen (läuft sonst jede Nacht)" aria-label="ContentIn abgleichen">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-4.5L4 8"/><path d="M4 3v5h5"/><path d="M4 13a8 8 0 0 0 14.5 4.5L20 16"/><path d="M20 21v-5h-5"/></svg>
+      </button>
     </div>
   </nav>
 
@@ -1002,6 +1005,14 @@ function draftNode(d, index) {
     }
   });
 
+  if (d.kennzahlen) {
+    const k = d.kennzahlen;
+    const kz = el("span", "time", "LinkedIn: " + k.impressions + " Impr. · " + k.likes + " Likes · " + k.comments + " Komm.");
+    kz.title = "Stand " + (k.gemessen_am ? absTime(k.gemessen_am) : "unbekannt")
+      + (d.veroeffentlicht_am ? " · veröffentlicht " + absTime(d.veroeffentlicht_am) : "");
+    meta.append(el("span", "dot", "·"), kz);
+  }
+
   const h2 = el("h2");
   h2.append(el("span", "", draftTitel(d.text)));
 
@@ -1530,6 +1541,21 @@ document.addEventListener("keydown", (ev) => {
 moreBtn.addEventListener("click", () => {
   state.offset += state.limit;
   load(false).catch(e => toast(e.message));
+});
+
+$("syncBtn").addEventListener("click", async () => {
+  const b = $("syncBtn");
+  if (b.disabled) return;
+  b.disabled = true;
+  try {
+    const r = await api("/api/sync/contentin", { method: "POST" });
+    toast("ContentIn: " + r.beitraege + " Beiträge geprüft, " + r.zugeordnet + " zugeordnet, "
+      + r.neu_gepostet + " neu als gepostet, " + r.archiviert + " Funde archiviert.");
+    load(true).catch(e => toast(e.message));
+  } catch (e) {
+    toast(e.message);
+  }
+  b.disabled = false;
 });
 
 $("exportBtn").addEventListener("click", async () => {

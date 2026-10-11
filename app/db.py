@@ -73,7 +73,8 @@ _INDEXES = (
 # Gespeicherte LinkedIn-Entwürfe (aus dem Verwerten-Dialog).
 # scores = JSON-Schnappschuss der Prüfer-Urteile zum Speicherzeitpunkt.
 DRAFT_COLS = ("id", "item_id", "item_title", "text", "scores", "status",
-              "created_at", "updated_at")
+              "created_at", "updated_at",
+              "contentin_post_id", "veroeffentlicht_am", "kennzahlen")
 DRAFT_SELECT = ", ".join(DRAFT_COLS)
 DRAFT_STATUS = ("entwurf", "gepostet")
 
@@ -86,7 +87,10 @@ CREATE TABLE IF NOT EXISTS drafts (
   scores      TEXT NOT NULL DEFAULT '[]',
   status      TEXT NOT NULL DEFAULT 'entwurf',
   created_at  TEXT NOT NULL,
-  updated_at  TEXT NOT NULL
+  updated_at  TEXT NOT NULL,
+  contentin_post_id  INTEGER,
+  veroeffentlicht_am TEXT,
+  kennzahlen         TEXT NOT NULL DEFAULT ''
 )"""
 
 _SCHEMA_DRAFTS_PG = """
@@ -98,7 +102,19 @@ CREATE TABLE IF NOT EXISTS drafts (
   scores      TEXT NOT NULL DEFAULT '[]',
   status      TEXT NOT NULL DEFAULT 'entwurf',
   created_at  TEXT NOT NULL,
-  updated_at  TEXT NOT NULL
+  updated_at  TEXT NOT NULL,
+  contentin_post_id  BIGINT,
+  veroeffentlicht_am TEXT,
+  kennzahlen         TEXT NOT NULL DEFAULT ''
+)"""
+
+# Stand wiederkehrender Abgleiche (z. B. ContentIn-Rückkanal): wann zuletzt,
+# mit welchem Ergebnis. Eine Zeile je Abgleich-Name.
+_SCHEMA_SYNC_LOG = """
+CREATE TABLE IF NOT EXISTS sync_log (
+  name     TEXT PRIMARY KEY,
+  zuletzt  TEXT NOT NULL,
+  ergebnis TEXT NOT NULL DEFAULT ''
 )"""
 
 # Tageszähler für Dienst-Token-Aufrufe (Kostentransparenz + Leck-Erkennung).
@@ -211,11 +227,11 @@ def _row(r):
     return d
 
 
-def _column_names(cur):
+def _column_names(cur, tabelle="items"):
     if IS_POSTGRES:
-        cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'items'")
+        cur.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{tabelle}'")
         return {r[0] for r in cur.fetchall()}
-    cur.execute("PRAGMA table_info(items)")
+    cur.execute(f"PRAGMA table_info({tabelle})")
     return {r[1] for r in cur.fetchall()}
 
 
@@ -225,8 +241,18 @@ def init():
         cur.execute(_SCHEMA_DRAFTS_PG if IS_POSTGRES else _SCHEMA_DRAFTS_SQLITE)
         cur.execute("CREATE INDEX IF NOT EXISTS idx_drafts_updated ON drafts(updated_at)")
         cur.execute(_SCHEMA_DIENST_LOG)
+        cur.execute(_SCHEMA_SYNC_LOG)
         for stmt in _INDEXES:
             cur.execute(stmt)
+        # Nachrüst-Migration für Bibliotheken, die vor dem ContentIn-Rückkanal entstanden
+        vorhanden = _column_names(cur, "drafts")
+        if "contentin_post_id" not in vorhanden:
+            cur.execute("ALTER TABLE drafts ADD COLUMN contentin_post_id "
+                        + ("BIGINT" if IS_POSTGRES else "INTEGER"))
+        if "veroeffentlicht_am" not in vorhanden:
+            cur.execute("ALTER TABLE drafts ADD COLUMN veroeffentlicht_am TEXT")
+        if "kennzahlen" not in vorhanden:
+            cur.execute("ALTER TABLE drafts ADD COLUMN kennzahlen TEXT NOT NULL DEFAULT ''")
         # Nachrüst-Migration für Bestände, die vor kind/pillar angelegt wurden
         have = _column_names(cur)
         if "kind" not in have:
@@ -453,3 +479,52 @@ def delete_draft(draft_id):
     with cursor() as cur:
         cur.execute(_q("DELETE FROM drafts WHERE id = ?"), (draft_id,))
         return cur.rowcount == 1
+
+
+def draft_veroeffentlichung(draft_id, post_id=None, veroeffentlicht_am=None, kennzahlen=None):
+    """Rückkanal: Entwurf als gepostet markieren und ContentIn-Daten ablegen.
+
+    Bewusst ohne updated_at — der nächtliche Abgleich soll die Bibliothek
+    nicht umsortieren.
+    """
+    sets, params = ["status = ?"], ["gepostet"]
+    if post_id is not None:
+        sets.append("contentin_post_id = ?")
+        params.append(int(post_id))
+    if veroeffentlicht_am:
+        sets.append("veroeffentlicht_am = ?")
+        params.append(str(veroeffentlicht_am))
+    if kennzahlen is not None:
+        sets.append("kennzahlen = ?")
+        params.append(kennzahlen)
+    params.append(draft_id)
+    with cursor() as cur:
+        cur.execute(_q(f"UPDATE drafts SET {', '.join(sets)} WHERE id = ?"), params)
+    return get_draft(draft_id)
+
+
+def archiviere_fund(item_id):
+    """Quell-Fund eines geposteten Entwurfs aus dem Posteingang nehmen.
+
+    True, wenn er bis eben noch 'new' war — die Rücknahme bleibt bewusst Handarbeit.
+    """
+    with cursor() as cur:
+        cur.execute(_q("UPDATE items SET status = 'archived' WHERE id = ? AND status = 'new'"), (item_id,))
+        return cur.rowcount == 1
+
+
+# ---------- Abgleich-Stand ----------
+
+def sync_merken(name, ergebnis=""):
+    with cursor() as cur:
+        cur.execute(_q("INSERT INTO sync_log (name, zuletzt, ergebnis) VALUES (?, ?, ?) "
+                       "ON CONFLICT (name) DO UPDATE SET zuletzt = excluded.zuletzt, "
+                       "ergebnis = excluded.ergebnis"),
+                    (name, utcnow_iso(), ergebnis))
+
+
+def sync_zuletzt(name):
+    with cursor() as cur:
+        cur.execute(_q("SELECT zuletzt, ergebnis FROM sync_log WHERE name = ?"), (name,))
+        r = cur.fetchone()
+    return {"zuletzt": r[0], "ergebnis": r[1]} if r else None
