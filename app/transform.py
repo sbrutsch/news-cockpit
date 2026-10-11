@@ -130,7 +130,7 @@ Format „Erzählung" — so klangen Stefans Beiträge, die im Frühjahr 2026 di
 - Eine Szene statt einer Analyse. Zeile eins ist ein konkreter Moment: Ort, Uhrzeit, der Satz, der fällt. Kein Zahlen-Einstieg, keine Studie, kein „Viele IT-Leiter kennen das".
 - Ein Satz je Zeile, Absätze von ein bis drei Zeilen, viel Weißraum. Kurze Sätze. Gegenwart.
 - Dramaturgie in vier Schritten: die Szene / der Moment, in dem es kippt / was wirklich entschieden hat (Interesse, Macht, Zeitpunkt — nicht Technik) / die Pointe.
-- Du-Ansprache: Der Leser steht selbst im Raum („Alle schauen auf dich.").
+- Du-Ansprache, durchgehend bis zur letzten Zeile: Der Leser steht selbst im Raum („Alle schauen auf dich."). Schlägt der Fund eine Schlussfrage oder Formulierung in Sie-Form vor, übernimmst du sie nicht wörtlich, sondern schreibst die Pointe aus der Szene heraus.
 - 700 bis 1.300 Zeichen. Keine Aufzählungen, kein Prüfraster, keine „drei Fragen", kein Werkzeug-Angebot am Ende — die Pointe ist das Angebot.
 - Schluss: ein Satz, der hängen bleibt, oder eine Frage, die sich mit einem Wort beantworten lässt. Kein Hashtag, kein Verkaufs-Aufruf.
 
