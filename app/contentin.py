@@ -26,6 +26,7 @@ import json
 import logging
 import os
 import re
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -40,6 +41,14 @@ KENNZAHLEN_FRISCH_TAGE = 30
 VERGLEICH_ZEICHEN = 60      # so viele normierte Zeichen vom Anfang werden verglichen
 VERGLEICH_MINDESTENS = 40   # kürzer ist kein belastbarer Vergleich
 
+# ContentIn drosselt Bursts („Too many requests in a few seconds, wait about
+# ten seconds") — gelernt beim ersten Produktionslauf am 2026-10-11, als 24
+# Kennzahlen-Abfragen ohne Pause hintereinander liefen. Deshalb Abstand
+# zwischen den Werkzeug-Aufrufen und ein Wiederholungsversuch nach Drossel.
+ABSTAND_SEKUNDEN = 1.5
+DROSSEL_WARTEZEIT = 12
+DROSSEL_VERSUCHE = 3
+
 
 class ContentInError(Exception):
     pass
@@ -47,6 +56,16 @@ class ContentInError(Exception):
 
 def mcp_key():
     return os.environ.get("CONTENTIN_MCP_KEY", "").strip()
+
+
+def _warten(sekunden):
+    """Einzige Schlafstelle — die Tests ersetzen sie durch einen Zähler."""
+    time.sleep(sekunden)
+
+
+def _ist_drossel(text):
+    t = (text or "").lower()
+    return "too many" in t or "rate limit" in t
 
 
 # ---------------------------------------------------------------- Transport
@@ -98,6 +117,7 @@ class Client:
         self.session_id = None
         self._zaehler = 0
         self._verbunden = False
+        self._letzter_aufruf = None
 
     def _headers(self):
         h = {"Content-Type": "application/json",
@@ -133,21 +153,40 @@ class Client:
         self._senden({"jsonrpc": "2.0", "method": "notifications/initialized"})
         self._verbunden = True
 
+    def _abstand_halten(self):
+        if self._letzter_aufruf is not None:
+            rest = ABSTAND_SEKUNDEN - (time.monotonic() - self._letzter_aufruf)
+            if rest > 0:
+                _warten(rest)
+        self._letzter_aufruf = time.monotonic()
+
     def werkzeug(self, name, argumente):
-        """Ein MCP-Werkzeug rufen; liefert dessen JSON-Ergebnis als dict."""
+        """Ein MCP-Werkzeug rufen; liefert dessen JSON-Ergebnis als dict.
+
+        Hält Abstand zum vorigen Aufruf und versucht es nach einer
+        Drossel-Antwort bis zu DROSSEL_VERSUCHE mal erneut.
+        """
         if not self._verbunden:
             self.verbinden()
-        res = self._rpc("tools/call", {"name": name, "arguments": argumente})
-        text = "".join(b.get("text", "") for b in res.get("content", [])
-                       if isinstance(b, dict) and b.get("type") == "text")
-        if res.get("isError"):
-            raise ContentInError(f"{name}: {text[:200] or 'Werkzeug meldet Fehler'}")
-        if isinstance(res.get("structuredContent"), dict):
-            return res["structuredContent"]
-        try:
-            return json.loads(text)
-        except ValueError:
-            raise ContentInError(f"{name}: Antwort ist kein JSON")
+        for versuch in range(DROSSEL_VERSUCHE + 1):
+            self._abstand_halten()
+            res = self._rpc("tools/call", {"name": name, "arguments": argumente})
+            text = "".join(b.get("text", "") for b in res.get("content", [])
+                           if isinstance(b, dict) and b.get("type") == "text")
+            if res.get("isError"):
+                if _ist_drossel(text) and versuch < DROSSEL_VERSUCHE:
+                    log.info("ContentIn drosselt bei %s — warte %s s (Versuch %d)",
+                             name, DROSSEL_WARTEZEIT, versuch + 1)
+                    _warten(DROSSEL_WARTEZEIT)
+                    continue
+                raise ContentInError(f"{name}: {text[:200] or 'Werkzeug meldet Fehler'}")
+            if isinstance(res.get("structuredContent"), dict):
+                return res["structuredContent"]
+            try:
+                return json.loads(text)
+            except ValueError:
+                raise ContentInError(f"{name}: Antwort ist kein JSON")
+        raise ContentInError(f"{name}: ContentIn drosselt dauerhaft")
 
 
 # ---------------------------------------------------------------- Zuordnung

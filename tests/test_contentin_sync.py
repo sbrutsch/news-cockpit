@@ -21,6 +21,14 @@ KENNZAHLEN = {"impressions": 137, "members_reached": 95, "likes": 4, "comments":
               "shares": 0, "engagement": 2.92}
 
 
+@pytest.fixture(autouse=True)
+def pausen(monkeypatch):
+    """Kein echtes Schlafen in Tests — nur mitschreiben, wie lange gewartet würde."""
+    protokoll = []
+    monkeypatch.setattr(contentin, "_warten", protokoll.append)
+    return protokoll
+
+
 class FakeClient:
     def __init__(self, posts, metrics=None):
         self.posts, self.metrics = posts, metrics or {}
@@ -136,6 +144,32 @@ def test_mcp_client_liest_sse_und_fuehrt_session_mit(monkeypatch):
     assert c.werkzeug("list_posts", {"status": ["posted"]}) == {"posts": [{"post_id": 5}]}
     assert gesendet[-1][0]["Mcp-Session-Id"] == "s-1", "Session-Id aus der Initialisierung wandert mit"
     assert all(h["X-MCP-Key"] == "cimcp_test" for h, _ in gesendet)
+
+
+def test_drossel_antwort_wird_abgewartet_und_wiederholt(monkeypatch, pausen):
+    """Produktionsbefund vom 2026-10-11: ContentIn bremst Bursts. Nach der
+    Drossel-Antwort wird gewartet und derselbe Aufruf wiederholt."""
+    antworten = iter([
+        {"isError": True, "content": [{"type": "text", "text":
+            "Too many ContentIn requests in a few seconds. Wait about ten seconds and try again."}]},
+        {"content": [{"type": "text", "text": json.dumps({"measured": True, "metrics": {"likes": 3}})}]},
+    ])
+
+    def fake_transport(url, headers, body, timeout):
+        if body.get("method") == "tools/call":
+            ergebnis = next(antworten)
+        elif body.get("method") == "initialize":
+            ergebnis = {"protocolVersion": "2025-03-26"}
+        else:
+            return ({"Content-Type": "text/plain"}, "")
+        return ({"Content-Type": "application/json"},
+                json.dumps({"jsonrpc": "2.0", "id": body["id"], "result": ergebnis}))
+
+    monkeypatch.setattr(contentin, "_transport", fake_transport)
+    c = contentin.Client("cimcp_test")
+
+    assert c.werkzeug("get_post_analytics", {"post_id": 1})["metrics"]["likes"] == 3
+    assert contentin.DROSSEL_WARTEZEIT in pausen, "nach der Drossel-Antwort muss gewartet werden"
 
 
 def test_mcp_fehler_wird_zu_contentin_error(monkeypatch):
