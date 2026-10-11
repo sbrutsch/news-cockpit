@@ -17,6 +17,11 @@ die letzten drei Einträge plus ein Verweis hierher.
   `GET /api/experiment`, Format-Chips und Experiment-Karte in der Oberfläche, Vorlage
   `docs/format-experiment.md`, vier Tests. Befunde der Überprüfung der Erstellung
   stecken im Testarm, die Kontrolle wird erst nach der Auswertung angefasst.
+  Produktionsprobe mit Fund 636: Lehrstück 1.324 Zeichen im Drei-Fragen-Raster,
+  Erzählung 910 Zeichen in 16 kurzen Zeilen ohne Aufzählung; beide übernahmen die
+  Sie-Schlussfrage aus dem Fund wörtlich, daher eine Zeile im Testarm-Prompt (Du bis
+  zur letzten Zeile, Schlussfragen aus dem Fund nicht wörtlich, `a70e268`); Nachprobe
+  899 Zeichen, Schluss in Du-Form.
 - **2026-10-11 (3):** **Messung der Claudia-Eichung: Kriterium 1 verfehlt, Kriterium 2
   erfüllt.** Sechs Beiträge, die nicht Maßstab sind, im Produktions-Container mit
   `scripts/pruefer_messen.py` geprüft: Noten 7, 7, 7, 6, 6, 7, vorher 7, 7, 8, 8, 8, 8.

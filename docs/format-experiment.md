@@ -81,6 +81,28 @@ Die App führt die Zahlen; die Tabelle dient der Planung der Slots.
 | 7 | | A | | | | |
 | 8 | | B | | | | |
 
+## Probe vor dem Start (2026-10-11)
+
+Fund 636 (Post-Idee zur Haftung bei KI-Agenten), beide Formate aus demselben Fund im
+Produktions-Container erzeugt, nichts gespeichert:
+
+| | Lehrstück | Erzählung |
+|---|---|---|
+| Zeichen | 1.324 | 910 (Nachprobe 899) |
+| Zeilen | 9 | 16 |
+| Zeilenlänge, Median | 122 | 50 |
+| Aufzählungen | keine, aber Drei-Fragen-Raster am Schluss | keine |
+| Einstieg | Behauptung mit Erklärung | Szene: „Vorstandssitzung. Donnerstag. 16:40 Uhr." |
+
+Befund: Der Themenscout gibt in vielen Ideen eine Schlussfrage in Sie-Form vor („Schluss mit
+konkreter Frage an die Leser: …"). Beide Formate übernahmen sie wörtlich. Im Lehrstück passt
+das, in der Erzählung brach es die Du-Ansprache. Der Testarm-Prompt verlangt seit `a70e268`
+Du bis zur letzten Zeile und übersetzt vorgeschlagene Schlussfragen in die Szene; die
+Nachprobe endete mit „Wer in deinem Gremium würde heute geradestehen, wenn die Maschine
+falsch entscheidet?". Für die Auswertung heißt das: Eine ähnliche Schlussfrage in beiden
+Armen ist kein Zufall, sondern die Vorgabe des Funds. Die Arme unterscheiden sich im Weg
+dorthin.
+
 ## Störgrößen, die man kennen sollte
 
 Reichweite hängt am Thema (ein Konzernname bringt Impressionen, nicht Gespräch), am Wochentag

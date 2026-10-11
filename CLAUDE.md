@@ -257,7 +257,17 @@ weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückz
   Neu: `drafts.format` (Migration), `POST …/verwerten` mit `{format}`, `format` in
   Überarbeiten und Speichern, `GET /api/experiment`, Format-Chips im Entwurfs-Fenster,
   Format-Chip und Experiment-Karte im Entwürfe-Tab, Vorlage `docs/format-experiment.md`,
-  vier Tests in `tests/test_format_experiment.py`.
+  vier Tests in `tests/test_format_experiment.py`. **Produktionsprobe** mit Fund 636
+  (Haftung bei KI-Agenten), beide Formate aus demselben Fund, nichts gespeichert:
+  Lehrstück 1.324 Zeichen, 9 Zeilen, Zeilen-Median 122, Schluss im Drei-Fragen-Raster;
+  Erzählung 910 Zeichen, 16 Zeilen, Zeilen-Median 50, keine Aufzählung, Szene als
+  Einstieg. Befund: Beide übernahmen die vom Themenscout im Fund vorgegebene
+  Schlussfrage in Sie-Form wörtlich; im Lehrstück passt das, in der Erzählung bricht
+  es die Du-Ansprache. Deshalb eine Zeile im Testarm-Prompt (Du bis zur letzten
+  Zeile, vorgeschlagene Schlussfragen nicht wörtlich, `a70e268`). Nachprobe: 899
+  Zeichen, 15 Zeilen, Schlussfrage in Du-Form und neu formuliert, das einzige „Sie"
+  steht in wörtlicher Rede. Die drei Anfänge im Prompt sind nachgeprüft Stefans
+  eigene ContentIn-Beiträge vom März und April 2026 (Post-IDs 249506, 249527, 254831).
 - **2026-10-11 (3):** **Messung der Claudia-Eichung: Kriterium 1 verfehlt, Kriterium 2
   erfüllt.** Sechs Beiträge, die nicht Maßstab sind, im Produktions-Container mit dem
   neuen `scripts/pruefer_messen.py` geprüft (sechs Claude-Aufrufe, Cent-Betrag): Noten
