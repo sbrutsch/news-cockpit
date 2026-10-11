@@ -21,7 +21,7 @@ Kommentare und eine höhere Engagement-Rate als das Lehrstück.
 | Format-Chip | Lehrstück | Erzählung |
 | Prompt | heutiges Format mit Qualitätslatte, wörtlich unverändert | Szene, kurze Zeilen, Du, 700 bis 1.300 Zeichen, Pointe; drei eigene Anfänge als Maßstab |
 | Beiträge | vier | vier |
-| Reihenfolge | A, B, A, B, A, B, A, B, je Posting-Slot abwechselnd | |
+| Reihenfolge | B, A, B, A, B, A, B, A, je Posting-Slot abwechselnd (Start mit B am 2026-10-11) | |
 | Gleich halten | Posting-Zeit (05:45), Bild ja/nein, Säulen-Mischung, kein Poll, kein Dokument-Post | |
 | Themen | aus dem Posteingang wie bisher; kein Thema mit großem Firmennamen in nur einem Arm | |
 
@@ -72,14 +72,18 @@ Die App führt die Zahlen; die Tabelle dient der Planung der Slots.
 
 | Nr. | Slot | Arm | Fund | Entwurf-Nr. | gepostet | 7 Tage um |
 |---|---|---|---|---|---|---|
-| 1 | | A | | | | |
-| 2 | | B | | | | |
-| 3 | | A | | | | |
-| 4 | | B | | | | |
-| 5 | | A | | | | |
-| 6 | | B | | | | |
-| 7 | | A | | | | |
-| 8 | | B | | | | |
+| 1 | | B | 636, Haftung bei KI-Agenten | 33 | | |
+| 2 | | A | Vorschlag 634, gleiches Thema | | | |
+| 3 | | B | | | | |
+| 4 | | A | | | | |
+| 5 | | B | | | | |
+| 6 | | A | | | | |
+| 7 | | B | | | | |
+| 8 | | A | | | | |
+
+Beitrag 1 (Entwurf 33, erzeugt am 2026-10-11, 996 Zeichen, 20 Zeilen): Ronny 3, Claudia 5,
+Markus 3. Erwartet, siehe Schritt 3: Die Prüfer verlangen Raster, These in Zeile eins und ein
+Werkzeug, also das Lehrstück. Der Text bleibt, wie er ist; gemessen wird die Reaktion der Leser.
 
 ## Probe vor dem Start (2026-10-11)
 
