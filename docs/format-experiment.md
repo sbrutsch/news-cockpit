@@ -73,7 +73,7 @@ Die App führt die Zahlen; die Tabelle dient der Planung der Slots.
 | Nr. | Slot | Arm | Fund | Entwurf-Nr. | gepostet | 7 Tage um |
 |---|---|---|---|---|---|---|
 | 1 | | B | 636, Haftung bei KI-Agenten | 33 | | |
-| 2 | | A | Vorschlag 634, gleiches Thema | | | |
+| 2 | | A | 634, Business Judgment Rule | 34 | | |
 | 3 | | B | | | | |
 | 4 | | A | | | | |
 | 5 | | B | | | | |
@@ -84,6 +84,11 @@ Die App führt die Zahlen; die Tabelle dient der Planung der Slots.
 Beitrag 1 (Entwurf 33, erzeugt am 2026-10-11, 996 Zeichen, 20 Zeilen): Ronny 3, Claudia 5,
 Markus 3. Erwartet, siehe Schritt 3: Die Prüfer verlangen Raster, These in Zeile eins und ein
 Werkzeug, also das Lehrstück. Der Text bleibt, wie er ist; gemessen wird die Reaktion der Leser.
+
+Beitrag 2 (Entwurf 34, Lehrstück, erzeugt am 2026-10-11, 1.602 Zeichen, 227 Wörter): Ronny 5,
+Claudia 7, Markus 5. Dieselben Prüfer, dasselbe Thema, zwei Punkte mehr je Stimme für das
+Format, dessen Werte sie tragen. Genau dieser Abstand wird nach sieben Tagen gegen die
+Reaktion der Leser gelegt.
 
 ## Probe vor dem Start (2026-10-11)
 
