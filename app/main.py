@@ -29,6 +29,7 @@ _load_env_file()
 
 import json  # noqa: E402
 import logging  # noqa: E402
+import statistics  # noqa: E402
 import threading  # noqa: E402
 import time  # noqa: E402
 from collections import deque  # noqa: E402
@@ -332,16 +333,23 @@ def patch_item(item_id: int, body: PatchBody):
     return db.update_item(item_id, important=body.important, status=body.status, note=note)
 
 
+class VerwertenBody(BaseModel):
+    format: str = "lehrstueck"  # 'lehrstueck' (Kontrolle) oder 'erzaehlung' (Testarm)
+
+
 @app.post("/api/items/{item_id}/verwerten", dependencies=[Depends(require_session)])
-def verwerten(item_id: int):
+def verwerten(item_id: int, body: VerwertenBody | None = None):
     item = db.get_item(item_id)
     if not item or item["status"] == "deleted":
         raise HTTPException(status_code=404, detail="Nicht gefunden")
+    format = body.format if body else "lehrstueck"
+    if format not in transform.FORMATE:
+        raise HTTPException(status_code=400, detail="format muss 'lehrstueck' oder 'erzaehlung' sein")
     try:
-        draft = transform.linkedin_entwurf(item)
+        draft = transform.linkedin_entwurf(item, format)
     except transform.TransformError as e:
         raise HTTPException(status_code=e.status, detail=str(e))
-    return {"draft": draft, "model": transform.MODEL}
+    return {"draft": draft, "model": transform.MODEL, "format": format}
 
 
 class PruefBody(BaseModel):
@@ -354,6 +362,7 @@ class UeberarbeitenBody(BaseModel):
     entwurf: str
     feedback: list[dict]  # [{name, rolle, score, feedback}, ...]
     anweisung: str = ""   # Stefans Regie-Anweisung, hat Vorrang vor dem Feedback
+    format: str = "lehrstueck"  # Format halten — eine Erzählung darf nicht zur Liste werden
 
 
 @app.get("/api/pruefer", dependencies=[Depends(require_session_oder_dienst)])
@@ -420,16 +429,57 @@ def ueberarbeiten(body: UeberarbeitenBody):
     if not body.feedback:
         raise HTTPException(status_code=400, detail="Kein Feedback übergeben")
     try:
-        return {"draft": transform.ueberarbeiten(body.entwurf, body.feedback, body.anweisung)}
+        return {"draft": transform.ueberarbeiten(body.entwurf, body.feedback, body.anweisung,
+                                                 body.format)}
     except transform.TransformError as e:
         raise HTTPException(status_code=e.status, detail=str(e))
+
+
+@app.get("/api/experiment", dependencies=[Depends(require_session)])
+def experiment(seit: str = "2026-10-11"):
+    """Format-Experiment: je Arm Entwürfe, gepostet, gemessen und die Mediane aus
+    dem Rückkanal (docs/format-experiment.md). Gezählt werden nur Entwürfe mit
+    Format-Etikett, also solche aus dem Entwurfs-Fenster; der Rückfluss aus dem
+    Marketing-Cockpit trägt keins."""
+    arme = {f: [] for f in transform.FORMATE}
+    for d in db.list_drafts(limit=500):
+        if d.get("format") in arme and (d.get("created_at") or "") >= seit:
+            arme[d["format"]].append(d)
+
+    def median(werte):
+        return statistics.median(werte) if werte else None
+
+    antwort = {}
+    for f, entwuerfe in arme.items():
+        kennzahlen = []
+        for d in entwuerfe:
+            try:
+                k = json.loads(d["kennzahlen"]) if d.get("kennzahlen") else None
+            except ValueError:
+                k = None
+            if k and k.get("impressions") is not None:
+                kennzahlen.append(k)
+        antwort[f] = {
+            "label": transform.FORMAT_LABEL[f],
+            "entwuerfe": len(entwuerfe),
+            "gepostet": sum(1 for d in entwuerfe if d["status"] == "gepostet"),
+            "gemessen": len(kennzahlen),
+            "impressionen_median": median([k["impressions"] for k in kennzahlen]),
+            "likes_median": median([k.get("likes") or 0 for k in kennzahlen]),
+            "kommentare_je_post": (round(sum(k.get("comments") or 0 for k in kennzahlen) / len(kennzahlen), 2)
+                                   if kennzahlen else None),
+            "engagement_median": median([k.get("engagement") or 0 for k in kennzahlen]),
+            "mit_kommentar": sum(1 for k in kennzahlen if (k.get("comments") or 0) > 0),
+        }
+    return {"seit": seit, "arme": antwort}
 
 
 class DraftBody(BaseModel):
     text: str
     item_id: int | None = None
     item_title: str = ""
-    scores: list[dict] = []  # [{pruefer, name, score}, ...] — Schnappschuss
+    scores: list[dict] = []  # [{pruefer, name, score, dimensionen}, ...] — Schnappschuss
+    format: str = ""         # 'lehrstueck' | 'erzaehlung' | '' (ohne Etikett)
 
 
 class DraftPatchBody(BaseModel):
@@ -459,9 +509,11 @@ def get_drafts():
 def create_draft(body: DraftBody):
     if not body.text.strip():
         raise HTTPException(status_code=400, detail="Leerer Entwurf")
+    if body.format and body.format not in transform.FORMATE:
+        raise HTTPException(status_code=400, detail="format muss 'lehrstueck', 'erzaehlung' oder leer sein")
     d = db.insert_draft(body.text, item_id=body.item_id,
                         item_title=body.item_title.strip()[:300],
-                        scores=json.dumps(body.scores[:8]))
+                        scores=json.dumps(body.scores[:8]), format=body.format)
     return JSONResponse(status_code=201, content=_draft_out(d))
 
 

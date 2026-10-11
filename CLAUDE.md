@@ -225,8 +225,39 @@ ContentIn-Themen setzen: `schedule_post` kennt kein Thema-Feld. ContentIns
 Säulen-Berichte bleiben deshalb ein Artefakt, solange Beiträge dort nicht von
 Hand getaggt werden.
 
+## Das Format-Experiment: Erzählung gegen Lehrstück
+
+Seit 2026-10-11 kennt die Erzeugung zwei Formate (`transform.FORMATE`): `lehrstueck`, das
+heutige Format mit Qualitätslatte und Prüfraster, als Kontrolle **wörtlich unverändert**;
+und `erzaehlung`, der Testarm aus den Frühjahrsbeiträgen mit den meisten Kommentaren:
+Szene statt Analyse, ein Satz je Zeile, Du-Ansprache, 700 bis 1.300 Zeichen, Pointe statt
+Raster, drei von Stefans eigenen Anfängen als Maßstab im Prompt. Das Format wird im
+Entwurfs-Fenster gewählt (Chips unter der Quellzeile, Wahl bleibt im Browser gemerkt),
+beim Speichern am Entwurf abgelegt (`drafts.format`) und beim Überarbeiten gehalten (für
+die Erzählung mit eigenem Zusatz, damit Prüfer-Feedback sie nicht zur Liste zurückbaut).
+`GET /api/experiment` liefert je Arm Entwürfe, gepostet, gemessen und die Mediane aus dem
+Rückkanal; der Entwürfe-Tab zeigt dieselbe Karte.
+
+Ablauf, Messung und Entscheidungsregel stehen in
+[`docs/format-experiment.md`](docs/format-experiment.md). Zwei Regeln daraus betreffen den
+Code: Die Kontrolle bleibt bis zur Auswertung unverändert (Befunde der Überprüfung fließen
+nur in den Testarm), und im Experiment wird nur geprüft, nicht automatisch überarbeitet,
+weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückziehen.
+
 ## Änderungsprotokoll
 
+- **2026-10-11 (4):** **Format-Experiment vorbereitet, Erstellung überprüft.** Zweites
+  Erzeugungs-Format `erzaehlung` als Testarm (aus den Frühjahrsbeiträgen mit den meisten
+  Kommentaren: Szene, ein Satz je Zeile, Du-Ansprache, 700 bis 1.300 Zeichen, Pointe
+  statt Raster, drei eigene Anfänge als Maßstab); `lehrstueck` bleibt als Kontrolle
+  wörtlich unverändert. Befunde der Überprüfung: Die Qualitätslatte erzwingt das
+  Prüfraster am Ende, die Prüfer tragen dessen Werte, die drei reichweitenstärksten
+  Beiträge entstanden vor der Latte, ContentIn mahnt Einstiege unter 250 Zeichen an.
+  Alles davon steckt im Testarm; die Kontrolle wird erst nach dem Experiment angefasst.
+  Neu: `drafts.format` (Migration), `POST …/verwerten` mit `{format}`, `format` in
+  Überarbeiten und Speichern, `GET /api/experiment`, Format-Chips im Entwurfs-Fenster,
+  Format-Chip und Experiment-Karte im Entwürfe-Tab, Vorlage `docs/format-experiment.md`,
+  vier Tests in `tests/test_format_experiment.py`.
 - **2026-10-11 (3):** **Messung der Claudia-Eichung: Kriterium 1 verfehlt, Kriterium 2
   erfüllt.** Sechs Beiträge, die nicht Maßstab sind, im Produktions-Container mit dem
   neuen `scripts/pruefer_messen.py` geprüft (sechs Claude-Aufrufe, Cent-Betrag): Noten
@@ -253,20 +284,6 @@ Hand getaggt werden.
   Beiträge, die nicht Maßstab sind, ergeben mindestens drei verschiedene Noten, und die
   zwei mit den meisten Reaktionen liegen über den zwei mit den wenigsten. Messung: siehe
   Eintrag (3).
-- **2026-10-11:** **Rückkanal von ContentIn** (`app/contentin.py`, Abschnitt
-  oben). Anlass war die Auswertung der Generierung gegen 30 Entwürfe und 41
-  veröffentlichte Beiträge: Prüfer ohne Trennschärfe (Claudia 25 von 28 mal
-  8, Ronny nie 8, Schleife endet in 29 von 29 Fällen in Runde 1), Kommentare
-  je Beitrag von 2,0 (Frühjahr) auf 0,2 (Sept/Okt), und das Cockpit wusste
-  seit 20.08. nicht mehr, was gepostet wurde. Neu: Spalten `contentin_post_id`,
-  `veroeffentlicht_am`, `kennzahlen` an `drafts` (Migration in `db.init`),
-  Tabelle `sync_log`, `db.archiviere_fund` statt Inline-Code in `patch_draft`,
-  Envs `CONTENTIN_MCP_KEY`/`CONTENTIN_MCP_URL`, Route `POST /api/sync/contentin`,
-  Abgleich-Knopf und Kennzahlen-Zeile im Entwürfe-Tab. Getestet ohne Netz:
-  Zuordnung über Textanfang inkl. HTML und Entities, Textvariante wird nicht
-  zugeordnet, Markieren mit Kennzahlen und Auto-Archiv, Idempotenz und kein
-  zweiter Analytics-Abruf für alte Beiträge, 401/503/200 am Endpunkt, SSE-
-  und JSON-Antworten, Session-Id-Mitführung, Fehlerpfad.
-**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (23 weitere,
+**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (24 weitere,
 zurück bis zum Projektstart am 2026-07-15). Neue Einträge kommen hier oben dazu
 und wandern weiter, sobald mehr als drei zusammenkommen.

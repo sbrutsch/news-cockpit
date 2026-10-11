@@ -1,0 +1,90 @@
+# Format-Experiment: Erzählung gegen Lehrstück
+
+Stand: 2026-10-11 · Laufzeit: acht Beiträge, etwa drei Wochen · Auswertung: `GET /api/experiment`
+und die Karte oben im Entwürfe-Tab.
+
+## Hypothese
+
+Die Beiträge aus dem Cockpit bekommen seit Juli weniger Reaktion als die Beiträge vom
+Frühjahr: Kommentare je Beitrag von 2,0 auf 0,2, Likes-Median von 6 auf 3, Engagement-Median
+von 2,8 % auf 1,4 %. Zwei Belege sprechen dafür, dass es am Format liegt, nicht am Thema:
+Die drei reichweitenstärksten Cockpit-Beiträge entstanden am 16. Juli, vor der Qualitätslatte
+mit ihrem Pflicht-Prüfraster; und die geeichte Claudia trennt sechs Cockpit-Beiträge kaum,
+weil sie einander textlich zu ähnlich sind. Hypothese: Das Erzählformat des Frühjahrs (Szene,
+ein Satz je Zeile, Du-Ansprache, Pointe statt Raster) bringt bei gleichen Themen mehr
+Kommentare und eine höhere Engagement-Rate als das Lehrstück.
+
+## Design
+
+| | Arm A, Kontrolle | Arm B, Testarm |
+|---|---|---|
+| Format-Chip | Lehrstück | Erzählung |
+| Prompt | heutiges Format mit Qualitätslatte, wörtlich unverändert | Szene, kurze Zeilen, Du, 700 bis 1.300 Zeichen, Pointe; drei eigene Anfänge als Maßstab |
+| Beiträge | vier | vier |
+| Reihenfolge | A, B, A, B, A, B, A, B, je Posting-Slot abwechselnd | |
+| Gleich halten | Posting-Zeit (05:45), Bild ja/nein, Säulen-Mischung, kein Poll, kein Dokument-Post | |
+| Themen | aus dem Posteingang wie bisher; kein Thema mit großem Firmennamen in nur einem Arm | |
+
+Das Format wird im Entwurfs-Fenster gewählt (Chips unter der Quellzeile) und beim Speichern
+am Entwurf abgelegt. Ohne Speichern gibt es keine Zuordnung und keine Messung.
+
+## Ablauf je Beitrag
+
+1. Fund im Posteingang wählen, Feder klicken.
+2. Format-Chip nach Plan setzen (Wechsel erzeugt den Entwurf neu).
+3. Einmal prüfen lassen, alle drei Prüfer, als Dokumentation der Teilnoten. **Keine
+   Prüfschleife und keine automatische Überarbeitung im Experiment:** Die Prüfer tragen die
+   Werte des Lehrstücks (Raster, Fragen, Werkzeug) und würden den Testarm zurückziehen.
+   Handarbeit am Text ist erlaubt, solange das Format bleibt.
+4. Speichern (Etikett und Teilnoten landen am Entwurf), Text kopieren, in ContentIn für den
+   nächsten Slot planen.
+5. Nichts weiter: Der Rückkanal markiert nachts „gepostet" und holt die Kennzahlen, 30 Tage
+   lang täglich frisch.
+
+## Messung
+
+Je Beitrag gelten die Kennzahlen sieben Tage nach Veröffentlichung als belastbar; die
+Auswertung läuft, sobald alle acht Beiträge sieben Tage alt sind. Gemessen wird je Arm:
+
+- Kommentare je Beitrag (wichtigste Größe, sie zeigt Gespräch)
+- Anteil der Beiträge mit mindestens einem Kommentar
+- Engagement-Median (Likes plus Kommentare je Impression, aus ContentIn)
+- Likes-Median
+- Impressionen-Median (nur zur Einordnung; ein Ausreißer wie Mercedes sagt nichts über das Format)
+
+Die Teilnoten der Prüfer werden daneben gelegt, nicht als Maßstab: Interessant ist, ob ein
+Kriterium die echte Reaktion vorhersagt. Nach der Eichung streute „Verwertbar Richtung
+Vorstand" am stärksten.
+
+## Entscheidungsregel
+
+- **B gewinnt**, wenn Kommentare je Beitrag und Engagement-Median beide höher sind als in A.
+  Dann wird Erzählung das Standardformat, und die Qualitätslatte des Lehrstücks wird in die
+  Sprache des Erzählformats übersetzt (Pointe statt Raster), die Prüfer-Kriterien folgen.
+- **A gewinnt**, wenn beide Größen in A höher sind. Dann bleibt das Lehrstück, und der
+  nächste Hebel ist das Thema (Fall mit Namen und Zahl im Opener), nicht die Form.
+- **Unentschieden** (eine Größe je Arm oder Unterschiede unter 30 %): Vier weitere Beiträge
+  je Arm, dann neu entscheiden. Nicht vorher am Prompt drehen.
+
+## Laufzettel
+
+Die App führt die Zahlen; die Tabelle dient der Planung der Slots.
+
+| Nr. | Slot | Arm | Fund | Entwurf-Nr. | gepostet | 7 Tage um |
+|---|---|---|---|---|---|---|
+| 1 | | A | | | | |
+| 2 | | B | | | | |
+| 3 | | A | | | | |
+| 4 | | B | | | | |
+| 5 | | A | | | | |
+| 6 | | B | | | | |
+| 7 | | A | | | | |
+| 8 | | B | | | | |
+
+## Störgrößen, die man kennen sollte
+
+Reichweite hängt am Thema (ein Konzernname bringt Impressionen, nicht Gespräch), am Wochentag
+und daran, ob ein Bild dabei ist. Deshalb sind Kommentare und Engagement-Rate die Zielgrößen,
+nicht Impressionen, und deshalb wechseln die Arme sich ab, statt zwei Wochen am Stück zu
+laufen. Acht Beiträge sind wenig; das Ergebnis ist eine Richtung, kein Beweis. Es reicht, um
+zu entscheiden, womit die nächsten zwanzig Beiträge geschrieben werden.

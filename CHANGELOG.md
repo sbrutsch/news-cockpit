@@ -9,6 +9,14 @@ Ausgelagert am 2026-08-26 aus `CLAUDE.md`: Das Protokoll war dort auf 161 von
 Weg, die Claude bei jeder Sitzung liest. In `CLAUDE.md` stehen jetzt nur noch
 die letzten drei Einträge plus ein Verweis hierher.
 
+- **2026-10-11 (4):** **Format-Experiment vorbereitet, Erstellung überprüft.** Zweites
+  Erzeugungs-Format `erzaehlung` als Testarm (Szene, ein Satz je Zeile, Du-Ansprache,
+  700 bis 1.300 Zeichen, Pointe statt Raster, drei eigene Frühjahrs-Anfänge als
+  Maßstab); `lehrstueck` bleibt als Kontrolle wörtlich unverändert. Neu: `drafts.format`,
+  `POST …/verwerten` mit `{format}`, `format` in Überarbeiten und Speichern,
+  `GET /api/experiment`, Format-Chips und Experiment-Karte in der Oberfläche, Vorlage
+  `docs/format-experiment.md`, vier Tests. Befunde der Überprüfung der Erstellung
+  stecken im Testarm, die Kontrolle wird erst nach der Auswertung angefasst.
 - **2026-10-11 (3):** **Messung der Claudia-Eichung: Kriterium 1 verfehlt, Kriterium 2
   erfüllt.** Sechs Beiträge, die nicht Maßstab sind, im Produktions-Container mit
   `scripts/pruefer_messen.py` geprüft: Noten 7, 7, 7, 6, 6, 7, vorher 7, 7, 8, 8, 8, 8.

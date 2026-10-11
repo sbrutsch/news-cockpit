@@ -108,13 +108,13 @@
 
   /* ---------- Art-Filter (kind) ---------- */
   .kinds { display: flex; gap: 8px; padding: 14px 0 4px; flex-wrap: wrap; }
-  .kind-chip {
+  .kind-chip, .format-chip {
     font-size: 12.5px; font-weight: 600; color: var(--muted);
     border: 1px solid var(--line-soft); border-radius: 999px; padding: 4px 13px;
     transition: all .15s;
   }
-  .kind-chip:hover { color: var(--text); border-color: var(--line); }
-  .kind-chip.active { color: var(--text); background: var(--elev-strong); border-color: rgba(148,163,184,0.4); }
+  .kind-chip:hover, .format-chip:hover { color: var(--text); border-color: var(--line); }
+  .kind-chip.active, .format-chip.active { color: var(--text); background: var(--elev-strong); border-color: rgba(148,163,184,0.4); }
 
   /* ---------- Liste ---------- */
   .list { list-style: none; margin-top: 10px; }
@@ -381,6 +381,8 @@
   /* ---------- Entwürfe-Tab ---------- */
   .chip.gepostet { color: #6FCF97; border-color: rgba(111,207,151,0.35); background: rgba(111,207,151,0.08); }
   .chip.verwertet { color: #8FBFA9; border-color: rgba(111,207,151,0.3); }
+  .chip.format { color: var(--muted); border-style: dashed; }
+  .vw-format { display: flex; gap: 8px; margin: -4px 0 14px; }
   .d-score { font-size: 11.5px; font-weight: 700; padding: 1.5px 8px; border-radius: 5px; font-variant-numeric: tabular-nums; }
   .d-score.hoch { color: #6FCF97; background: rgba(111,207,151,0.12); }
   .d-score.mittel { color: var(--amber); background: var(--amber-dim); }
@@ -593,6 +595,7 @@ async function load(reset) {
   if (state.tab === "drafts") {
     const data = await api("/api/drafts");
     state.drafts = data.items;
+    try { state.experiment = await api("/api/experiment"); } catch { state.experiment = null; }
     state.counts = data.counts;
     state.mayHaveMore = false;
     render();
@@ -956,7 +959,31 @@ function render_counts_only() {
 }
 
 /* ---------- Entwürfe-Tab ---------- */
+function renderExperiment() {
+  const box = $("briefing");
+  box.textContent = "";
+  const ex = state.experiment && state.experiment.arme;
+  if (!ex || !Object.values(ex).some(a => a.entwuerfe > 0)) return;
+  const card = el("div", "briefing");
+  card.append(el("div", "b-date", "Format-Experiment · seit " + state.experiment.seit));
+  Object.values(ex).forEach(a => {
+    const line = el("div", "b-line");
+    line.append(el("strong", "", a.label + ": "));
+    let text = a.entwuerfe + (a.entwuerfe === 1 ? " Entwurf" : " Entwürfe") + ", " + a.gepostet + " gepostet, " + a.gemessen + " gemessen";
+    if (a.gemessen > 0) {
+      text += " · Impressionen " + a.impressionen_median + " · Likes " + a.likes_median
+        + " · " + a.kommentare_je_post + " Komm./Post · " + a.engagement_median + " % · "
+        + a.mit_kommentar + " mit Kommentar";
+    }
+    line.append(text);
+    card.append(line);
+  });
+  card.append(el("div", "b-pillars", "Mediane aus dem ContentIn-Rückkanal, Ablauf und Entscheidungsregel in docs/format-experiment.md"));
+  box.append(card);
+}
+
 function renderDrafts() {
+  renderExperiment();
   const q = state.q.toLowerCase();
   const list = state.drafts.filter(d =>
     !q || d.text.toLowerCase().includes(q) || (d.item_title || "").toLowerCase().includes(q));
@@ -998,6 +1025,7 @@ function draftNode(d, index) {
   t.title = absTime(d.updated_at);
   meta.append(t);
   if (d.status === "gepostet") meta.append(el("span", "chip gepostet", "gepostet"));
+  if (FORMAT_LABEL[d.format]) meta.append(el("span", "chip format", FORMAT_LABEL[d.format]));
   (d.scores || []).forEach(s => {
     if (s.score !== null && s.score !== undefined) {
       const badge = el("span", "d-score " + scoreKlasse(s.score),
@@ -1084,13 +1112,23 @@ function openDraft(d) {
   vw.quelleText = d.item_title ? "Grundlage: " + d.item_title : "Freier Entwurf";
   vw.anweisung = "";
   vw.gesichert = d.text;  // unverändertes Schließen braucht keine Nachfrage
+  if (FORMAT_LABEL[d.format]) vw.format = d.format;
   vwShow();
   renderDraft(d.text);
 }
 
 /* ---------- Verwerten: LinkedIn-Entwurf ---------- */
 const vw = { item: null, draft: "", results: {}, include: {}, draftId: null,
-             quelleText: "", anweisung: "", laufend: false, stoppen: false, gesichert: null };
+             quelleText: "", anweisung: "", laufend: false, stoppen: false, gesichert: null,
+             format: "lehrstueck" };
+// Format-Experiment: Kontrolle „Lehrstück" gegen Testarm „Erzählung" (docs/format-experiment.md).
+// Die Wahl bleibt im Browser gemerkt, damit die Arme sich leicht abwechseln lassen.
+const FORMATE = [
+  { key: "lehrstueck", label: "Lehrstück", hinweis: "Kontrolle: heutiges Format mit Qualitätslatte und Prüfraster" },
+  { key: "erzaehlung", label: "Erzählung", hinweis: "Testarm: Szene, ein Satz je Zeile, Du-Ansprache, 700–1.300 Zeichen, Pointe statt Raster" }
+];
+const FORMAT_LABEL = Object.fromEntries(FORMATE.map(f => [f.key, f.label]));
+try { if (FORMAT_LABEL[localStorage.getItem("cockpit_format")]) vw.format = localStorage.getItem("cockpit_format"); } catch { /* egal */ }
 
 function vwShow() { $("vwOverlay").hidden = false; }
 function vwHide() {
@@ -1141,6 +1179,20 @@ const PRUEFER_LISTE = [
   { key: "markus", name: "Markus Leitner", rolle: "Head of IT, Mittelstand — erste 100 Tage", initial: "M" }
 ];
 
+function formatWechseln(key) {
+  if (vw.laufend || !FORMAT_LABEL[key] || key === vw.format) return;
+  vw.format = key;
+  try { localStorage.setItem("cockpit_format", key); } catch { /* egal */ }
+  if (vw.item) {
+    toast("Erzeuge neu als " + FORMAT_LABEL[key] + " …");
+    verwerten(vw.item);
+  } else {
+    // Freier Entwurf: nur das Etikett wechselt, Text und Prüfergebnisse bleiben stehen
+    document.querySelectorAll(".format-chip").forEach(c => c.classList.toggle("active", c.dataset.format === key));
+    toast("Format " + FORMAT_LABEL[key] + " — gilt fürs Überarbeiten und Speichern.");
+  }
+}
+
 async function verwerten(item) {
   vw.item = item;
   vw.results = {};
@@ -1151,7 +1203,8 @@ async function verwerten(item) {
   vwShow();
   vwLoading();
   try {
-    const data = await api("/api/items/" + item.id + "/verwerten", { method: "POST" });
+    const data = await api("/api/items/" + item.id + "/verwerten",
+                           { method: "POST", body: JSON.stringify({ format: vw.format }) });
     renderDraft(data.draft);
   } catch (e) {
     const body = $("vwBody");
@@ -1185,6 +1238,17 @@ function renderDraft(draft) {
   const main = el("div", "vw-main");
   const quelle = vw.item ? vwQuelleZeile(vw.item) : (vw.quelleText || "Neuer Entwurf");
   main.append(el("div", "vw-quelle", quelle + " · Text direkt bearbeitbar"));
+  // Format-Chips: Wechsel erzeugt den Entwurf neu (bei einem Fund) bzw. gilt fürs Überarbeiten
+  const fz = el("div", "vw-format");
+  FORMATE.forEach(f => {
+    const c = el("button", "format-chip" + (vw.format === f.key ? " active" : ""), f.label);
+    c.type = "button";
+    c.dataset.format = f.key;
+    c.title = f.hinweis;
+    c.addEventListener("click", () => formatWechseln(f.key));
+    fz.append(c);
+  });
+  main.append(fz);
   const ta = document.createElement("textarea");
   ta.className = "vw-draft";
   ta.value = draft;
@@ -1367,7 +1431,7 @@ async function ueberarbeiten() {
   try {
     const data = await api("/api/ueberarbeiten", {
       method: "POST",
-      body: JSON.stringify({ entwurf: vorher, feedback, anweisung })
+      body: JSON.stringify({ entwurf: vorher, feedback, anweisung, format: vw.format })
     });
     renderDraft(data.draft);
     if (!vw.laufend) toast("Überarbeitet — die Prüfer können erneut urteilen.");
@@ -1464,7 +1528,8 @@ async function saveDraft() {
         text,
         item_id: vw.item ? vw.item.id : null,
         item_title: vw.item ? vw.item.title : "",
-        scores
+        scores,
+        format: vw.format
       }) });
       vw.draftId = d.id;
       vw.gesichert = text;

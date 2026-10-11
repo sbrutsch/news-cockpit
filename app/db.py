@@ -74,7 +74,7 @@ _INDEXES = (
 # scores = JSON-Schnappschuss der Prüfer-Urteile zum Speicherzeitpunkt.
 DRAFT_COLS = ("id", "item_id", "item_title", "text", "scores", "status",
               "created_at", "updated_at",
-              "contentin_post_id", "veroeffentlicht_am", "kennzahlen")
+              "contentin_post_id", "veroeffentlicht_am", "kennzahlen", "format")
 DRAFT_SELECT = ", ".join(DRAFT_COLS)
 DRAFT_STATUS = ("entwurf", "gepostet")
 
@@ -90,7 +90,8 @@ CREATE TABLE IF NOT EXISTS drafts (
   updated_at  TEXT NOT NULL,
   contentin_post_id  INTEGER,
   veroeffentlicht_am TEXT,
-  kennzahlen         TEXT NOT NULL DEFAULT ''
+  kennzahlen         TEXT NOT NULL DEFAULT '',
+  format             TEXT NOT NULL DEFAULT ''
 )"""
 
 _SCHEMA_DRAFTS_PG = """
@@ -105,7 +106,8 @@ CREATE TABLE IF NOT EXISTS drafts (
   updated_at  TEXT NOT NULL,
   contentin_post_id  BIGINT,
   veroeffentlicht_am TEXT,
-  kennzahlen         TEXT NOT NULL DEFAULT ''
+  kennzahlen         TEXT NOT NULL DEFAULT '',
+  format             TEXT NOT NULL DEFAULT ''
 )"""
 
 # Stand wiederkehrender Abgleiche (z. B. ContentIn-Rückkanal): wann zuletzt,
@@ -253,6 +255,8 @@ def init():
             cur.execute("ALTER TABLE drafts ADD COLUMN veroeffentlicht_am TEXT")
         if "kennzahlen" not in vorhanden:
             cur.execute("ALTER TABLE drafts ADD COLUMN kennzahlen TEXT NOT NULL DEFAULT ''")
+        if "format" not in vorhanden:  # Format-Experiment: 'lehrstueck' | 'erzaehlung' | ''
+            cur.execute("ALTER TABLE drafts ADD COLUMN format TEXT NOT NULL DEFAULT ''")
         # Nachrüst-Migration für Bestände, die vor kind/pillar angelegt wurden
         have = _column_names(cur)
         if "kind" not in have:
@@ -421,17 +425,17 @@ def _draft_row(r):
     return dict(zip(DRAFT_COLS, r))
 
 
-def insert_draft(text, item_id=None, item_title="", scores="[]"):
+def insert_draft(text, item_id=None, item_title="", scores="[]", format=""):
     now = utcnow_iso()
-    params = (item_id, item_title, text, scores, now, now)
+    params = (item_id, item_title, text, scores, now, now, format or "")
+    spalten = "item_id, item_title, text, scores, created_at, updated_at, format"
     with cursor() as cur:
         if IS_POSTGRES:
-            cur.execute(_q("INSERT INTO drafts (item_id, item_title, text, scores, created_at, updated_at) "
-                           "VALUES (?, ?, ?, ?, ?, ?) RETURNING id"), params)
+            cur.execute(_q(f"INSERT INTO drafts ({spalten}) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id"),
+                        params)
             new_id = cur.fetchone()[0]
         else:
-            cur.execute("INSERT INTO drafts (item_id, item_title, text, scores, created_at, updated_at) "
-                        "VALUES (?, ?, ?, ?, ?, ?)", params)
+            cur.execute(f"INSERT INTO drafts ({spalten}) VALUES (?, ?, ?, ?, ?, ?, ?)", params)
             new_id = cur.lastrowid
     return get_draft(new_id)
 

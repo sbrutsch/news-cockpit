@@ -113,18 +113,80 @@ def _claude_text(system, user_content, max_tokens):
     return text
 
 
-def linkedin_entwurf(item):
-    return _claude_text(SYSTEM, _user_content(item), max_tokens=6000)
+# ---------------------------------------------------------------- Formate
+#
+# Format-Experiment seit 2026-10-11 (docs/format-experiment.md): "lehrstueck" ist
+# das bisherige Format mit Qualitätslatte und Prüfraster und bleibt als Kontrolle
+# WÖRTLICH unverändert, bis das Experiment ausgewertet ist. "erzaehlung" ist der
+# Testarm, abgeleitet aus Stefans Beiträgen vom Frühjahr 2026, die die meisten
+# Kommentare bekamen: Szene statt Analyse, ein Satz je Zeile, Du-Ansprache,
+# Pointe statt Raster. Die drei Anfänge im Prompt sind seine eigenen Texte.
+
+SYSTEM_ERZAEHLUNG = """Du schreibst LinkedIn-Posts für Stefan Brutscher — Sparringspartner für IT-Leiter, deren wichtige Entscheidungen im Management-Gremium zu scheitern drohen.
+
+Positionierung (verbindlich): Entscheidungssicherheit in kritischen Managementmomenten. Fokus auf Durchsetzung, Klarheit und Wirkung im Gremium — nicht auf Technik. Tagline: "Damit Entscheidungen durchgehen." Zielgruppe: IT-Leiter, CIOs und IT-Bereichsleiter im DACH-Raum — fachlich stark, aber unter Druck im Management. Core Values: Klarheit vor Harmonie, Wirkung vor Theorie, Verantwortung vor Komfort.
+
+Format „Erzählung" — so klangen Stefans Beiträge, die im Frühjahr 2026 die meisten Kommentare bekamen:
+- Eine Szene statt einer Analyse. Zeile eins ist ein konkreter Moment: Ort, Uhrzeit, der Satz, der fällt. Kein Zahlen-Einstieg, keine Studie, kein „Viele IT-Leiter kennen das".
+- Ein Satz je Zeile, Absätze von ein bis drei Zeilen, viel Weißraum. Kurze Sätze. Gegenwart.
+- Dramaturgie in vier Schritten: die Szene / der Moment, in dem es kippt / was wirklich entschieden hat (Interesse, Macht, Zeitpunkt — nicht Technik) / die Pointe.
+- Du-Ansprache: Der Leser steht selbst im Raum („Alle schauen auf dich.").
+- 700 bis 1.300 Zeichen. Keine Aufzählungen, kein Prüfraster, keine „drei Fragen", kein Werkzeug-Angebot am Ende — die Pointe ist das Angebot.
+- Schluss: ein Satz, der hängen bleibt, oder eine Frage, die sich mit einem Wort beantworten lässt. Kein Hashtag, kein Verkaufs-Aufruf.
+
+Drei Anfänge als Maßstab, Stefans eigene Beiträge:
+
+Steering Committee. Freitag. 11:57 Uhr.
+Die nächste Sitzung beginnt um 12.
+Die Präsentation ist durch. Budgetfolie. Timeline. Ein paar Architekturdiagramme.
+Der IT-Leiter schließt mit dem Satz: „Das wäre unser Vorschlag."
+Kurze Stille.
+
+Im Steering Committee sitzt niemand gern am Pranger.
+Deshalb passiert etwas Merkwürdiges:
+Alle sehen die Risiken.
+Keiner spricht sie aus.
+
+Der CFO sagt: „Ihr habt doch die besten Leute, warum kippt das Projekt?"
+Budgetrunde.
+Alle schauen auf dich.
+Der CFO lehnt sich zurück.
+„Dann holen wir uns jemanden rein, der das hier durchzieht."
+
+Was für jedes Format gilt: Deutsch. Keine Emojis. Keine erfundenen Zahlen oder Studien. Keine Ferndiagnosen über benannte reale Personen — deren Motive kennst du nicht. Verboten: "Mindset", "Transformationsreise", "Führung auf Augenhöhe" als Floskel, Adjektiv-Ketten, Berater-Selbstinszenierung, Motivations-Pathos, KI-Floskeln ("In der heutigen schnelllebigen Welt...", "Lassen Sie uns ehrlich sein"). Behauptung und Beleg trennen. Die Quelle nicht nacherzählen: Der Fund ist der Anlass, die Szene gehört dem Leser.
+Antworte NUR mit dem Post-Text. Keine Anführungszeichen drumherum, kein Kommentar, keine Überschrift."""
+
+FORMATE = ("lehrstueck", "erzaehlung")
+FORMAT_LABEL = {"lehrstueck": "Lehrstück", "erzaehlung": "Erzählung"}
 
 
-_UEBERARBEITEN_SYSTEM = SYSTEM + """
+def system_fuer(format):
+    if format not in FORMATE:
+        raise TransformError("Unbekanntes Format — erlaubt: lehrstueck, erzaehlung.", status=400)
+    return SYSTEM if format == "lehrstueck" else SYSTEM_ERZAEHLUNG
+
+
+def linkedin_entwurf(item, format="lehrstueck"):
+    return _claude_text(system_fuer(format), _user_content(item), max_tokens=6000)
+
+
+_UEBERARBEITEN_ZUSATZ = """
 
 Du erhältst einen bestehenden Entwurf plus das Feedback echter IT-Leiter aus der Zielgruppe. Überarbeite den Post so, dass er die berechtigten Kritikpunkte aufnimmt — ohne die Positionslogik zu verwässern oder in Gefälligkeit zu kippen. Nimm ernst, was substanziell ist; ignoriere, was den Kern verraten würde, und triff bei widersprüchlichem Feedback eine klare Entscheidung. Überarbeiten heißt schärfen, nicht verlängern: Die neue Fassung bleibt ein LinkedIn-Post innerhalb der Wortgrenze — wenn Feedback neue Elemente fordert, fliegt dafür Schwächeres raus. Antworte NUR mit dem überarbeiteten Post-Text, ohne Vorwort oder Kommentar."""
+
+# Die Prüfer tragen die Werte des Lehrstücks (Raster, Fragen, Werkzeug). Ohne
+# diesen Zusatz zieht ihr Feedback eine Erzählung in der Überarbeitung zur Liste zurück.
+_ERZAEHLUNG_HALTEN = """
+
+Das Format bleibt „Erzählung": ein Satz je Zeile, 700 bis 1.300 Zeichen, keine Aufzählungen, kein Prüfraster. Verlangt das Feedback eine Liste, ein Raster oder ein Werkzeug, setzt du den Gedanken als schärfere Szene oder schärfere Pointe um — nie als Liste."""
 
 _ABSCHNITT_HINWEIS = "[Hinweis: Antwort wurde am Token-Limit abgeschnitten]"
 
 
-def ueberarbeiten(entwurf, feedback_liste, anweisung=""):
+def ueberarbeiten(entwurf, feedback_liste, anweisung="", format="lehrstueck"):
+    system = system_fuer(format) + _UEBERARBEITEN_ZUSATZ
+    if format == "erzaehlung":
+        system += _ERZAEHLUNG_HALTEN
     # Falls eine frühere Runde abgeschnitten wurde: Hinweis-Zeile nicht
     # als Post-Inhalt in die nächste Runde schleppen
     entwurf = entwurf.replace(_ABSCHNITT_HINWEIS, "").strip()
@@ -142,7 +204,7 @@ def ueberarbeiten(entwurf, feedback_liste, anweisung=""):
     if anweisung:
         user += ("\n\nRegie-Anweisung von Stefan — sie hat Vorrang vor dem Prüfer-Feedback "
                  f"und entscheidet, was davon umgesetzt wird: {anweisung.strip()}")
-    return _claude_text(_UEBERARBEITEN_SYSTEM, user, max_tokens=6000)
+    return _claude_text(system, user, max_tokens=6000)
 
 
 EINORDNUNG_SYSTEM = """Du bewertest Fundstücke für Stefan Brutscher — Sparringspartner für IT-Leiter, deren wichtige Entscheidungen im Management-Gremium zu scheitern drohen. Positionierung: Entscheidungssicherheit in kritischen Managementmomenten, "Damit Entscheidungen durchgehen." Zielgruppe: IT-Leiter, CIOs, IT-Bereichsleiter im DACH-Raum — fachlich stark, unter Druck im Management.
