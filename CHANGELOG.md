@@ -9,6 +9,13 @@ Ausgelagert am 2026-08-26 aus `CLAUDE.md`: Das Protokoll war dort auf 161 von
 Weg, die Claude bei jeder Sitzung liest. In `CLAUDE.md` stehen jetzt nur noch
 die letzten drei Einträge plus ein Verweis hierher.
 
+- **2026-10-11 (3):** **Messung der Claudia-Eichung: Kriterium 1 verfehlt, Kriterium 2
+  erfüllt.** Sechs Beiträge, die nicht Maßstab sind, im Produktions-Container mit
+  `scripts/pruefer_messen.py` geprüft: Noten 7, 7, 7, 6, 6, 7, vorher 7, 7, 8, 8, 8, 8.
+  Zwei verschiedene Noten statt drei; stark 7,0 gegen schwach 6,5. Der Freifahrtschein
+  ist weg, Trennschärfe im engen Band entsteht aber nicht im Prompt: gleicher Generator,
+  gleiches Format, Reaktionsunterschiede eher aus Thema und Zeitpunkt. Nicht weiter am
+  Prompt gedreht, Beleg für das Format-Experiment.
 - **2026-10-11 (2):** **Claudia geeicht, Teilnoten gespeichert.** Befund aus den
   Produktionsdaten: Claudia vergab 25 von 28 mal die 8, Ronny nie, die Prüfschleife
   endete in 29 von 29 Fällen in Runde 1. Claudia ist im Kanon geeicht

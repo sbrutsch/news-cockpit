@@ -10,7 +10,7 @@ quelle: "news-cockpit app/pruefer.py (_CLAUDIA_SYSTEM), Dokumente/KI/KI-Agenten/
 gilt_fuer: [news-cockpit, marketing-cockpit, audit-skelett]
 vertraulichkeit: freigabefaehig
 ---
-<!-- Generiert aus wissensbasis@85c4041 am 2026-10-11. Nicht hier editieren. Quelle: personas/claudia.md -->
+<!-- Generiert aus wissensbasis@f8c1c96 am 2026-10-11. Nicht hier editieren. Quelle: personas/claudia.md -->
 
 # Claudia Brenner
 
@@ -66,6 +66,13 @@ dass der SCORE nie über dem gerundeten Durchschnitt der vier Kriterien liegt. D
 eine Setzung, keine Interview-Stelle. Prüfkriterium: Über sechs Beiträge hinweg, die nicht
 Maßstab sind, müssen mindestens drei verschiedene Noten fallen, und die zwei Beiträge
 mit den meisten Reaktionen liegen im Schnitt über den zwei mit den wenigsten.
+
+Messung am 2026-10-11 nach dem Deploy (Entwürfe 7, 4, 18, 20, 2, 11): Noten 7, 7, 7, 6,
+6, 7, vorher 7, 7, 8, 8, 8, 8. Zwei verschiedene Noten statt drei, stark 7,0 gegen schwach
+6,5. Kriterium 1 verfehlt, Kriterium 2 erfüllt. Die 8 ist kein Freifahrtschein mehr. Mehr
+Trennschärfe kommt nicht aus dem Prompt: Die Beiträge entstammen demselben Generator und
+Format, die Unterschiede in den Reaktionen eher aus Thema und Zeitpunkt. Nächster Hebel
+ist das Format der Beiträge, nicht die Prüferin.
 
 ## System-Prompt
 

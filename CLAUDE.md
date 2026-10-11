@@ -227,6 +227,18 @@ Hand getaggt werden.
 
 ## Änderungsprotokoll
 
+- **2026-10-11 (3):** **Messung der Claudia-Eichung: Kriterium 1 verfehlt, Kriterium 2
+  erfüllt.** Sechs Beiträge, die nicht Maßstab sind, im Produktions-Container mit dem
+  neuen `scripts/pruefer_messen.py` geprüft (sechs Claude-Aufrufe, Cent-Betrag): Noten
+  7, 7, 7, 6, 6, 7, vorher 7, 7, 8, 8, 8, 8. Zwei verschiedene Noten statt drei; stark
+  7,0 gegen schwach 6,5, richtige Richtung, kleiner Abstand. Lesart: Der Freifahrtschein
+  ist weg, die Prüfschleife bekommt von Claudia keine 8 mehr geschenkt. Trennschärfe im
+  engen Band entsteht aber nicht im Prompt: Die sechs Beiträge entstammen demselben
+  Generator und Format und sind einander textlich ähnlich, die Unterschiede in den
+  Reaktionen kommen eher aus Thema und Zeitpunkt. Deshalb nicht weiter am Prompt gedreht
+  (vereinfachen statt nachbessern), sondern als Beleg für das Format-Experiment
+  festgehalten, im Kanon wie hier. Teilnoten der Messung: „Verwertbar Richtung Vorstand"
+  streut 5 bis 8 und ist das Kriterium mit dem größten Ausschlag.
 - **2026-10-11 (2):** **Claudia geeicht, Teilnoten gespeichert.** Befund aus den
   Produktionsdaten: Claudia vergab 25 von 28 mal die 8, Ronny nie, die Prüfschleife
   endete in 29 von 29 Fällen in Runde 1. Claudia ist im Kanon geeicht
@@ -239,8 +251,8 @@ Hand getaggt werden.
   `drafts.scores[].dimensionen`, aus der Oberfläche wie aus dem Rückfluss, Tooltip am
   Score-Chip; zwei Tests in `tests/test_teilnoten.py`. Prüfkriterium der Eichung: sechs
   Beiträge, die nicht Maßstab sind, ergeben mindestens drei verschiedene Noten, und die
-  zwei mit den meisten Reaktionen liegen über den zwei mit den wenigsten. Messung nach
-  dem Deploy: siehe Folgeeintrag.
+  zwei mit den meisten Reaktionen liegen über den zwei mit den wenigsten. Messung: siehe
+  Eintrag (3).
 - **2026-10-11:** **Rückkanal von ContentIn** (`app/contentin.py`, Abschnitt
   oben). Anlass war die Auswertung der Generierung gegen 30 Entwürfe und 41
   veröffentlichte Beiträge: Prüfer ohne Trennschärfe (Claudia 25 von 28 mal
@@ -255,15 +267,6 @@ Hand getaggt werden.
   zugeordnet, Markieren mit Kennzahlen und Auto-Archiv, Idempotenz und kein
   zweiter Analytics-Abruf für alte Beiträge, 401/503/200 am Endpunkt, SSE-
   und JSON-Antworten, Session-Id-Mitführung, Fehlerpfad.
-- **2026-09-12 (2):** **Workflow-Actions auf Node 24, per Commit-SHA angepinnt.**
-  `tests.yml` nutzte `actions/checkout@v4` und `actions/setup-python@v5`; beide laufen auf
-  Node 20, das GitHub abkündigt (Warnung in jedem Lauf seit September). Jetzt checkout
-  v7.0.1 und setup-python v7.0.0 (Node 24), nicht mehr über den beweglichen Tag, sondern
-  über den Commit-SHA der Version mit Versionskommentar: ein verschobener Tag kann so
-  keinen fremden Code in den Workflow bringen. Neu `.github/dependabot.yml`, nur für
-  Actions, monatlich; die Python-Pakete bleiben bewusst draußen (Regel in
-  `requirements.txt`). Geprüft: YAML lädt, Testlauf in der CI auf dem PR grün, Warnung
-  weg. Gleiches Muster wie in `wissensbasis` am selben Tag.
-**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (22 weitere,
+**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (23 weitere,
 zurück bis zum Projektstart am 2026-07-15). Neue Einträge kommen hier oben dazu
 und wandern weiter, sobald mehr als drei zusammenkommen.
