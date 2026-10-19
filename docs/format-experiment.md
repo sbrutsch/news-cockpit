@@ -72,7 +72,7 @@ Die App führt die Zahlen; die Tabelle dient der Planung der Slots.
 
 | Nr. | Slot | Arm | Fund | Entwurf-Nr. | gepostet | 7 Tage um |
 |---|---|---|---|---|---|---|
-| 1 | Mo 19.10. 07:45 (ContentIn 350681) | B | 636, Haftung bei KI-Agenten | 33 | | 26.10. |
+| 1 | Mo 19.10. 07:45 (ContentIn 350681) | B | 636, Haftung bei KI-Agenten | 33 | 19.10., mit Bild | 26.10. |
 | 2 | Mi 21.10. 07:45 (ContentIn 350682) | A | 634, Business Judgment Rule | 34 | | 28.10. |
 | 3 | | B | | | | |
 | 4 | | A | | | | |
