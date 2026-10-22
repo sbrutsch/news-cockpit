@@ -76,8 +76,8 @@ Die App führt die Zahlen; die Tabelle dient der Planung der Slots.
 | 2 | Mi 21.10. 07:45 (ContentIn 350682) | A | 634, Business Judgment Rule | 34 | | 28.10. |
 | 3 | Mo 26.10. 07:45 (ContentIn 353892) | B | 711, Schatten-KI fliegt auf | 35 | | 02.11. |
 | 4 | Mi 28.10. 07:45 (ContentIn 353893) | A | 710, Schatten-KI, Fachbereiche | 36 | | 04.11. |
-| 5 | | B | | | | |
-| 6 | | A | | | | |
+| 5 | Mo 02.11. 07:45 (ContentIn 353894) | B | 691, CFO zückt den Taschenrechner | 37 | | 09.11. |
+| 6 | Mi 04.11. 07:45 (ContentIn 353895) | A | 699, CFO-Kill-Review | 38 | | 11.11. |
 | 7 | | B | | | | |
 | 8 | | A | | | | |
 
@@ -98,6 +98,13 @@ bewertet: Erzählung Ronny 2, Claudia 4, Markus 4; Lehrstück Ronny 3, Claudia 6
 Die Erstfassung des Lehrstücks endete mit einer Hashtag-Zeile, die keiner der 26 bisherigen
 Beiträge trägt; in der Endfassung ist sie weg. Beide ohne Bild geplant, Bilder ergänzt
 Stefan in ContentIn bei beiden oder bei keinem.
+
+Beitrag 5 (Entwurf 37, Erzählung, 939 Zeichen, 16 Zeilen) und Beitrag 6 (Entwurf 38,
+Lehrstück, 1.332 Zeichen), erzeugt am 2026-10-22, Thema CFO im Gremium: Erzählung Ronny 3,
+Claudia 6, Markus 5; Lehrstück Ronny 3, Claudia 6, Markus 4. Zwei Handgriffe von Stefan
+freigegeben, ohne Nachbewertung: In der Erzählung „Donnerstag, 9 Uhr" statt „Dienstag,
+14 Uhr", weil Beitrag 3 denselben Einstieg hatte; im Lehrstück der Absicherungssatz vor der
+Schlussfrage gestrichen. Die Noten beziehen sich auf die erzeugte Fassung.
 
 ## Probe vor dem Start (2026-10-11)
 

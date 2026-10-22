@@ -265,7 +265,10 @@ weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückz
   711) und 4 (Entwurf 36, Lehrstück aus Meldung 710) erzeugt, auf Stefans Wunsch einmal
   per Regie-Anweisung im Aufbau geschärft (ohne Prüfer-Feedback), neu bewertet und in
   ContentIn geplant (353892 Mo 26.10., 353893 Mi 28.10., 07:45 Berlin, ab Winterzeit
-  06:45 UTC), siehe Laufzettel in `docs/format-experiment.md`.
+  06:45 UTC). Beitrag 5 (Entwurf 37, Erzählung aus Idee 691) und 6 (Entwurf 38,
+  Lehrstück aus Meldung 699) am selben Tag erzeugt, geprüft und mit zwei freigegebenen
+  Handgriffen geplant (353894 Mo 02.11., 353895 Mi 04.11.). Laufzettel in
+  `docs/format-experiment.md`.
 - **2026-10-11 (4):** **Format-Experiment vorbereitet, Erstellung überprüft.** Zweites
   Erzeugungs-Format `erzaehlung` als Testarm (aus den Frühjahrsbeiträgen mit den meisten
   Kommentaren: Szene, ein Satz je Zeile, Du-Ansprache, 700 bis 1.300 Zeichen, Pointe
