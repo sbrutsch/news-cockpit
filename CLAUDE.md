@@ -262,8 +262,10 @@ weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückz
   19.10.) und 2 (Lehrstück, 21.10.) sind live und vom Rückkanal erkannt; Stefan hat
   beide nur um ein Bild ergänzt, der Text ist unverändert (die höhere Zeichenzahl in
   ContentIn kommt von der HTML-Umwandlung). Beitrag 3 (Entwurf 35, Erzählung aus Idee
-  711) und 4 (Entwurf 36, Lehrstück aus Meldung 710) erzeugt und geprüft, Slots
-  26.10. und 28.10., siehe Laufzettel in `docs/format-experiment.md`.
+  711) und 4 (Entwurf 36, Lehrstück aus Meldung 710) erzeugt, auf Stefans Wunsch einmal
+  per Regie-Anweisung im Aufbau geschärft (ohne Prüfer-Feedback), neu bewertet und in
+  ContentIn geplant (353892 Mo 26.10., 353893 Mi 28.10., 07:45 Berlin, ab Winterzeit
+  06:45 UTC), siehe Laufzettel in `docs/format-experiment.md`.
 - **2026-10-11 (4):** **Format-Experiment vorbereitet, Erstellung überprüft.** Zweites
   Erzeugungs-Format `erzaehlung` als Testarm (aus den Frühjahrsbeiträgen mit den meisten
   Kommentaren: Szene, ein Satz je Zeile, Du-Ansprache, 700 bis 1.300 Zeichen, Pointe

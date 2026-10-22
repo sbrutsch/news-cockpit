@@ -16,7 +16,8 @@ die letzten drei Einträge plus ein Verweis hierher.
   sonst geschluckt), nur der Startlauf bleibt bedingt. `pruefer.pruefen` 6.000 statt
   4.000 Token. Experiment: Beitrag 1 und 2 live und erkannt, Text unverändert, nur Bild
   ergänzt; Beitrag 3 (Entwurf 35, Erzählung, Idee 711) und 4 (Entwurf 36, Lehrstück,
-  Meldung 710) erzeugt und geprüft, Slots 26.10. und 28.10.
+  Meldung 710) erzeugt, per Regie-Anweisung im Aufbau geschärft, neu bewertet und in
+  ContentIn geplant (26.10. und 28.10., 07:45 Berlin).
 - **2026-10-11 (4):** **Format-Experiment vorbereitet, Erstellung überprüft.** Zweites
   Erzeugungs-Format `erzaehlung` als Testarm (Szene, ein Satz je Zeile, Du-Ansprache,
   700 bis 1.300 Zeichen, Pointe statt Raster, drei eigene Frühjahrs-Anfänge als
