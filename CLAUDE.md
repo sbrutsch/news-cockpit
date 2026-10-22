@@ -214,8 +214,12 @@ Entwurf und nimmt den Quell-Fund aus dem Posteingang (`db.archiviere_fund`,
 dieselbe Funktion wie beim Markieren von Hand). Kennzahlen der letzten 30 Tage
 werden bei jedem Lauf erneuert, ältere nur einmal.
 
-Läuft täglich 01:10 UTC im eigenen Thread, kein n8n nötig, und beim
-Containerstart, falls heute noch nicht (Stand in `sync_log`). Von Hand:
+Läuft täglich 06:10 UTC im eigenen Thread, kein n8n nötig, und beim
+Containerstart, falls heute noch nicht (Stand in `sync_log`); der tägliche Lauf
+selbst ist bedingungslos, sonst schluckt ein Neustart vor 06:10 den Morgenlauf.
+Bis 2026-10-22 lief er um 01:10, also vor der Veröffentlichung um 05:45 UTC: Ein
+Montagsbeitrag galt erst Dienstagnacht als gepostet, der Fund blieb einen Tag im
+Posteingang. Jetzt liegt er nach dem Posten und vor dem Themenscout. Von Hand:
 `POST /api/sync/contentin` (Sitzung oder Ingest-Token) oder der Knopf neben
 dem Export. Ohne `CONTENTIN_MCP_KEY` bleibt alles aus. Ein fehlgeschlagener
 Lauf wird geloggt, nicht gemerkt, damit der nächste es erneut versucht.
@@ -246,6 +250,20 @@ weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückz
 
 ## Änderungsprotokoll
 
+- **2026-10-22:** **Rückkanal auf 06:10 UTC, Tageslauf bedingungslos; Prüfer-Antwort bis
+  6.000 Token; Format-Experiment Beitrag 3 und 4.** Befund aus der Kontrolle der ersten
+  Woche: Der Abgleich um 01:10 lief vor der Veröffentlichung um 05:45 UTC, ein
+  Montagsbeitrag galt erst Dienstagnacht als gepostet, der Fund blieb einen Tag im
+  Posteingang. Jetzt 06:10 UTC, nach dem Posten und vor dem Themenscout. Der tägliche
+  Lauf prüft nicht mehr „heute schon gelaufen?", sonst hätte ein Neustart vor 06:10
+  (wie bei der Plattform-Wartung am 22.10.) den Morgenlauf geschluckt; nur der
+  Startlauf bleibt bedingt. `pruefer.pruefen` bekommt 6.000 statt 4.000 Token, weil
+  Claudias Begründung zweimal abgeschnitten wurde. Experiment: Beitrag 1 (Erzählung,
+  19.10.) und 2 (Lehrstück, 21.10.) sind live und vom Rückkanal erkannt; Stefan hat
+  beide nur um ein Bild ergänzt, der Text ist unverändert (die höhere Zeichenzahl in
+  ContentIn kommt von der HTML-Umwandlung). Beitrag 3 (Entwurf 35, Erzählung aus Idee
+  711) und 4 (Entwurf 36, Lehrstück aus Meldung 710) erzeugt und geprüft, Slots
+  26.10. und 28.10., siehe Laufzettel in `docs/format-experiment.md`.
 - **2026-10-11 (4):** **Format-Experiment vorbereitet, Erstellung überprüft.** Zweites
   Erzeugungs-Format `erzaehlung` als Testarm (aus den Frühjahrsbeiträgen mit den meisten
   Kommentaren: Szene, ein Satz je Zeile, Du-Ansprache, 700 bis 1.300 Zeichen, Pointe
@@ -280,20 +298,6 @@ weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückz
   (vereinfachen statt nachbessern), sondern als Beleg für das Format-Experiment
   festgehalten, im Kanon wie hier. Teilnoten der Messung: „Verwertbar Richtung Vorstand"
   streut 5 bis 8 und ist das Kriterium mit dem größten Ausschlag.
-- **2026-10-11 (2):** **Claudia geeicht, Teilnoten gespeichert.** Befund aus den
-  Produktionsdaten: Claudia vergab 25 von 28 mal die 8, Ronny nie, die Prüfschleife
-  endete in 29 von 29 Fällen in Runde 1. Claudia ist im Kanon geeicht
-  (`wissensbasis@85c4041`, `personas/claudia.md`, neuer Abschnitt Eichung; Vertrag in
-  `personas/README.md` um den optionalen Abschnitt ergänzt): drei Maßstäbe aus echten
-  LinkedIn-Reaktionen auf eigene Beiträge (Entwürfe 6, 16, 25 als 8, 6, 4), Grundrate
-  höchstens eine 8 je zehn Beiträge, SCORE nie über dem Durchschnitt der vier Kriterien.
-  Kopie per Generator nach `app/personas/claudia.md`; die Skills-Bibliothek trägt keine
-  Claudia-Kopie (Generator-Check: nichts zu schreiben). Teilnoten landen jetzt in
-  `drafts.scores[].dimensionen`, aus der Oberfläche wie aus dem Rückfluss, Tooltip am
-  Score-Chip; zwei Tests in `tests/test_teilnoten.py`. Prüfkriterium der Eichung: sechs
-  Beiträge, die nicht Maßstab sind, ergeben mindestens drei verschiedene Noten, und die
-  zwei mit den meisten Reaktionen liegen über den zwei mit den wenigsten. Messung: siehe
-  Eintrag (3).
-**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (24 weitere,
+**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (25 weitere,
 zurück bis zum Projektstart am 2026-07-15). Neue Einträge kommen hier oben dazu
 und wandern weiter, sobald mehr als drei zusammenkommen.

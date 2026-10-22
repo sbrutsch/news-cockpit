@@ -182,7 +182,7 @@ def pruefen(entwurf, key, art="beitrag"):
     text = _claude_text(
         system,
         f"{_EINLEITUNG[art]}\n\n{entwurf}",
-        max_tokens=4000,
+        max_tokens=6000,  # 4000 schnitt Claudias Begründung ab (2026-10-11, Entwurf 33)
     )
     score, feedback = parse_score(text)
     return {"pruefer": key, "name": PRUEFER[key]["name"], "rolle": PRUEFER[key]["rolle"],

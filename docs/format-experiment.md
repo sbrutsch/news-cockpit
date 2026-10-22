@@ -38,7 +38,7 @@ am Entwurf abgelegt. Ohne Speichern gibt es keine Zuordnung und keine Messung.
    Handarbeit am Text ist erlaubt, solange das Format bleibt.
 4. Speichern (Etikett und Teilnoten landen am Entwurf), Text kopieren, in ContentIn für den
    nächsten Slot planen.
-5. Nichts weiter: Der Rückkanal markiert nachts „gepostet" und holt die Kennzahlen, 30 Tage
+5. Nichts weiter: Der Rückkanal markiert am selben Morgen (06:10 UTC) „gepostet" und holt die Kennzahlen, 30 Tage
    lang täglich frisch.
 
 ## Messung
@@ -74,8 +74,8 @@ Die App führt die Zahlen; die Tabelle dient der Planung der Slots.
 |---|---|---|---|---|---|---|
 | 1 | Mo 19.10. 07:45 (ContentIn 350681) | B | 636, Haftung bei KI-Agenten | 33 | 19.10., mit Bild | 26.10. |
 | 2 | Mi 21.10. 07:45 (ContentIn 350682) | A | 634, Business Judgment Rule | 34 | | 28.10. |
-| 3 | | B | | | | |
-| 4 | | A | | | | |
+| 3 | | B | 711, Schatten-KI fliegt auf | 35 | | |
+| 4 | | A | 710, Schatten-KI, Fachbereiche | 36 | | |
 | 5 | | B | | | | |
 | 6 | | A | | | | |
 | 7 | | B | | | | |

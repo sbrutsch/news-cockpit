@@ -9,6 +9,14 @@ Ausgelagert am 2026-08-26 aus `CLAUDE.md`: Das Protokoll war dort auf 161 von
 Weg, die Claude bei jeder Sitzung liest. In `CLAUDE.md` stehen jetzt nur noch
 die letzten drei Einträge plus ein Verweis hierher.
 
+- **2026-10-22:** **Rückkanal auf 06:10 UTC, Tageslauf bedingungslos; Prüfer-Antwort bis
+  6.000 Token; Format-Experiment Beitrag 3 und 4.** Der Abgleich um 01:10 lief vor der
+  Veröffentlichung um 05:45 UTC, ein Montagsbeitrag galt erst Dienstagnacht als gepostet.
+  Jetzt 06:10 UTC; der tägliche Lauf ist bedingungslos (ein Neustart vor 06:10 hätte ihn
+  sonst geschluckt), nur der Startlauf bleibt bedingt. `pruefer.pruefen` 6.000 statt
+  4.000 Token. Experiment: Beitrag 1 und 2 live und erkannt, Text unverändert, nur Bild
+  ergänzt; Beitrag 3 (Entwurf 35, Erzählung, Idee 711) und 4 (Entwurf 36, Lehrstück,
+  Meldung 710) erzeugt und geprüft, Slots 26.10. und 28.10.
 - **2026-10-11 (4):** **Format-Experiment vorbereitet, Erstellung überprüft.** Zweites
   Erzeugungs-Format `erzaehlung` als Testarm (Szene, ein Satz je Zeile, Du-Ansprache,
   700 bis 1.300 Zeichen, Pointe statt Raster, drei eigene Frühjahrs-Anfänge als
