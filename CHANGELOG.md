@@ -9,6 +9,24 @@ Ausgelagert am 2026-08-26 aus `CLAUDE.md`: Das Protokoll war dort auf 161 von
 Weg, die Claude bei jeder Sitzung liest. In `CLAUDE.md` stehen jetzt nur noch
 die letzten drei Einträge plus ein Verweis hierher.
 
+- **2026-10-23:** **Oberfläche auf den Oberflächen-Standard umgebaut.** Anlass: Stefan will
+  für alle eigenen Apps einen modernen, einheitlichen Look; der Standard liegt als Skill
+  `oberflaechen-standard` in der skills-bibliothek. Die vier Dateien liegen **unverändert
+  kopiert** unter `public/oberflaeche/` (Aktualisieren = neu kopieren, nie dort editieren);
+  `index.html` bindet sie per `<link>`/`<script>` ein, Cockpit-Eigenes steht weiter inline.
+  Neues Gerüst: Sidebar mit den vier Ansichten (am Handy Tab-Leiste unten), Begrüßung mit
+  Tageslage, Kennzahlen-Leiste, Karten „Heute geliefert“ (Zusammensetzung als Balken) und
+  „Schwerpunkte“ bzw. je Experiment-Arm eine Karte im Entwürfe-Tab, darunter die Liste als
+  Hauptkarte mit Art-Filter. Hell und Dunkel folgen dem System, Umschalter oben und im
+  Profilmenü (Abmelden sitzt jetzt dort). **CI:** Akzent Blau für Aktion und Auswahl; Rot
+  bleibt der Wichtig-Markierung vorbehalten (plus Löschen-Bestätigung und Fehler), Amber
+  Content-Ideen und Notizen, Grün „gepostet“; Prüfstand-Titel ohne Großbuchstaben.
+  Logik unverändert: Rendern weiter nur über `textContent`/DOM-APIs, `innerHTML` nur für die
+  statischen Icons; umbenannt nur Klassen (`.actions` → `.entry-actions`, Trennpunkt `.sep`).
+  Geprüft lokal mit SQLite und Beispieldaten in Chromium: Login inkl. Fehlversuch, Stern,
+  Notiz, Löschen mit Bestätigung, Verwerten-Fenster (ohne API-Key mit Fehlermeldung),
+  Entwurf mit Prüfstand, Suche, Profilmenü, Hell/Dunkel, 1440 und 390 px ohne seitliches
+  Scrollen, keine JS-Fehler; `pytest -q` grün.
 - **2026-10-22:** **Rückkanal auf 06:10 UTC, Tageslauf bedingungslos; Prüfer-Antwort bis
   6.000 Token; Format-Experiment Beitrag 3 und 4.** Der Abgleich um 01:10 lief vor der
   Veröffentlichung um 05:45 UTC, ein Montagsbeitrag galt erst Dienstagnacht als gepostet.

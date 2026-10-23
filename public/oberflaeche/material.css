@@ -1,0 +1,72 @@
+/* Oberflächen-Standard · material.css
+   Glas mit Tiefe: Innenlicht, Lichtkante, Zeigerlicht, Mulden, Kippen, Auftritt, Hintergrund. Braucht tokens.css.
+   Quelle der Wahrheit: skills-bibliothek/claude-code-global/oberflaechen-standard/assets/ */
+@layer tokens, base, layout, components, utilities;
+
+@layer base {
+  /* Hintergrund: drei weiche Lichtfelder (eins im Akzent) + feines Korn.
+     Das Glas braucht etwas, das es verwischen kann – sonst wirkt es flach. */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(42vmax 34vmax at 88% -6%, oklch(0.62 var(--accent-c) var(--accent-h) / .30), transparent 70%),
+      radial-gradient(36vmax 30vmax at 4% 104%, oklch(0.60 0.16 300 / .20), transparent 70%),
+      radial-gradient(28vmax 22vmax at 48% 58%, oklch(0.70 0.12 200 / .12), transparent 70%);
+    background-color: var(--bg);
+  }
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .05; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@layer components {
+  /* ---- Fläche: Glas mit Lichtkante, fällt sauber auf solide zurück ---- */
+  .glass {
+    position: relative;
+    background:
+      radial-gradient(280px circle at var(--gx, -999px) var(--gy, -999px), var(--glint), transparent 70%),
+      linear-gradient(172deg, var(--sheen) 0%, transparent 34%),
+      var(--surface);
+    box-shadow: var(--depth), var(--shadow);
+    backdrop-filter: blur(var(--blur)) saturate(1.8);
+  }
+  /* Lichtkante: Ring aus Kegelverlauf, per Maske auf 1.25px Rand beschnitten.
+     Hell oben links + unten, Akzent-Schimmer unten rechts. */
+  .glass::before {
+    content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    border-radius: inherit; padding: 1.25px;
+    background: conic-gradient(from 300deg,
+      var(--rim-hi) 0deg, var(--rim-lo) 55deg, transparent 90deg,
+      var(--rim-tint) 125deg, var(--rim-mid) 180deg, var(--rim-lo) 225deg,
+      transparent 270deg, var(--rim-lo) 315deg, var(--rim-hi) 360deg);
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .glass { background: var(--surface-solid); backdrop-filter: none; }
+    body::after { display: none; }
+  }
+  @media (prefers-contrast: more) {
+    :root { --line: light-dark(oklch(0.3 0 0 / .45), oklch(1 0 0 / .4)); }
+    .glass { background: var(--surface-solid); backdrop-filter: none; outline: 1px solid var(--line); }
+    .glass::before { display: none; }
+  }
+
+  /* Eingelassene Mulde: für Suchfelder, Schalter-Spuren, Messwert-Kästen */
+  .well { background: var(--surface-2); box-shadow: var(--inset-well); }
+
+  /* Kippen unter dem Zeiger (licht.js setzt --rx/--ry, nur Maus, nie bei reduced-motion) */
+  [data-tilt] {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform var(--t-slow) var(--ease);
+  }
+  [data-tilt].is-tilting { transition-duration: 80ms; }
+
+  /* Auftritt: Kinder erscheinen gestaffelt (sibling-index(); ältere Browser ohne Staffel) */
+  [data-cascade] > * {
+    animation: enter .6s var(--ease) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+    animation-delay: calc(sibling-index() * 60ms);
+  }
+  @keyframes enter { from { opacity: 0; translate: 0 14px; } }
+}

@@ -23,6 +23,7 @@ Domain `news.itcoach.cloud` (Domain liegt ebenfalls bei Hostinger)
 │   └── transform.py  # Claude-Aufrufe: Entwurf, Überarbeiten, Einordnen (`_claude_text`)
 ├── public/
 │   ├── index.html    # Komplette UI: Vanilla HTML/CSS/JS, kein Build-Step, keine CDN-Abhängigkeit
+│   ├── oberflaeche/  # Oberflächen-Standard (skills-bibliothek), unverändert kopiert — nie hier editieren
 │   ├── sw.js         # PWA: netz-zuerst, kein API-Caching
 │   └── manifest.webmanifest + icons/
 ├── tests/            # pytest, kein Netz, keine Claude-Aufrufe (Kopf von conftest.py lesen)
@@ -43,8 +44,10 @@ Domain `news.itcoach.cloud` (Domain liegt ebenfalls bei Hostinger)
 - **Frontend rendert ausschließlich über `textContent`/DOM-APIs** — kein
   `innerHTML` mit Fremddaten (XSS-Schutz gegen bösartige Feed-Titel).
   `innerHTML` nur für die statischen SVG-Icon-Strings.
-- **CI:** Farben `#1F2A37`/`#6B7280`/`#C53030` (Rot NUR für Wichtig-Markierung),
-  Source Sans 3 mit Arial-Fallback, kein ALL-CAPS, Hierarchie über Größe/Gewicht.
+- **Oberfläche nach dem Oberflächen-Standard** (Skill `oberflaechen-standard`, seit
+  2026-10-23): Tokens, Material und Bausteine aus `public/oberflaeche/`, Akzent Blau.
+  **CI bleibt:** Rot NUR für die Wichtig-Markierung (sonst nur Löschen-Bestätigung und
+  Fehler), Source Sans 3 mit Arial-Fallback, kein ALL-CAPS, Hierarchie über Größe/Gewicht.
 
 ## Secrets (Governance-Regel 3)
 
@@ -250,6 +253,24 @@ weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückz
 
 ## Änderungsprotokoll
 
+- **2026-10-23:** **Oberfläche auf den Oberflächen-Standard umgebaut.** Anlass: Stefan will
+  für alle eigenen Apps einen modernen, einheitlichen Look; der Standard liegt als Skill
+  `oberflaechen-standard` in der skills-bibliothek. Die vier Dateien liegen **unverändert
+  kopiert** unter `public/oberflaeche/` (Aktualisieren = neu kopieren, nie dort editieren);
+  `index.html` bindet sie per `<link>`/`<script>` ein, Cockpit-Eigenes steht weiter inline.
+  Neues Gerüst: Sidebar mit den vier Ansichten (am Handy Tab-Leiste unten), Begrüßung mit
+  Tageslage, Kennzahlen-Leiste, Karten „Heute geliefert“ (Zusammensetzung als Balken) und
+  „Schwerpunkte“ bzw. je Experiment-Arm eine Karte im Entwürfe-Tab, darunter die Liste als
+  Hauptkarte mit Art-Filter. Hell und Dunkel folgen dem System, Umschalter oben und im
+  Profilmenü (Abmelden sitzt jetzt dort). **CI:** Akzent Blau für Aktion und Auswahl; Rot
+  bleibt der Wichtig-Markierung vorbehalten (plus Löschen-Bestätigung und Fehler), Amber
+  Content-Ideen und Notizen, Grün „gepostet“; Prüfstand-Titel ohne Großbuchstaben.
+  Logik unverändert: Rendern weiter nur über `textContent`/DOM-APIs, `innerHTML` nur für die
+  statischen Icons; umbenannt nur Klassen (`.actions` → `.entry-actions`, Trennpunkt `.sep`).
+  Geprüft lokal mit SQLite und Beispieldaten in Chromium: Login inkl. Fehlversuch, Stern,
+  Notiz, Löschen mit Bestätigung, Verwerten-Fenster (ohne API-Key mit Fehlermeldung),
+  Entwurf mit Prüfstand, Suche, Profilmenü, Hell/Dunkel, 1440 und 390 px ohne seitliches
+  Scrollen, keine JS-Fehler; `pytest -q` grün.
 - **2026-10-22:** **Rückkanal auf 06:10 UTC, Tageslauf bedingungslos; Prüfer-Antwort bis
   6.000 Token; Format-Experiment Beitrag 3 und 4.** Befund aus der Kontrolle der ersten
   Woche: Der Abgleich um 01:10 lief vor der Veröffentlichung um 05:45 UTC, ein
@@ -291,18 +312,6 @@ weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückz
   Zeichen, 15 Zeilen, Schlussfrage in Du-Form und neu formuliert, das einzige „Sie"
   steht in wörtlicher Rede. Die drei Anfänge im Prompt sind nachgeprüft Stefans
   eigene ContentIn-Beiträge vom März und April 2026 (Post-IDs 249506, 249527, 254831).
-- **2026-10-11 (3):** **Messung der Claudia-Eichung: Kriterium 1 verfehlt, Kriterium 2
-  erfüllt.** Sechs Beiträge, die nicht Maßstab sind, im Produktions-Container mit dem
-  neuen `scripts/pruefer_messen.py` geprüft (sechs Claude-Aufrufe, Cent-Betrag): Noten
-  7, 7, 7, 6, 6, 7, vorher 7, 7, 8, 8, 8, 8. Zwei verschiedene Noten statt drei; stark
-  7,0 gegen schwach 6,5, richtige Richtung, kleiner Abstand. Lesart: Der Freifahrtschein
-  ist weg, die Prüfschleife bekommt von Claudia keine 8 mehr geschenkt. Trennschärfe im
-  engen Band entsteht aber nicht im Prompt: Die sechs Beiträge entstammen demselben
-  Generator und Format und sind einander textlich ähnlich, die Unterschiede in den
-  Reaktionen kommen eher aus Thema und Zeitpunkt. Deshalb nicht weiter am Prompt gedreht
-  (vereinfachen statt nachbessern), sondern als Beleg für das Format-Experiment
-  festgehalten, im Kanon wie hier. Teilnoten der Messung: „Verwertbar Richtung Vorstand"
-  streut 5 bis 8 und ist das Kriterium mit dem größten Ausschlag.
-**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (25 weitere,
+**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (26 weitere,
 zurück bis zum Projektstart am 2026-07-15). Neue Einträge kommen hier oben dazu
 und wandern weiter, sobald mehr als drei zusammenkommen.
