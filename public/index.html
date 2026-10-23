@@ -37,11 +37,13 @@
     --gruen: var(--ok);         --gruen-soft: var(--ok-soft);
   }
   body { font-size: 16px; line-height: 1.55; }
+  /* Auf sehr breiten Bildschirmen nicht bis an den Rand ziehen */
+  .shell { max-inline-size: 1680px; margin-inline: auto; }
   ::selection { background: color-mix(in oklch, var(--accent) 35%, transparent); }
 
   /* ---------- Marke ---------- */
   .brand-mark { font-family: var(--serif); font-style: italic; font-size: 19px; font-weight: 700; }
-  .brand-name { font-family: var(--serif); font-size: 21px; letter-spacing: -0.015em; }
+  .brand-name { font-family: var(--serif); font-size: 20px; letter-spacing: -0.015em; white-space: nowrap; }
   .brand-dot { color: var(--rot); }
   .side-foot { display: flex; align-items: center; gap: 8px; padding: 10px 12px 2px; font-size: 12.5px; color: var(--text-3); }
   .pulse { inline-size: 7px; aspect-ratio: 1; border-radius: 50%; background: var(--gruen); animation: pulse 2.6s infinite; flex: none; }
@@ -88,7 +90,8 @@
   .kinds .kind-chip.active { background: linear-gradient(172deg, var(--sheen), transparent 70%), var(--surface-solid); color: var(--text); box-shadow: var(--depth), 0 2px 6px -2px var(--drop-far); }
 
   .entry {
-    position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px;
+    /* Textspalte mit lesbarer Höchstbreite, Aktionen direkt daneben statt am Kartenrand */
+    position: relative; display: grid; grid-template-columns: minmax(0, 92ch) auto; justify-content: start; gap: 4px 20px;
     padding: 16px 14px 16px 20px; border-radius: var(--r-lg);
     animation: entry-in .5s var(--ease) both;
     transition: background-color var(--t) var(--ease), opacity .3s, translate .3s;
@@ -106,7 +109,7 @@
   .entry h2 { grid-column: 1; font-size: 17.5px; font-weight: 650; line-height: 1.4; margin-top: 4px; letter-spacing: -0.005em; text-wrap: pretty; }
   .entry h2 a { color: inherit; text-decoration: none; }
   .entry h2 a:hover { text-decoration: underline; text-decoration-color: var(--accent-text); text-decoration-thickness: 2px; text-underline-offset: 4px; }
-  .entry .summary { grid-column: 1; color: var(--text-2); font-size: 15px; line-height: 1.6; margin-top: 4px; max-width: 80ch; }
+  .entry .summary { grid-column: 1; color: var(--text-2); font-size: 15px; line-height: 1.6; margin-top: 4px; }
   .entry .summary.zitat { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--text); border-inline-start: 2px solid var(--line); padding-inline-start: 14px; margin-top: 8px; }
 
   .chip.idee { color: var(--amber); background: var(--amber-soft); }
@@ -144,7 +147,7 @@
   .entry.gepostet h2, .entry.gepostet .d-text { opacity: .55; }
   .entry .d-text {
     grid-column: 1; white-space: pre-wrap; color: var(--text-2); font-size: 15px; line-height: 1.6;
-    margin-top: 4px; max-width: 80ch; cursor: pointer;
+    margin-top: 4px; cursor: pointer;
     display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
   }
   .entry .d-text.open { display: block; -webkit-line-clamp: none; }

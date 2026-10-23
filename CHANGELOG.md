@@ -26,7 +26,9 @@ die letzten drei Einträge plus ein Verweis hierher.
   Geprüft lokal mit SQLite und Beispieldaten in Chromium: Login inkl. Fehlversuch, Stern,
   Notiz, Löschen mit Bestätigung, Verwerten-Fenster (ohne API-Key mit Fehlermeldung),
   Entwurf mit Prüfstand, Suche, Profilmenü, Hell/Dunkel, 1440 und 390 px ohne seitliches
-  Scrollen, keine JS-Fehler; `pytest -q` grün.
+  Scrollen, keine JS-Fehler; `pytest -q` grün. Nachtrag gleicher Tag: Auf breiten Bildschirmen war die
+  Textspalte zu schmal und die Aktionen standen am Kartenrand; jetzt Textspalte bis 92ch,
+  Aktionen direkt daneben, Gesamtbreite höchstens 1680 px, Markenname ohne Umbruch.
 - **2026-10-22:** **Rückkanal auf 06:10 UTC, Tageslauf bedingungslos; Prüfer-Antwort bis
   6.000 Token; Format-Experiment Beitrag 3 und 4.** Der Abgleich um 01:10 lief vor der
   Veröffentlichung um 05:45 UTC, ein Montagsbeitrag galt erst Dienstagnacht als gepostet.
