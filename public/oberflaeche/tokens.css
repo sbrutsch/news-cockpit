@@ -1,0 +1,115 @@
+/* Oberflächen-Standard · tokens.css
+   Werte (Farben, Form, Material-Farben, Bewegung) + Basis. Ein Projekt ändert NUR hier – meist nur --accent-h/--accent-c.
+   Quelle der Wahrheit: skills-bibliothek/claude-code-global/oberflaechen-standard/assets/ */
+@layer tokens, base, layout, components, utilities;
+
+/* ============================================================
+   TOKENS — die einzige Stelle, die ein Projekt anpasst.
+   Farben in OKLCH, Hell/Dunkel über light-dark().
+   ============================================================ */
+@layer tokens {
+  :root {
+    color-scheme: light dark;
+
+    /* Akzent: nur Farbton + Sättigung tauschen, Helligkeit regelt der Standard */
+    --accent-h: 255;
+    --accent-c: 0.17;
+
+    /* Neutrale Grundsprache (leicht kühl, Farbton 260) */
+    --bg:          light-dark(oklch(0.965 0.006 260), oklch(0.165 0.012 260));
+    --surface:     light-dark(oklch(1 0 0 / 0.52),    oklch(0.24 0.016 268 / 0.46));
+    --surface-solid: light-dark(oklch(0.995 0.002 260), oklch(0.215 0.014 260));
+    --surface-2:   light-dark(oklch(0.93 0.008 260 / 0.7), oklch(0.13 0.012 265 / 0.45));
+    --line:        light-dark(oklch(0.25 0.02 260 / 0.10), oklch(1 0 0 / 0.09));
+
+    --text:        light-dark(oklch(0.22 0.015 260), oklch(0.96 0.005 260));
+    --text-2:      light-dark(oklch(0.45 0.015 260), oklch(0.78 0.012 260)); /* AA auf Karten */
+    --text-3:      light-dark(oklch(0.55 0.012 260), oklch(0.66 0.012 260)); /* nur ≥ 13px fett / Deko */
+
+    --accent:      oklch(0.56 var(--accent-c) var(--accent-h));             /* Fläche, weiße Schrift */
+    --accent-text: light-dark(oklch(0.50 var(--accent-c) var(--accent-h)), oklch(0.80 calc(var(--accent-c) * .7) var(--accent-h)));
+    --accent-soft: oklch(0.62 var(--accent-c) var(--accent-h) / 0.16);
+    --on-accent:   oklch(0.99 0 0);
+    /* Gel: Akzentfläche mit Glanz – für Hauptaktion, Haken, Marke */
+    --gel: linear-gradient(180deg, oklch(1 0 0 / .30) 0%, oklch(1 0 0 / .06) 55%, transparent 56%),
+           linear-gradient(oklch(0.64 var(--accent-c) var(--accent-h)), oklch(0.52 var(--accent-c) var(--accent-h)) 75%);
+    --gel-depth: inset 0 1px 1px oklch(1 0 0 / .6), inset 0 -2px 4px oklch(0 0 0 / .16), inset 0 0 0 .5px oklch(1 0 0 / .22);
+    --glow: 0 10px 24px -10px oklch(0.58 var(--accent-c) var(--accent-h) / .95);
+
+    /* Semantik — nur wenn etwas bedeutet, nie als Dekor */
+    --ok:     light-dark(oklch(0.52 0.13 150), oklch(0.80 0.15 150));
+    --warn:   light-dark(oklch(0.55 0.13 65),  oklch(0.82 0.13 75));
+    --danger: light-dark(oklch(0.53 0.19 25),  oklch(0.74 0.16 25));
+    --ok-soft: oklch(0.70 0.15 150 / 0.16);
+    --warn-soft: oklch(0.78 0.14 70 / 0.18);
+    --danger-soft: oklch(0.65 0.19 25 / 0.16);
+
+    /* Diagramm-Reihen (unterscheidbar, auch für Rot-Grün-Schwäche) */
+    --c1: oklch(0.68 0.19 10);
+    --c2: oklch(0.76 0.17 150);
+    --c3: oklch(0.74 0.13 220);
+
+    /* Form */
+    --r-xl: 26px;  --r-lg: 18px;  --r-md: 12px;  --r-sm: 8px;  --r-pill: 999px;
+    --pad-card: clamp(16px, 2.2cqi, 24px);
+    --gap: clamp(12px, 1.4vw, 20px);
+    --blur: 18px;
+
+    /* ---- Material „Glas mit Tiefe“ ----
+       Licht kommt von oben links. light-dark() kann nur Farben, deshalb sind
+       hier die Farben getrennt und die Schatten-Struktur steht einmal unten. */
+    --hl-top:    light-dark(oklch(1 0 0 / .95), oklch(1 0 0 / .26));  /* Oberkante */
+    --hl-bottom: light-dark(oklch(1 0 0 / .45), oklch(1 0 0 / .07));  /* Unterkante, Gegenlicht */
+    --hl-glint:  light-dark(oklch(1 0 0 / .85), oklch(1 0 0 / .20));  /* Innenglanz oben links */
+    --hl-glint2: light-dark(oklch(1 0 0 / .55), oklch(1 0 0 / .09));  /* Innenglanz unten rechts */
+    --shade-in:  light-dark(oklch(0.40 0.08 265 / .16), oklch(0 0 0 / .42)); /* Glasdicke unten */
+    --drop-near: light-dark(oklch(0.30 0.06 265 / .10), oklch(0 0 0 / .32));
+    --drop-far:  light-dark(oklch(0.30 0.10 265 / .38), oklch(0 0 0 / .72));
+    --rim-hi:    light-dark(oklch(1 0 0),        oklch(1 0 0 / .70));
+    --rim-mid:   light-dark(oklch(1 0 0 / .70),  oklch(1 0 0 / .32));
+    --rim-lo:    light-dark(oklch(1 0 0 / .20),  oklch(1 0 0 / .08));
+    --rim-tint:  oklch(0.78 0.14 var(--accent-h) / .55);   /* eigene Note: Akzent im Gegenlicht */
+    --glint:     light-dark(oklch(1 0 0 / .40),  oklch(1 0 0 / .11));  /* Lichtfleck unter dem Zeiger */
+    --sheen:     light-dark(oklch(1 0 0 / .40),  oklch(1 0 0 / .07));  /* Schräglicht von oben */
+    --well:      light-dark(oklch(0.40 0.05 265 / .12), oklch(0 0 0 / .38)); /* eingelassene Mulden */
+
+    --depth: inset 0 1px 1px var(--hl-top), inset 0 -1px 1px var(--hl-bottom),
+             inset 3px 4px 12px -6px var(--hl-glint), inset -4px -6px 14px -8px var(--hl-glint2),
+             inset 0 -16px 28px -18px var(--shade-in);
+    --shadow: 0 1px 2px var(--drop-near), 0 24px 48px -22px var(--drop-far);
+    --inset-well: inset 0 1px 3px var(--well), inset 0 -1px 0 var(--hl-bottom);
+
+    /* Typo: Systemschrift; im Projekt Inter/Geist als Variable Font selbst hosten */
+    --font: "Inter var", "Inter", "Geist", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --fs-hero: clamp(2rem, 1.2rem + 3vw, 3.25rem);
+
+    /* Bewegung: wenige Kurven, überall dieselben */
+    --ease: cubic-bezier(.22, 1, .36, 1);                    /* ausklingen: Standard */
+    --spring: linear(0, .34 9%, .78 20%, 1.04 32%, 1.09 40%, 1.05 50%, .99 64%, 1.004 80%, 1); /* leichter Überschwinger */
+    --t-fast: 120ms; --t: 200ms; --t-slow: 420ms;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"]  { color-scheme: dark; }
+}
+
+/* ============================================================ */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; interpolate-size: allow-keywords; }
+  body {
+    margin: 0; min-height: 100dvh;
+    font: 15px/1.5 var(--font); color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.015em; }
+  p { margin: 0; text-wrap: pretty; }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  a { color: var(--accent-text); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; border-radius: 6px; }
+  .num { font-variant-numeric: tabular-nums; }
+  [hidden] { display: none !important; } /* sonst macht display:flex/grid einer Klasse hidden wirkungslos */
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
