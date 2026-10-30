@@ -268,7 +268,11 @@ weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückz
   Folgetag erkannt). Jetzt 07:10 UTC, in beiden Jahreszeiten nach dem Posten und nach
   dem Themenscout. Entwurf 39 (Lehrstück aus Fund 729, PwC-CEO-Studie) hat Stefan am
   23.10. selbst über die neue Oberfläche erzeugt und prüfen lassen; er ist nicht
-  geplant und zählt in der Experiment-Karte als Lehrstück-Entwurf.
+  geplant und zählt in der Experiment-Karte als Lehrstück-Entwurf. Beitrag 7 (Entwurf
+  40, Erzählung aus Idee 700, Einstieg per Regie-Runde vom Ort-Uhrzeit-Auftakt auf den
+  Satz im Raum umgestellt) und 8 (Entwurf 41, Lehrstück aus Meldung 694) erzeugt,
+  geprüft und geplant (355778 Mo 09.11., 355779 Mi 11.11.). Damit sind alle acht
+  Beiträge des Experiments unterwegs; Auswertung am 18.11.
 - **2026-10-23:** **Oberfläche auf den Oberflächen-Standard umgebaut.** Anlass: Stefan will
   für alle eigenen Apps einen modernen, einheitlichen Look; der Standard liegt als Skill
   `oberflaechen-standard` in der skills-bibliothek. Die vier Dateien liegen **unverändert

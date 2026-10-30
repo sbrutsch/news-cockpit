@@ -16,7 +16,9 @@ die letzten drei Einträge plus ein Verweis hierher.
   18.11. (Tabelle und Lesart in `docs/format-experiment.md`). Die 06:10-Korrektur vom
   22.10. hielt nur bis zur Winterzeit (ContentIn postet seit 25.10. um 06:45 UTC, der
   Abgleich lag wieder davor); jetzt 07:10 UTC, in beiden Jahreszeiten nach dem Posten
-  und nach dem Themenscout.
+  und nach dem Themenscout. Beitrag 7 (Entwurf 40, Erzählung, Idee 700, Einstieg per
+  Regie-Runde variiert) und 8 (Entwurf 41, Lehrstück, Meldung 694) erzeugt, geprüft und
+  geplant für 09.11. und 11.11.; damit sind alle acht Beiträge unterwegs.
 - **2026-10-23:** **Oberfläche auf den Oberflächen-Standard umgebaut.** Anlass: Stefan will
   für alle eigenen Apps einen modernen, einheitlichen Look; der Standard liegt als Skill
   `oberflaechen-standard` in der skills-bibliothek. Die vier Dateien liegen **unverändert

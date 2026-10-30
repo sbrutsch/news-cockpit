@@ -78,8 +78,8 @@ Die App führt die Zahlen; die Tabelle dient der Planung der Slots.
 | 4 | Mi 28.10. 07:45 (ContentIn 353893) | A | 710, Schatten-KI, Fachbereiche | 36 | 28.10., mit Bild | 04.11. |
 | 5 | Mo 02.11. 07:45 (ContentIn 353894) | B | 691, CFO zückt den Taschenrechner | 37 | | 09.11. |
 | 6 | Mi 04.11. 07:45 (ContentIn 353895) | A | 699, CFO-Kill-Review | 38 | | 11.11. |
-| 7 | | B | | | | |
-| 8 | | A | | | | |
+| 7 | Mo 09.11. 07:45 (ContentIn 355778) | B | 700, ERP von 2004 | 40 | | 16.11. |
+| 8 | Mi 11.11. 07:45 (ContentIn 355779) | A | 694, GFT: 84 Prozent stoppten | 41 | | 18.11. |
 
 Beitrag 1 (Entwurf 33, erzeugt am 2026-10-11, 996 Zeichen, 20 Zeilen): Ronny 3, Claudia 5,
 Markus 3. Erwartet, siehe Schritt 3: Die Prüfer verlangen Raster, These in Zeile eins und ein
@@ -105,6 +105,12 @@ Claudia 6, Markus 5; Lehrstück Ronny 3, Claudia 6, Markus 4. Zwei Handgriffe vo
 freigegeben, ohne Nachbewertung: In der Erzählung „Donnerstag, 9 Uhr" statt „Dienstag,
 14 Uhr", weil Beitrag 3 denselben Einstieg hatte; im Lehrstück der Absicherungssatz vor der
 Schlussfrage gestrichen. Die Noten beziehen sich auf die erzeugte Fassung.
+
+Beitrag 7 (Entwurf 40, Erzählung, 795 Zeichen, 18 Zeilen) und Beitrag 8 (Entwurf 41,
+Lehrstück, 1.507 Zeichen, 234 Wörter), erzeugt am 2026-10-30, Thema Altsysteme: Erzählung
+Ronny 2, Claudia 3, Markus 4; Lehrstück Ronny 3, Claudia 6, Markus 3. Die Erzählung begann
+erzeugt wieder mit „Vorstand. Dienstag. 9 Uhr.", wie die drei davor; eine Regie-Runde nur für
+den Einstieg hat den Auftakt auf den Satz im Raum umgestellt, geprüft wurde die Fassung danach.
 
 ## Probe vor dem Start (2026-10-11)
 
