@@ -18,7 +18,9 @@ die letzten drei Einträge plus ein Verweis hierher.
   Abgleich lag wieder davor); jetzt 07:10 UTC, in beiden Jahreszeiten nach dem Posten
   und nach dem Themenscout. Beitrag 7 (Entwurf 40, Erzählung, Idee 700, Einstieg per
   Regie-Runde variiert) und 8 (Entwurf 41, Lehrstück, Meldung 694) erzeugt, geprüft und
-  geplant für 09.11. und 11.11.; damit sind alle acht Beiträge unterwegs.
+  geplant für 09.11. und 11.11.; damit sind alle acht Beiträge unterwegs. Beschlossen
+  für nach der Auswertung am 18.11.: Probe „Fürsprache" (Erkennungsliste,
+  Ergänzungsfrage), siehe `docs/format-experiment.md`.
 - **2026-10-23:** **Oberfläche auf den Oberflächen-Standard umgebaut.** Anlass: Stefan will
   für alle eigenen Apps einen modernen, einheitlichen Look; der Standard liegt als Skill
   `oberflaechen-standard` in der skills-bibliothek. Die vier Dateien liegen **unverändert

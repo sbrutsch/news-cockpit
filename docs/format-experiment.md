@@ -170,6 +170,33 @@ Lesart, bewusst vorsichtig:
 Konsequenz: nichts am Prompt ändern, Beitrag 5 bis 8 wie geplant, Auswertung nach Beitrag 8
 am 18.11. Bleibt es dann bei „eine Größe je Arm", greift die Regel: vier weitere je Arm.
 
+## Nach der Auswertung: Fürsprache-Probe (beschlossen am 2026-10-30)
+
+Anlass: ein gesponserter Beitrag in Stefans Feed (Workwize, „Your IT manager deserves a 200%
+raise", 2.109 Reaktionen, 103 Kommentare, 130 Reposts). Die Reichweite war gekauft, der
+Mechanismus nicht: These mit Zahl in Zeile eins, an den Chef des Lesers adressiert; eine Liste
+von Rollen, in denen sich jeder IT-Leiter wiedererkennt, statt einer Anleitung; Fürsprache, die
+IT-Leiter in die eigene Firma weiterreichen; und Kommentare, die die Liste ergänzen („I would
+add Facilities manager"), also leicht und ungefährlich. Unsere Schlussfragen verlangen dagegen
+ein öffentliches Bekenntnis („Wer in deinem Gremium würde heute geradestehen?"), in beiden
+Armen. Das würde erklären, warum beide Arme kaum Kommentare bekommen.
+
+Plan, nach dem 18.11., wenn das Experiment ausgewertet ist:
+
+1. Ein Probe-Beitrag „Fürsprache": Stefan spricht für IT-Leiter in Richtung Gremium
+   (Arbeitstitel „Was der Vorstand nicht sieht, wenn er die IT-Vorlage ablehnt"), mit
+   Erkennungsliste und einer Ergänzungsfrage am Schluss. Die Probe entsteht als Einzelstück
+   (Skript im Container, eigener Prompt, nichts gespeichert außer dem Entwurf); ein drittes
+   Format `fuersprache` im Code gibt es erst, wenn die Probe trägt.
+2. Die drei Prüfer urteilen zur Dokumentation. Erwartung: niedrige Noten, weil Erkennung
+   statt Umsetzbarkeit. Genau das ist der Punkt; die Leser entscheiden.
+3. Getrennt davon die Schlussfrage als eigene Variable: Bekenntnisfrage gegen
+   Ergänzungsfrage, je zwei Beiträge im Siegerformat des Experiments. Billig, trennbar,
+   zielt auf die Kommentare.
+4. Nicht übernehmen: Englisch, globale Zielgruppe, Produkt-Link am Ende, gekaufte Reichweite.
+
+Geplant wird nichts ohne Freigabe; die Probe wird vorgelegt wie jeder Experiment-Beitrag.
+
 ## Störgrößen, die man kennen sollte
 
 Reichweite hängt am Thema (ein Konzernname bringt Impressionen, nicht Gespräch), am Wochentag
