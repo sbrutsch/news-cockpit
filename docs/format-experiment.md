@@ -38,7 +38,7 @@ am Entwurf abgelegt. Ohne Speichern gibt es keine Zuordnung und keine Messung.
    Handarbeit am Text ist erlaubt, solange das Format bleibt.
 4. Speichern (Etikett und Teilnoten landen am Entwurf), Text kopieren, in ContentIn für den
    nächsten Slot planen.
-5. Nichts weiter: Der Rückkanal markiert am selben Morgen (06:10 UTC) „gepostet" und holt die Kennzahlen, 30 Tage
+5. Nichts weiter: Der Rückkanal markiert am selben Morgen (07:10 UTC) „gepostet" und holt die Kennzahlen, 30 Tage
    lang täglich frisch.
 
 ## Messung
@@ -73,9 +73,9 @@ Die App führt die Zahlen; die Tabelle dient der Planung der Slots.
 | Nr. | Slot | Arm | Fund | Entwurf-Nr. | gepostet | 7 Tage um |
 |---|---|---|---|---|---|---|
 | 1 | Mo 19.10. 07:45 (ContentIn 350681) | B | 636, Haftung bei KI-Agenten | 33 | 19.10., mit Bild | 26.10. |
-| 2 | Mi 21.10. 07:45 (ContentIn 350682) | A | 634, Business Judgment Rule | 34 | | 28.10. |
-| 3 | Mo 26.10. 07:45 (ContentIn 353892) | B | 711, Schatten-KI fliegt auf | 35 | | 02.11. |
-| 4 | Mi 28.10. 07:45 (ContentIn 353893) | A | 710, Schatten-KI, Fachbereiche | 36 | | 04.11. |
+| 2 | Mi 21.10. 07:45 (ContentIn 350682) | A | 634, Business Judgment Rule | 34 | 21.10., mit Bild | 28.10. |
+| 3 | Mo 26.10. 07:45 (ContentIn 353892) | B | 711, Schatten-KI fliegt auf | 35 | 26.10., mit Bild | 02.11. |
+| 4 | Mi 28.10. 07:45 (ContentIn 353893) | A | 710, Schatten-KI, Fachbereiche | 36 | 28.10., mit Bild | 04.11. |
 | 5 | Mo 02.11. 07:45 (ContentIn 353894) | B | 691, CFO zückt den Taschenrechner | 37 | | 09.11. |
 | 6 | Mi 04.11. 07:45 (ContentIn 353895) | A | 699, CFO-Kill-Review | 38 | | 11.11. |
 | 7 | | B | | | | |
@@ -127,6 +127,42 @@ Nachprobe endete mit „Wer in deinem Gremium würde heute geradestehen, wenn di
 falsch entscheidet?". Für die Auswertung heißt das: Eine ähnliche Schlussfrage in beiden
 Armen ist kein Zufall, sondern die Vorgabe des Funds. Die Arme unterscheiden sich im Weg
 dorthin.
+
+## Zwischenstand 2026-10-30
+
+Vier von acht Beiträgen sind draußen, zwei davon älter als sieben Tage. Stand 30.10., 08:50
+UTC, Kennzahlen aus ContentIn; die Spalte „bei 48 h" zeigt Impressionen, Likes und
+Kommentare zum gleichen Alter, damit die Beiträge vergleichbar sind.
+
+| Beitrag | Arm | Alter | Impressionen | Erreicht | Likes | Kommentare | Engagement | bei 48 h |
+|---|---|---|---|---|---|---|---|---|
+| 1, Haftung bei KI-Agenten | B | 11 Tage | 531 | 407 | 5 | 1 | 1,13 % | 379 / 2 / 1 |
+| 2, Business Judgment Rule | A | 9 Tage | 84 | 56 | 3 | 0 | 3,57 % | 48 / 1 / 0 |
+| 3, Schatten-KI fliegt auf | B | 4 Tage | 124 | 83 | 1 | 0 | 0,81 % | 117 / 1 / 0 |
+| 4, Schatten-KI, Fachbereiche | A | 2 Tage | 79 | 59 | 2 | 0 | 2,53 % | 79 / 2 / 0 |
+
+Vergleichsbasis: die 14 Cockpit-Lehrstücke vom 24.08. bis 14.10. (ohne Etikett), Median
+163 Impressionen, 2 Likes, 1,31 % Engagement, 2 von 14 mit Kommentar.
+
+Lesart, bewusst vorsichtig:
+
+- Reichweite: Erzählung vorn (Median 328 gegen 82), getragen von Beitrag 1. Beitrag 3 blieb
+  mit 124 weit darunter, lag bei 48 Stunden aber immer noch über beiden Lehrstücken.
+- Beide Lehrstücke des Experiments (84, 79) liegen am unteren Rand der Vergleichsbasis; nur
+  der 14.10. (80) war ähnlich schwach. Die Reichweite der Lehrstücke fällt seit Oktober
+  (176, 160, 80, 84, 79), das begann vor dem Experiment.
+- Kommentare: 1 gegen 0. Der einzige Kommentar seit dem 28.09. kam auf die erste Erzählung,
+  gut zwei Stunden nach dem Posten. Wer ihn schrieb, weiß ContentIn nicht.
+- Engagement-Rate: Lehrstück vorn (3,05 % gegen 0,97 %), aber auf 80 Impressionen zählen
+  zwei Likes 2,5 Prozentpunkte. Die Rate belohnt kleine Reichweite.
+- Nach der Entscheidungsregel: eine Größe je Arm, also unentschieden. Bei zwei Beiträgen je
+  Arm war nichts anderes zu erwarten.
+- Prüfer gegen Leser: Claudia gab dem Lehrstück 2 die beste Note (7), es hat die wenigsten
+  Impressionen. Erzählung 1 (Ronny 3, Claudia 5, Markus 3) hat die meisten. Vier Punkte sind
+  keine Statistik, sie zeigen aber in dieselbe Richtung wie der Befund vom 11.10.
+
+Konsequenz: nichts am Prompt ändern, Beitrag 5 bis 8 wie geplant, Auswertung nach Beitrag 8
+am 18.11. Bleibt es dann bei „eine Größe je Arm", greift die Regel: vier weitere je Arm.
 
 ## Störgrößen, die man kennen sollte
 

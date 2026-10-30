@@ -63,7 +63,7 @@ async def lifespan(_app):
         log.warning("APP_PASSWORD_HASH/APP_PASSWORD nicht gesetzt — Login ist deaktiviert.")
     if contentin.mcp_key():
         threading.Thread(target=_contentin_zeitplan, daemon=True, name="contentin-abgleich").start()
-        log.info("ContentIn-Rückkanal aktiv: Abgleich täglich 06:10 UTC, beim Start falls heute noch nicht.")
+        log.info("ContentIn-Rückkanal aktiv: Abgleich täglich 07:10 UTC, beim Start falls heute noch nicht.")
     else:
         log.info("CONTENTIN_MCP_KEY nicht gesetzt — Rückkanal von ContentIn bleibt aus.")
     yield
@@ -568,13 +568,15 @@ def _sekunden_bis(stunde_utc, minute_utc):
 
 
 def _contentin_zeitplan():
-    """Täglich 06:10 UTC (07:10 bzw. 08:10 deutscher Zeit): nach der Veröffentlichung
-    um 05:45 UTC und vor dem Themenscout um 06:30, damit ein Beitrag noch am selben
-    Morgen als gepostet gilt. Bis 2026-10-22 lief der Abgleich um 01:10 und erkannte
-    ihn erst in der Nacht danach. Beim Start einmal sofort, falls heute noch kein Lauf
-    steht (ein Deploy kostet so höchstens einen Abgleich); der tägliche Lauf selbst ist
-    bedingungslos, sonst würde ein Neustart vor 06:10 den Morgenlauf schlucken. Ein
-    Fehlschlag wird geloggt, nicht gemerkt, damit der nächste Lauf es erneut versucht."""
+    """Täglich 07:10 UTC (08:10 bzw. 09:10 deutscher Zeit): nach der Veröffentlichung
+    um 07:45 deutscher Zeit (05:45 UTC im Sommer, 06:45 UTC im Winter) und nach dem
+    Themenscout um 06:30 deutscher Zeit, damit ein Beitrag noch am selben Morgen als
+    gepostet gilt. Bis 2026-10-22 lief der Abgleich um 01:10, bis 2026-10-30 um 06:10;
+    das lag seit der Winterzeit wieder vor der Veröffentlichung. Beim Start einmal
+    sofort, falls heute noch kein Lauf steht (ein Deploy kostet so höchstens einen
+    Abgleich); der tägliche Lauf selbst ist bedingungslos, sonst würde ein Neustart vor
+    07:10 den Morgenlauf schlucken. Ein Fehlschlag wird geloggt, nicht gemerkt, damit
+    der nächste Lauf es erneut versucht."""
     start = True
     while True:
         try:
@@ -588,7 +590,7 @@ def _contentin_zeitplan():
         except Exception:
             log.exception("ContentIn-Abgleich fehlgeschlagen — nächster Versuch beim nächsten Lauf")
         start = False
-        time.sleep(_sekunden_bis(6, 10))
+        time.sleep(_sekunden_bis(7, 10))
 
 
 @app.delete("/api/drafts/{draft_id}", dependencies=[Depends(require_session)])

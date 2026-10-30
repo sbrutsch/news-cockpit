@@ -217,12 +217,15 @@ Entwurf und nimmt den Quell-Fund aus dem Posteingang (`db.archiviere_fund`,
 dieselbe Funktion wie beim Markieren von Hand). Kennzahlen der letzten 30 Tage
 werden bei jedem Lauf erneuert, ältere nur einmal.
 
-Läuft täglich 06:10 UTC im eigenen Thread, kein n8n nötig, und beim
+Läuft täglich 07:10 UTC im eigenen Thread, kein n8n nötig, und beim
 Containerstart, falls heute noch nicht (Stand in `sync_log`); der tägliche Lauf
-selbst ist bedingungslos, sonst schluckt ein Neustart vor 06:10 den Morgenlauf.
-Bis 2026-10-22 lief er um 01:10, also vor der Veröffentlichung um 05:45 UTC: Ein
-Montagsbeitrag galt erst Dienstagnacht als gepostet, der Fund blieb einen Tag im
-Posteingang. Jetzt liegt er nach dem Posten und vor dem Themenscout. Von Hand:
+selbst ist bedingungslos, sonst schluckt ein Neustart vor 07:10 den Morgenlauf.
+Bis 2026-10-22 lief er um 01:10, also vor der Veröffentlichung um 07:45 deutscher
+Zeit: Ein Montagsbeitrag galt erst Dienstagnacht als gepostet, der Fund blieb
+einen Tag im Posteingang. Die Korrektur auf 06:10 UTC hielt nur bis zur Winterzeit:
+Seit dem 25.10. postet ContentIn um 06:45 UTC, der Abgleich lag wieder davor.
+07:10 UTC liegt in beiden Jahreszeiten nach dem Posten und nach dem Themenscout
+(06:30 deutscher Zeit). Von Hand:
 `POST /api/sync/contentin` (Sitzung oder Ingest-Token) oder der Knopf neben
 dem Export. Ohne `CONTENTIN_MCP_KEY` bleibt alles aus. Ein fehlgeschlagener
 Lauf wird geloggt, nicht gemerkt, damit der nächste es erneut versucht.
@@ -253,6 +256,19 @@ weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückz
 
 ## Änderungsprotokoll
 
+- **2026-10-30:** **Zwischenstand Format-Experiment; Rückkanal auf 07:10 UTC.** Vier
+  Beiträge draußen, zwei älter als sieben Tage: Erzählung 531 und 124 Impressionen,
+  Lehrstück 84 und 79; Kommentare 1 gegen 0, Engagement-Rate 0,97 gegen 3,05 Prozent.
+  Nach der Entscheidungsregel unentschieden (eine Größe je Arm), Beitrag 5 bis 8 laufen
+  wie geplant, Auswertung am 18.11. Tabelle mit 48-Stunden-Vergleich, Vergleichsbasis
+  (14 Lehrstücke seit August, Median 163 Impressionen) und Lesart in
+  `docs/format-experiment.md`, Abschnitt Zwischenstand. Befund nebenbei: Die
+  06:10-Korrektur vom 22.10. hielt nur bis zur Winterzeit; seit dem 25.10. postet
+  ContentIn um 06:45 UTC, der Abgleich lag wieder davor (26.10. und 28.10. erst am
+  Folgetag erkannt). Jetzt 07:10 UTC, in beiden Jahreszeiten nach dem Posten und nach
+  dem Themenscout. Entwurf 39 (Lehrstück aus Fund 729, PwC-CEO-Studie) hat Stefan am
+  23.10. selbst über die neue Oberfläche erzeugt und prüfen lassen; er ist nicht
+  geplant und zählt in der Experiment-Karte als Lehrstück-Entwurf.
 - **2026-10-23:** **Oberfläche auf den Oberflächen-Standard umgebaut.** Anlass: Stefan will
   für alle eigenen Apps einen modernen, einheitlichen Look; der Standard liegt als Skill
   `oberflaechen-standard` in der skills-bibliothek. Die vier Dateien liegen **unverändert
@@ -292,28 +308,6 @@ weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückz
   Lehrstück aus Meldung 699) am selben Tag erzeugt, geprüft und mit zwei freigegebenen
   Handgriffen geplant (353894 Mo 02.11., 353895 Mi 04.11.). Laufzettel in
   `docs/format-experiment.md`.
-- **2026-10-11 (4):** **Format-Experiment vorbereitet, Erstellung überprüft.** Zweites
-  Erzeugungs-Format `erzaehlung` als Testarm (aus den Frühjahrsbeiträgen mit den meisten
-  Kommentaren: Szene, ein Satz je Zeile, Du-Ansprache, 700 bis 1.300 Zeichen, Pointe
-  statt Raster, drei eigene Anfänge als Maßstab); `lehrstueck` bleibt als Kontrolle
-  wörtlich unverändert. Befunde der Überprüfung: Die Qualitätslatte erzwingt das
-  Prüfraster am Ende, die Prüfer tragen dessen Werte, die drei reichweitenstärksten
-  Beiträge entstanden vor der Latte, ContentIn mahnt Einstiege unter 250 Zeichen an.
-  Alles davon steckt im Testarm; die Kontrolle wird erst nach dem Experiment angefasst.
-  Neu: `drafts.format` (Migration), `POST …/verwerten` mit `{format}`, `format` in
-  Überarbeiten und Speichern, `GET /api/experiment`, Format-Chips im Entwurfs-Fenster,
-  Format-Chip und Experiment-Karte im Entwürfe-Tab, Vorlage `docs/format-experiment.md`,
-  vier Tests in `tests/test_format_experiment.py`. **Produktionsprobe** mit Fund 636
-  (Haftung bei KI-Agenten), beide Formate aus demselben Fund, nichts gespeichert:
-  Lehrstück 1.324 Zeichen, 9 Zeilen, Zeilen-Median 122, Schluss im Drei-Fragen-Raster;
-  Erzählung 910 Zeichen, 16 Zeilen, Zeilen-Median 50, keine Aufzählung, Szene als
-  Einstieg. Befund: Beide übernahmen die vom Themenscout im Fund vorgegebene
-  Schlussfrage in Sie-Form wörtlich; im Lehrstück passt das, in der Erzählung bricht
-  es die Du-Ansprache. Deshalb eine Zeile im Testarm-Prompt (Du bis zur letzten
-  Zeile, vorgeschlagene Schlussfragen nicht wörtlich, `a70e268`). Nachprobe: 899
-  Zeichen, 15 Zeilen, Schlussfrage in Du-Form und neu formuliert, das einzige „Sie"
-  steht in wörtlicher Rede. Die drei Anfänge im Prompt sind nachgeprüft Stefans
-  eigene ContentIn-Beiträge vom März und April 2026 (Post-IDs 249506, 249527, 254831).
-**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (26 weitere,
+**Ältere Einträge stehen in [`CHANGELOG.md`](CHANGELOG.md)** (27 weitere,
 zurück bis zum Projektstart am 2026-07-15). Neue Einträge kommen hier oben dazu
 und wandern weiter, sobald mehr als drei zusammenkommen.

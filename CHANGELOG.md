@@ -9,6 +9,14 @@ Ausgelagert am 2026-08-26 aus `CLAUDE.md`: Das Protokoll war dort auf 161 von
 Weg, die Claude bei jeder Sitzung liest. In `CLAUDE.md` stehen jetzt nur noch
 die letzten drei Einträge plus ein Verweis hierher.
 
+- **2026-10-30:** **Zwischenstand Format-Experiment; Rückkanal auf 07:10 UTC.** Vier
+  Beiträge draußen, zwei älter als sieben Tage: Erzählung 531 und 124 Impressionen,
+  Lehrstück 84 und 79; Kommentare 1 gegen 0, Engagement-Rate 0,97 gegen 3,05 Prozent;
+  nach der Entscheidungsregel unentschieden, Beitrag 5 bis 8 wie geplant, Auswertung am
+  18.11. (Tabelle und Lesart in `docs/format-experiment.md`). Die 06:10-Korrektur vom
+  22.10. hielt nur bis zur Winterzeit (ContentIn postet seit 25.10. um 06:45 UTC, der
+  Abgleich lag wieder davor); jetzt 07:10 UTC, in beiden Jahreszeiten nach dem Posten
+  und nach dem Themenscout.
 - **2026-10-23:** **Oberfläche auf den Oberflächen-Standard umgebaut.** Anlass: Stefan will
   für alle eigenen Apps einen modernen, einheitlichen Look; der Standard liegt als Skill
   `oberflaechen-standard` in der skills-bibliothek. Die vier Dateien liegen **unverändert
