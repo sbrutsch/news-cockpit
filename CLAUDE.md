@@ -274,7 +274,9 @@ weil die Prüfer die Werte des Lehrstücks tragen und den Testarm sonst zurückz
   geprüft und geplant (355778 Mo 09.11., 355779 Mi 11.11.). Damit sind alle acht
   Beiträge des Experiments unterwegs; Auswertung am 18.11. Beschlossen für danach: eine
   Probe „Fürsprache" (Erkennungsliste, Ergänzungsfrage statt Bekenntnisfrage), Anlass
-  und Plan in `docs/format-experiment.md`, Abschnitt „Nach der Auswertung".
+  und Plan in `docs/format-experiment.md`, Abschnitt „Nach der Auswertung". Die
+  Auswertung am 18.11. 09:00 läuft als einmalige Desktop-Routine
+  `format-experiment-auswertung` (nur lesend, Register `assistenz\REGISTER.md`).
 - **2026-10-23:** **Oberfläche auf den Oberflächen-Standard umgebaut.** Anlass: Stefan will
   für alle eigenen Apps einen modernen, einheitlichen Look; der Standard liegt als Skill
   `oberflaechen-standard` in der skills-bibliothek. Die vier Dateien liegen **unverändert

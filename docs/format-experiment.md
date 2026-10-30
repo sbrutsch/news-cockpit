@@ -197,6 +197,12 @@ Plan, nach dem 18.11., wenn das Experiment ausgewertet ist:
 
 Geplant wird nichts ohne Freigabe; die Probe wird vorgelegt wie jeder Experiment-Beitrag.
 
+Die Auswertung selbst läuft am 18.11. um 09:00 als einmalige Desktop-Routine
+`format-experiment-auswertung` (nur lesend: ContentIn und dieser Laufzettel; Bericht nach
+`assistenz\berichte\format-experiment-auswertung.md`; Master in
+`skills-bibliothek\claude-desktop-routinen`, Eintrag in `assistenz\REGISTER.md`). Sie stößt
+die Sitzung für die Probe an, macht sie aber nicht.
+
 ## Störgrößen, die man kennen sollte
 
 Reichweite hängt am Thema (ein Konzernname bringt Impressionen, nicht Gespräch), am Wochentag
